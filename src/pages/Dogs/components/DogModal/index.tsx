@@ -102,14 +102,14 @@ export function DogModal({ dog: parentDog, isOpen, onClose }: ModalProps) {
                       <div className={styles.carouselNav}>
                         <div className={styles.carouselNavButtons}>
                           <Button
-                            variant="outline"
+                            variant="primary"
                             size="icon"
                             onClick={api.goPrev}
                           >
                             <Lucide.ChevronLeft size={24} />
                           </Button>
                           <Button
-                            variant="outline"
+                            variant="primary"
                             size="icon"
                             onClick={api.goNext}
                           >

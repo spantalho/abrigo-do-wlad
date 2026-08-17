@@ -6,8 +6,9 @@ import { DogCard } from "./components/DogCard";
 
 import { CORES_MAP, TAGS_MAP, type Dog, type DogFilters } from "@/types/dogs";
 import { useDogSearch } from "@/hooks/useDogSearch";
+import { useDailyDog } from "@/hooks/useDailyDog";
 import { getOptimizedImageUrl } from "@/utils/cdn";
-import { getThirdPartyImage, preloadDogImages } from "@/utils/common";
+import { preloadDogImages } from "@/utils/common";
 import { analytics } from "@/utils/analytics";
 
 import HeroSmall from "@/components/HeroSmall";
@@ -179,16 +180,21 @@ export default function Dogs() {
     ITEMS_PER_PAGE,
   } = useDogSearch();
 
+  const dailyDog = useDailyDog();
+
   const [selectedDog, setSelectedDog] = React.useState<Dog | null>(null);
   const [loadingDogId, setLoadingDogId] = React.useState<string | null>(null);
   const trackedFiltersRef = React.useRef<string>("");
 
-  const heroImage = getThirdPartyImage("dogs", {
-    w: 1920,
-    h: 800,
-    q: 80,
-    crop: "top",
-  })?.url;
+  const heroImage = dailyDog?.fotos?.[0]
+    ? getOptimizedImageUrl(dailyDog.fotos[0], {
+        width: 1920,
+        height: 800,
+        quality: 80,
+        crop: "fill",
+        gravity: "auto",
+      })
+    : undefined;
 
   // Pré-carregamento de imagens da página atual
   React.useEffect(() => {
