@@ -2,24 +2,22 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
 
-function getFirebaseEnv(name: string): string {
-  const raw = import.meta.env[name as keyof ImportMetaEnv];
-
-  if (typeof raw !== "string") {
+function getFirebaseEnv(value: unknown): string {
+  if (typeof value !== "string") {
     return "";
   }
 
   // Defensive normalization for values copied with quotes/spaces.
-  return raw.trim().replace(/^['"]|['"]$/g, "");
+  return value.trim().replace(/^['"]|['"]$/g, "");
 }
 
 const firebaseConfig = {
-  apiKey: getFirebaseEnv("VITE_FIREBASE_API_KEY"),
-  authDomain: getFirebaseEnv("VITE_FIREBASE_AUTH_DOMAIN"),
-  projectId: getFirebaseEnv("VITE_FIREBASE_PROJECT_ID"),
-  storageBucket: getFirebaseEnv("VITE_FIREBASE_STORAGE_BUCKET"),
-  messagingSenderId: getFirebaseEnv("VITE_FIREBASE_MESSAGING_SENDER_ID"),
-  appId: getFirebaseEnv("VITE_FIREBASE_APP_ID")
+  apiKey: getFirebaseEnv(import.meta.env.VITE_FIREBASE_API_KEY),
+  authDomain: getFirebaseEnv(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN),
+  projectId: getFirebaseEnv(import.meta.env.VITE_FIREBASE_PROJECT_ID),
+  storageBucket: getFirebaseEnv(import.meta.env.VITE_FIREBASE_STORAGE_BUCKET),
+  messagingSenderId: getFirebaseEnv(import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID),
+  appId: getFirebaseEnv(import.meta.env.VITE_FIREBASE_APP_ID)
 };
 
 const missingFirebaseVars = [
