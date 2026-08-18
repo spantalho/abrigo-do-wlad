@@ -1,13 +1,13 @@
-import { getRedisStore } from "../_lib/redis";
+import { getKvStore } from "../_lib/kv";
 import { HTTP_STATUS } from "../_lib/constants";
-import { jsonResponse, getEnvValue } from "../_lib/env";
+import { jsonResponse, type CloudflareEnv } from "../_lib/env";
 
 export async function onRequest({
   request,
   env,
 }: {
   request: Request;
-  env: Record<string, string | undefined>;
+  env: CloudflareEnv;
 }) {
   if (request.method !== "GET") {
     return jsonResponse(HTTP_STATUS.METHOD_NOT_ALLOWED, {
@@ -15,19 +15,9 @@ export async function onRequest({
     });
   }
 
-  const redisUrl =
-    getEnvValue(env, "REDIS_URL") ||
-    getEnvValue(env, "CLOUDFLARE_REDIS_URL");
-
-  if (!redisUrl) {
-    return jsonResponse(HTTP_STATUS.INTERNAL_SERVER_ERROR, {
-      message: "Redis configuration is missing.",
-    });
-  }
-
   try {
-    const redis = getRedisStore(env);
-    const dog = await redis.get("hero-dog");
+    const kvStore = getKvStore(env);
+    const dog = await kvStore.get("hero-dog");
 
     if (dog) {
       return jsonResponse(HTTP_STATUS.OK, {

@@ -1,11 +1,14 @@
-export type CloudflareEnv = Record<string, string | undefined>;
+export type CloudflareEnv = Record<string, unknown>;
 
 export function getEnvValue(
   env: CloudflareEnv | undefined,
   key: string,
   fallback?: string,
 ): string | undefined {
-  return env?.[key] ?? process.env[key] ?? fallback;
+  const envValue = env?.[key];
+  const normalizedEnvValue = typeof envValue === "string" ? envValue : undefined;
+
+  return normalizedEnvValue ?? process.env[key] ?? fallback;
 }
 
 export function jsonResponse(

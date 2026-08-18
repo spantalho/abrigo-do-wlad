@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import net from "net";
 import type { IncomingMessage } from "http";
-import { getRedisStore } from "./redis";
+import { getKvStore } from "./kv";
 import {
   getAllowedOrigins,
   RATE_LIMIT_WINDOW,
@@ -76,13 +76,13 @@ export async function checkRateLimit(
   if (clientIp === "unknown") return true;
 
   const key = `rate-limit:${clientIp}`;
-  const redis = getRedisStore(env);
+  const kvStore = getKvStore(env);
 
   try {
-    const current = await redis.incr(key);
+    const current = await kvStore.incr(key);
 
     if (current === 1) {
-      await redis.expire(key, RATE_LIMIT_WINDOW);
+      await kvStore.expire(key, RATE_LIMIT_WINDOW);
     }
 
     return current <= MAX_REQUESTS_PER_WINDOW;

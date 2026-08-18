@@ -10,7 +10,7 @@ interface EmailOptions {
 
 function getTransporter(env?: CloudflareEnv) {
   const gmailUser = getEnvValue(env, "GMAIL_USER");
-  const gmailPass = getEnvValue(env, "GMAIL_PASS") || getEnvValue(env, "GMAIL_USER_PASSWORD");
+  const gmailPass = getEnvValue(env, "GMAIL_PASS")
 
   if (!gmailUser || !gmailPass) {
     throw new Error("GMAIL credentials are not configured in the Cloudflare environment.");

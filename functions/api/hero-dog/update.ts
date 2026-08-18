@@ -1,9 +1,9 @@
-import { getRedisStore } from "../_lib/redis";
+import { getKvStore } from "../_lib/kv";
 import { FieldPath } from "firebase-admin/firestore";
 import { getDb } from "../_lib/firebase";
 import { validateAuthHeader } from "../_lib/security";
 import { HTTP_STATUS } from "../_lib/constants";
-import { getEnvValue, jsonResponse } from "../_lib/env";
+import { getEnvValue, jsonResponse, type CloudflareEnv } from "../_lib/env";
 
 const DOGS_COLLECTION = "dogs";
 
@@ -13,7 +13,7 @@ type HeroDog = {
 };
 
 async function getRandomDogFromServer(
-  env?: Record<string, string | undefined>,
+  env?: CloudflareEnv,
 ): Promise<HeroDog | null> {
   const db = getDb(env);
   const docRef = db.collection(DOGS_COLLECTION);
@@ -45,10 +45,10 @@ async function getRandomDogFromServer(
   return { id: randomDoc.id, ...randomDoc.data() };
 }
 
-export async function updateHeroDog(env?: Record<string, string | undefined>) {
+export async function updateHeroDog(env?: CloudflareEnv) {
   try {
-    const redis = getRedisStore(env);
-    const currentDog = await redis.get<HeroDog | null>("hero-dog");
+    const kvStore = getKvStore(env);
+    const currentDog = await kvStore.get<HeroDog | null>("hero-dog");
     let newDog: HeroDog | null = null;
     let attempts = 0;
 
@@ -58,7 +58,7 @@ export async function updateHeroDog(env?: Record<string, string | undefined>) {
     } while (newDog && currentDog && newDog.id === currentDog.id && attempts < 3);
 
     if (newDog) {
-      await redis.set("hero-dog", newDog);
+      await kvStore.set("hero-dog", newDog);
       return {
         status: HTTP_STATUS.OK,
         body: {
@@ -90,7 +90,7 @@ export async function onRequest({
   env,
 }: {
   request: Request;
-  env: Record<string, string | undefined>;
+  env: CloudflareEnv;
 }) {
   if (request.method !== "GET") {
     return jsonResponse(HTTP_STATUS.METHOD_NOT_ALLOWED, {
@@ -116,7 +116,7 @@ export async function scheduled({
   env,
 }: {
   cron: string;
-  env: Record<string, string | undefined>;
+  env: CloudflareEnv;
 }) {
   console.log(`Scheduled hero-dog update triggered via cron: ${cron}`);
 

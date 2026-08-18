@@ -35,7 +35,7 @@ functions/
 │   │   ├── encryption.ts      # Criptografia de dados sensíveis
 │   │   ├── env.ts             # Helpers para leitura do env do Cloudflare
 │   │   ├── firebase.ts        # Conexão com Firebase Admin
-│   │   ├── redis.ts           # Cliente Redis
+│   │   ├── kv.ts              # Store de cache (Cloudflare KV + fallback local)
 │   │   ├── response.ts        # Helpers de resposta JSON (legado, em transição)
 │   │   ├── security.ts        # Validação, origem, recaptcha e rate limit
 │   │   └── validation.ts      # Validação de rotas e métodos HTTP
@@ -100,7 +100,7 @@ Para rodar o projeto localmente:
     ALLOWED_ORIGIN=http://localhost:5173
     RECAPTCHA_PUBLIC_KEY=
     RECAPTCHA_SECRET_KEY=
-    REDIS_URL=
+    # Binding Cloudflare KV (ex.: CACHE_KV)
     MASTER_KEY=
     CRON_SECRET=
 
@@ -112,7 +112,6 @@ Para rodar o projeto localmente:
     # E-mail / Admin
     GMAIL_USER=
     GMAIL_PASS=
-    GMAIL_USER_PASSWORD=
     ADOPTION_EMAIL_RECIPIENT=
     DEBUG_EMAIL_RECIPIENT=
     ADMIN_PANEL_URL=
@@ -149,7 +148,7 @@ Todos os módulos internos da API devem ler variáveis a partir do ambiente do r
 const value = env?.MY_KEY ?? process.env.MY_KEY;
 ```
 
-Isso garante que os serviços de Redis, Firebase, reCAPTCHA, e-mail e criptografia funcionem corretamente em diferentes provedores de deploy, sem acoplamento exclusivo a um ambiente.
+Isso garante que os serviços de cache em Cloudflare KV, Firebase, reCAPTCHA, e-mail e criptografia funcionem corretamente em diferentes provedores de deploy, sem acoplamento exclusivo a um ambiente.
 
 ## Autores
 

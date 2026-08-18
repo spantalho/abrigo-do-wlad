@@ -4,7 +4,13 @@
   "compatibility_date": "2026-08-18",
   "compatibility_flags": ["nodejs_compat"],
   "pages_build_output_dir": "./dist",
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "f6a1b05ef9af4532bae224d5e16ad4a0",
+    },
+  ],
   "triggers": {
-    "crons": ["0 3 * * *"]
-  }
+    "crons": ["0 3 * * *"],
+  },
 }
