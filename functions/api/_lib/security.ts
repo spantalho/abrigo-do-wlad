@@ -1,13 +1,14 @@
 import crypto from "crypto";
 import net from "net";
 import type { IncomingMessage } from "http";
-import { redis } from "./redis";
+import { getRedisStore } from "./redis";
 import {
-  ALLOWED_ORIGINS,
+  getAllowedOrigins,
   RATE_LIMIT_WINDOW,
   MAX_REQUESTS_PER_WINDOW,
   MAX_REQUEST_SIZE,
 } from "./constants";
+import { getEnvValue, type CloudflareEnv } from "./env";
 
 export function getClientIp(req: IncomingMessage): string {
   const clientIp = (
@@ -56,10 +57,14 @@ function truncateIp(ip: string): string {
   return ip;
 }
 
-export async function checkRateLimit(clientIp: string): Promise<boolean> {
+export async function checkRateLimit(
+  clientIp: string,
+  env?: CloudflareEnv,
+): Promise<boolean> {
   if (clientIp === "unknown") return true;
 
   const key = `rate-limit:${clientIp}`;
+  const redis = getRedisStore(env);
 
   try {
     const current = await redis.incr(key);
@@ -75,12 +80,12 @@ export async function checkRateLimit(clientIp: string): Promise<boolean> {
   }
 }
 
-export function validateOrigin(req: IncomingMessage): boolean {
+export function validateOrigin(req: IncomingMessage, env?: CloudflareEnv): boolean {
   const origin = req.headers.origin || req.headers.referer;
 
   if (!origin) return false;
 
-  return ALLOWED_ORIGINS.some((allowed) => origin.startsWith(allowed));
+  return getAllowedOrigins(env).some((allowed) => origin.startsWith(allowed));
 }
 
 export function validateContentType(req: IncomingMessage): boolean {
@@ -112,7 +117,10 @@ export function validateAuthHeader(
   return crypto.timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected));
 }
 
-export async function verifyRecaptcha(token: string): Promise<boolean> {
+export async function verifyRecaptcha(
+  token: string,
+  env?: CloudflareEnv,
+): Promise<boolean> {
   if (!token || typeof token !== "string" || token.length > 5000) {
     console.error(
       "reCAPTCHA validation failed: Invalid token format or length.",
@@ -120,7 +128,7 @@ export async function verifyRecaptcha(token: string): Promise<boolean> {
     return false;
   }
 
-  const secret = process.env.RECAPTCHA_SECRET_KEY;
+  const secret = getEnvValue(env, "RECAPTCHA_SECRET_KEY");
   if (!secret) {
     console.error("reCAPTCHA validation failed: Missing secret key.");
     return false;
@@ -154,7 +162,7 @@ export async function verifyRecaptcha(token: string): Promise<boolean> {
       "error-codes"?: string[];
     };
 
-    if (process.env.NODE_ENV === "development") {
+    if (getEnvValue(env, "NODE_ENV") === "development") {
       console.log("reCAPTCHA Google Response:", data);
     }
 

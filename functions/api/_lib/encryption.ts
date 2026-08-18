@@ -1,8 +1,9 @@
 import crypto from "crypto";
-import { db } from "./firebase";
+import { getDb } from "./firebase";
+import { getEnvValue, type CloudflareEnv } from "./env";
 
-function decryptSystemKey(encryptedKeyString: string): string {
-  const masterKey = process.env.MASTER_KEY;
+function decryptSystemKey(encryptedKeyString: string, env?: CloudflareEnv): string {
+  const masterKey = getEnvValue(env, "MASTER_KEY");
   if (!masterKey) {
     throw new Error("MASTER_KEY is not defined in environment variables.");
   }
@@ -28,8 +29,10 @@ function decryptSystemKey(encryptedKeyString: string): string {
 
 export async function encryptData(
   data: Record<string, unknown>,
+  env?: CloudflareEnv,
 ): Promise<{ encryptedData: string; keyVersion: string }> {
-  // get encryption key
+  const db = getDb(env);
+
   const keyDocSnap = await db.collection("system").doc("keys").get();
   if (!keyDocSnap.exists) {
     throw new Error(
@@ -48,7 +51,7 @@ export async function encryptData(
     throw new Error("Chave de criptografia ativa inválida ou não encontrada.");
   }
 
-  const currentKey = decryptSystemKey(encryptedCurrentKey);
+  const currentKey = decryptSystemKey(encryptedCurrentKey, env);
 
   const algorithm = "aes-256-gcm";
   const iv = crypto.randomBytes(16);

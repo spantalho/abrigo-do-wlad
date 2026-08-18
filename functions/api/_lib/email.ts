@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { getEnvValue, type CloudflareEnv } from "./env";
 
 interface EmailOptions {
   to: string;
@@ -7,27 +8,42 @@ interface EmailOptions {
   text?: string;
 }
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
-  },
-});
+function getTransporter(env?: CloudflareEnv) {
+  const gmailUser = getEnvValue(env, "GMAIL_USER");
+  const gmailPass = getEnvValue(env, "GMAIL_PASS") || getEnvValue(env, "GMAIL_USER_PASSWORD");
 
-export async function sendEmail(options: EmailOptions): Promise<void> {
+  if (!gmailUser || !gmailPass) {
+    throw new Error("GMAIL credentials are not configured in the Cloudflare environment.");
+  }
+
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: gmailUser,
+      pass: gmailPass,
+    },
+  });
+}
+
+export async function sendEmail(
+  options: EmailOptions,
+  env?: CloudflareEnv,
+): Promise<void> {
   try {
+      const gmailUser = getEnvValue(env, "GMAIL_USER") || process.env.GMAIL_USER;
+    const transporter = getTransporter(env);
+
     await transporter.sendMail({
-      from: `"Abrigo do Wlad" <${process.env.GMAIL_USER}>`,
+      from: `"Abrigo do Wlad" <${gmailUser}>`,
       to: options.to,
       subject: options.subject,
       text: options.text,
       html: options.html,
     });
 
-    if (process.env.NODE_ENV && process.env.NODE_ENV === "development") {
+    if (getEnvValue(env, "NODE_ENV") === "development" || process.env.NODE_ENV === "development") {
       console.log("[DEBUG] to:", options.to);
-      console.log("[DEBUG] from:", process.env.GMAIL_USER);
+      console.log("[DEBUG] from:", gmailUser);
     }
 
     console.log(`Email enviado para ${options.to}`);
@@ -40,6 +56,7 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
 export function generateAdoptionApplicationEmail(
   applicationData: Record<string, unknown>,
   applicationId: string,
+  env?: CloudflareEnv,
 ): { html: string; text: string } {
   const nome = applicationData.nome_adotante || "Candidato";
   const animal = applicationData.animal_especifico || "não especificado";
@@ -182,7 +199,7 @@ export function generateAdoptionApplicationEmail(
             </div>
 
             <div class="btn-container">
-              <a href="${process.env.ADMIN_PANEL_URL}" class="btn">Analisar Solicitação</a>
+              <a href="${getEnvValue(env, "ADMIN_PANEL_URL") || process.env.ADMIN_PANEL_URL || "#"}" class="btn">Analisar Solicitação</a>
             </div>
           </div>
 

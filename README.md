@@ -26,35 +26,52 @@ Este projeto foi criado para suprir uma necessidade crítica da ONG: a listagem 
 Abaixo está listada a estrutura atual do projeto:
 
 ```text
-api/                     # Serverless functions (Vercel)
-├── adoption/
-│   └── create.ts         # Processa e valida o envio de formulários
-├── hero-dog/
-│   ├── get.ts            # Retorna o animal em destaque armazenado no cache
-│   └── update.ts         # Seleciona um animal aleatório da db e atualiza o cache
-└── _lib/                 # Lógica interna da API
+functions/
+├── api/
+│   ├── [[path]].ts            # Roteador central de endpoints
+│   ├── _lib/
+│   │   ├── constants.ts       # Constantes e status HTTP
+│   │   ├── email.ts           # Envio de e-mails
+│   │   ├── encryption.ts      # Criptografia de dados sensíveis
+│   │   ├── env.ts             # Helpers para leitura do env do Cloudflare
+│   │   ├── firebase.ts        # Conexão com Firebase Admin
+│   │   ├── redis.ts           # Cliente Redis
+│   │   ├── response.ts        # Helpers de resposta JSON (legado, em transição)
+│   │   ├── security.ts        # Validação, origem, recaptcha e rate limit
+│   │   └── validation.ts      # Validação de rotas e métodos HTTP
+│   ├── adoption/
+│   │   └── create.ts          # Cria candidatura de adoção
+│   ├── hero-dog/
+│   │   ├── get.ts             # Retorna o dog em destaque
+│   │   └── update.ts          # Atualiza o dog destaque via cron/auth
+│   └── tests/
+│       └── email.ts          # Rota de debug para envio de e-mail em ambiente local
+├── public/
+│   └── legal/
+│       └── privacy-policy.json
 src/
-├── assets/              # Arquivos estáticos e metadados JSON
-├── components/          # Componentes globais e reutilizáveis
-│   ├── common/          # Componentes genéricos
-│   ├── ui/              # Componentes de interface base (Radix UI, botões, inputs, etc)
-│   ├── Header/          # Barra de navegação fixa
-│   └── Footer/          # Rodapé com informações e links
-├── hooks/               # Custom hooks
-├── lib/                 # Utilitários e configurações atrelados a libs externas
-├── pages/               # Páginas e rotas da aplicação
-│   ├── About/           # História e equipe do abrigo
-│   ├── Adopt/           # Vitrine com os animais disponíveis
-│   ├── BetaForm/        # Formulário multi-etapas preenchido por candidatos (Wizard)
-│   ├── Home/            # Landing page principal
-│   ├── Legal/           # Política de Privacidade e Termos de Uso
-│   └── Recycle/         # Mapa e listagem de postos de arrecadação
-├── services/            # Camada de comunicação de dados (Firebase, APIs externas)
-├── types/               # Declarações de tipagem global estrita (TypeScript)
-├── utils/               # Funções auxiliares (formatação, cdn, etc)
-├── routes.tsx           # Configuração central de roteamento da aplicação
-├── main.tsx             # Ponto de entrada raiz (Root provider)
-└── index.css            # Regras e estilos globais css-modules base
+├── assets/                   # Arquivos estáticos e metadados JSON
+├── components/               # Componentes globais e reutilizáveis
+│   ├── common/
+│   ├── ui/
+│   ├── Header/
+│   ├── Footer/
+│   └── ...
+├── hooks/                    # Custom hooks
+├── lib/                      # Utilitários e configs gerais
+├── pages/                    # Páginas e rotas da aplicação
+│   ├── About/
+│   ├── BetaForm/
+│   ├── Home/
+│   ├── Legal/
+│   └── Recycle/
+├── services/
+├── types/
+├── utils/
+├── routes.tsx
+├── main.tsx
+├── index.css
+└── vite-env.d.ts
 ```
 
 ## Instalação e Execução
@@ -66,12 +83,12 @@ Para rodar o projeto localmente:
     ```bash
     npm install
     ```
-3.  Configure as variáveis de ambiente baseando-se no arquivo `.env.example`. Crie um arquivo `.env` na raiz do projeto:
+3.  Configure as variáveis de ambiente. Para desenvolvimento local, use um arquivo `.env` na raiz. Para *deploy*, configure as mesmas chaves no painel do projeto.
 
     ```env
     NODE_ENV=development
 
-    # Firebase
+    # Frontend
     VITE_FIREBASE_API_KEY=
     VITE_FIREBASE_AUTH_DOMAIN=
     VITE_FIREBASE_PROJECT_ID=
@@ -79,14 +96,25 @@ Para rodar o projeto localmente:
     VITE_FIREBASE_MESSAGING_SENDER_ID=
     VITE_FIREBASE_APP_ID=
 
-    # Segurança e Integrações Externas
-    ALLOWED_ORIGIN=
+    # Runtime serverless / API
+    ALLOWED_ORIGIN=http://localhost:5173
     RECAPTCHA_PUBLIC_KEY=
     RECAPTCHA_SECRET_KEY=
+    REDIS_URL=
+    MASTER_KEY=
+    CRON_SECRET=
 
-    # Configurações de E-mail / Painel Admin
+    # Firebase Admin / API
+    FIREBASE_PROJECT_ID=
+    FIREBASE_CLIENT_EMAIL=
+    FIREBASE_PRIVATE_KEY=
+
+    # E-mail / Admin
     GMAIL_USER=
+    GMAIL_PASS=
     GMAIL_USER_PASSWORD=
+    ADOPTION_EMAIL_RECIPIENT=
+    DEBUG_EMAIL_RECIPIENT=
     ADMIN_PANEL_URL=
     ```
 
@@ -94,6 +122,34 @@ Para rodar o projeto localmente:
     ```bash
     npm run dev
     ```
+
+5.  Para build de produção, use:
+    ```bash
+    npm run build
+    ```
+
+    O build gera saída estática compatível com deploy em hosts que suportem arquivos estáticos e funções serverless.
+
+## Arquitetura da API
+
+A API foi organizada em funções serverless, com a pasta `functions/api` e roteamento centralizado em [functions/api/[[path]].ts](functions/api/[[path]].ts). A implementação foi escrita para funcionar em runtimes compatíveis com serverless, sem depender de integrações exclusivas de um provedor.
+
+### Estrutura de rotas
+
+- `GET /api/hero-dog/get` — retorna o cachorro em destaque
+- `POST /api/adoption/create` — cria a submissão da adoção
+- `GET /api/tests/email` — rota de debug para teste de e-mail local
+- `GET /api/hero-dog/update` — atualização do destaque via autenticidade configurada em `CRON_SECRET`
+
+### Convenção de ambiente
+
+Todos os módulos internos da API devem ler variáveis a partir do ambiente do runtime em execução, com suporte a fallback local para desenvolvimento:
+
+```ts
+const value = env?.MY_KEY ?? process.env.MY_KEY;
+```
+
+Isso garante que os serviços de Redis, Firebase, reCAPTCHA, e-mail e criptografia funcionem corretamente em diferentes provedores de deploy, sem acoplamento exclusivo a um ambiente.
 
 ## Autores
 

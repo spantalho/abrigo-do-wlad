@@ -1,11 +1,17 @@
+import type { CloudflareEnv } from "./env";
+import { getEnvValue } from "./env";
+
 export const MAX_REQUEST_SIZE = 50 * 1024; // 50KB
 export const RATE_LIMIT_WINDOW = 60; // segundos
 export const MAX_REQUESTS_PER_WINDOW = 5;
 export const ADOPTION_EXPIRATION_DAYS = 30;
 
-export const ALLOWED_ORIGINS = [
-  process.env.ALLOWED_ORIGIN || "http://localhost:5173",
-];
+export function getAllowedOrigins(env?: CloudflareEnv): string[] {
+  const origin = getEnvValue(env, "ALLOWED_ORIGIN", "http://localhost:5173");
+  return origin ? [origin] : ["http://localhost:5173"];
+}
+
+export const ALLOWED_ORIGINS = getAllowedOrigins();
 
 export const HTTP_STATUS = {
   OK: 200,
