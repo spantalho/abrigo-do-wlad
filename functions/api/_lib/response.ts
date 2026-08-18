@@ -1,4 +1,3 @@
-import type { ServerResponse } from "http";
 import { HTTP_STATUS } from "./constants";
 
 interface ApiResponse<T = unknown> {
@@ -8,37 +7,37 @@ interface ApiResponse<T = unknown> {
 }
 
 export function sendResponse<T = unknown>(
-  res: ServerResponse,
   statusCode: number,
   message: string,
   data?: T,
   errors?: unknown,
-): void {
+): Response {
   const response: ApiResponse<T> = {
     message,
     ...(data !== undefined ? { data } : {}),
     ...(errors !== undefined ? { errors } : {}),
   };
 
-  res.setHeader("Content-Type", "application/json");
-  res.statusCode = statusCode;
-  res.end(JSON.stringify(response));
+  return new Response(JSON.stringify(response), {
+    status: statusCode,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 }
 
 export function sendSuccess<T = unknown>(
-  res: ServerResponse,
   message: string,
   data?: T,
   statusCode: number = HTTP_STATUS.OK,
-): void {
-  sendResponse(res, statusCode, message, data);
+): Response {
+  return sendResponse(statusCode, message, data);
 }
 
 export function sendError(
-  res: ServerResponse,
   statusCode: number,
   message: string,
   errors?: unknown,
-): void {
-  sendResponse(res, statusCode, message, undefined, errors);
+): Response {
+  return sendResponse(statusCode, message, undefined, errors);
 }

@@ -10,12 +10,24 @@ import {
 } from "./constants";
 import { getEnvValue, type CloudflareEnv } from "./env";
 
-export function getClientIp(req: IncomingMessage): string {
-  const clientIp = (
-    (req.headers["x-forwarded-for"] as string)?.split(",")[0].trim() ||
-    req.socket.remoteAddress ||
-    "unknown"
-  );
+function getHeaderValue(
+  headers: Headers | Record<string, string | string[] | undefined>,
+  key: string,
+): string | undefined {
+  if (headers instanceof Headers) {
+    return headers.get(key) ?? undefined;
+  }
+
+  const value = headers[key];
+  return Array.isArray(value) ? value[0] : value ?? undefined;
+}
+
+export function getClientIp(req: Request | IncomingMessage): string {
+  const forwardedFor = getHeaderValue(req.headers, "x-forwarded-for");
+  const clientIp =
+    forwardedFor?.split(",")[0].trim() ||
+    ("socket" in req ? req.socket.remoteAddress : undefined) ||
+    "unknown";
 
   if (clientIp === "unknown") return clientIp;
 
@@ -80,16 +92,21 @@ export async function checkRateLimit(
   }
 }
 
-export function validateOrigin(req: IncomingMessage, env?: CloudflareEnv): boolean {
-  const origin = req.headers.origin || req.headers.referer;
+export function validateOrigin(
+  req: Request | IncomingMessage,
+  env?: CloudflareEnv,
+): boolean {
+  const origin =
+    getHeaderValue(req.headers, "origin") ??
+    getHeaderValue(req.headers, "referer");
 
   if (!origin) return false;
 
   return getAllowedOrigins(env).some((allowed) => origin.startsWith(allowed));
 }
 
-export function validateContentType(req: IncomingMessage): boolean {
-  const contentType = req.headers["content-type"];
+export function validateContentType(req: Request | IncomingMessage): boolean {
+  const contentType = getHeaderValue(req.headers, "content-type");
   return contentType?.includes("application/json") ?? false;
 }
 
