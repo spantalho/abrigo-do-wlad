@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import net from "net";
 import type { IncomingMessage } from "http";
-import { kv } from "@vercel/kv";
+import { redis } from "./redis";
 import {
   ALLOWED_ORIGINS,
   RATE_LIMIT_WINDOW,
@@ -62,10 +62,10 @@ export async function checkRateLimit(clientIp: string): Promise<boolean> {
   const key = `rate-limit:${clientIp}`;
 
   try {
-    const current = await kv.incr(key);
+    const current = await redis.incr(key);
 
     if (current === 1) {
-      await kv.expire(key, RATE_LIMIT_WINDOW);
+      await redis.expire(key, RATE_LIMIT_WINDOW);
     }
 
     return current <= MAX_REQUESTS_PER_WINDOW;

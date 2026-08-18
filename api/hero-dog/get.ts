@@ -1,4 +1,4 @@
-import { kv } from "../_lib/kv";
+import { redis } from "../_lib/redis";
 import type { IncomingMessage, ServerResponse } from "http";
 import { validateRequest } from "../_lib/validation";
 import { sendError, sendSuccess } from "../_lib/response";
@@ -20,7 +20,7 @@ export default async function handler(
   }
 
   try {
-    const dog = await kv.get("hero-dog");
+    const dog = await redis.get("hero-dog");
 
     if (dog) {
       sendSuccess(res, "Hero dog fetched successfully.", dog);

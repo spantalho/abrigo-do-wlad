@@ -1,4 +1,4 @@
-import { kv } from "../_lib/kv";
+import { redis } from "../_lib/redis";
 import { FieldPath } from "firebase-admin/firestore";
 import { IncomingMessage, ServerResponse } from "http";
 
@@ -64,7 +64,7 @@ export default async function handler(
   }
 
   try {
-    const currentDog: any = await kv.get("hero-dog");
+    const currentDog: any = await redis.get("hero-dog");
     let newDog;
     let attempts = 0;
 
@@ -74,7 +74,7 @@ export default async function handler(
     } while (newDog && currentDog && newDog.id === currentDog.id && attempts < 3);
 
     if (newDog) {
-      await kv.set("hero-dog", newDog);
+      await redis.set("hero-dog", newDog);
       sendSuccess(res, "Hero dog updated!", { dog: newDog });
     } else {
       sendError(res, HTTP_STATUS.NOT_FOUND, "No dog found");
