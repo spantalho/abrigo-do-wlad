@@ -5,10 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:cron": "wrangler dev --config workers/cron/wrangler.jsonc --test-scheduled",
     "build": "tsc -b && vite build",
+    "check:cron": "wrangler deploy --dry-run --config workers/cron/wrangler.jsonc --outdir .wrangler/cron-check",
+    "test": "node --import tsx --test workers/app/*.test.ts workers/shared/api/_lib/*.test.ts",
     "lint": "eslint .",
-    "preview": "npm run build && wrangler dev",
-    "deploy": "npm run build && wrangler pages deploy dist --project-name abrigo-do-wlad"
+    "preview": "npm run build && vite preview",
+    "deploy": "npm run build && wrangler deploy",
+    "deploy:cron": "wrangler deploy --config workers/cron/wrangler.jsonc"
   },
   "dependencies": {
     "@cloudinary/react": "^1.14.3",

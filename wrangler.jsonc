@@ -1,16 +1,19 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "abrigo-do-wlad",
-  "compatibility_date": "2026-08-18",
+  "main": "./workers/app/index.ts",
+  "keep_vars": true,
+  "compatibility_date": "2026-08-19",
   "compatibility_flags": ["nodejs_compat"],
-  "pages_build_output_dir": "./dist",
+  "assets": {
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "f6a1b05ef9af4532bae224d5e16ad4a0",
-    },
-  ],
-  "triggers": {
-    "crons": ["0 3 * * *"],
-  },
+      "id": "f6a1b05ef9af4532bae224d5e16ad4a0"
+    }
+  ]
 }

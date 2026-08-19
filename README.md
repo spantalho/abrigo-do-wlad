@@ -7,7 +7,7 @@ Este projeto foi criado para suprir uma necessidade crítica da ONG: a listagem 
 ## Funcionalidades
 
 - 🐶 **Vitrine de Adoção:** Catálogo digital completo e filtrável dos animais disponíveis, aposentando as antigas listagens em PDF.
-- 📝 **Solicitação de Adoção:** Formulário multi-etapas (_Wizard_) intuitivo para avaliação de possíveis tutores, garantindo a segurança e privacidade através da criptografia *client-side* de dados sensíveis antes do envio para a base de dados.
+- 📝 **Solicitação de Adoção:** Formulário multi-etapas (_Wizard_) intuitivo para avaliação de possíveis tutores, com criptografia dos dados sensíveis antes da persistência.
 - ♻️ **Reciclagem Solidária:** Relação dos pontos de coleta parceiros para auxiliar nas arrecadações do abrigo.
 - 🌓 **Acessibilidade e Usabilidade:** Suporte a tema claro/escuro nativo, animações fluidas e design responsivo.
 
@@ -20,35 +20,29 @@ Este projeto foi criado para suprir uma necessidade crítica da ONG: a listagem 
 - **Lucide React** (Ícones)
 - **Radix UI** (Componentes acessíveis)
 - **Motion** (Animações)
+- **Cloudflare Workers** (API, Static Assets e Cron Triggers)
+- **Cloudflare KV** (cache compartilhado entre Workers)
 
 ## Estrutura e Componentes
 
 Abaixo está listada a estrutura atual do projeto:
 
 ```text
-functions/
-├── api/
-│   ├── [[path]].ts            # Roteador central de endpoints
-│   ├── _lib/
-│   │   ├── constants.ts       # Constantes e status HTTP
-│   │   ├── email.ts           # Envio de e-mails
-│   │   ├── encryption.ts      # Criptografia de dados sensíveis
-│   │   ├── env.ts             # Helpers para leitura do env do Cloudflare
-│   │   ├── firebase.ts        # Conexão com Firebase Admin
-│   │   ├── kv.ts              # Store de cache (Cloudflare KV + fallback local)
-│   │   ├── response.ts        # Helpers de resposta JSON (legado, em transição)
-│   │   ├── security.ts        # Validação, origem, recaptcha e rate limit
-│   │   └── validation.ts      # Validação de rotas e métodos HTTP
-│   ├── adoption/
-│   │   └── create.ts          # Cria candidatura de adoção
-│   ├── hero-dog/
-│   │   ├── get.ts             # Retorna o dog em destaque
-│   │   └── update.ts          # Atualiza o dog destaque via cron/auth
-│   └── tests/
-│       └── email.ts          # Rota de debug para envio de e-mail em ambiente local
-├── public/
-│   └── legal/
-│       └── privacy-policy.json
+workers/
+├── app/
+│   └── index.ts               # Worker HTTP e roteador da API
+├── cron/
+│   ├── index.ts               # Worker exclusivo do Cron Trigger
+│   └── wrangler.jsonc         # Configuração do abrigo-do-wlad-cron
+└── shared/
+    └── api/                    # Serviços compartilhados pelos dois Workers
+        ├── _lib/               # Firebase Admin, KV, segurança e e-mail
+        ├── adoption/           # Submissão de candidatura
+        ├── hero-dog/           # Leitura e atualização do destaque
+        └── tests/              # Endpoint de debug local
+public/
+└── legal/
+    └── privacy-policy.json
 src/
 ├── assets/                   # Arquivos estáticos e metadados JSON
 ├── components/               # Componentes globais e reutilizáveis
@@ -95,16 +89,14 @@ Para rodar o projeto localmente:
     VITE_FIREBASE_STORAGE_BUCKET=
     VITE_FIREBASE_MESSAGING_SENDER_ID=
     VITE_FIREBASE_APP_ID=
+    VITE_RECAPTCHA_PUBLIC_KEY=
 
-    # Runtime serverless / API
+    # Runtime do Worker do app
     ALLOWED_ORIGIN=http://localhost:5173
-    RECAPTCHA_PUBLIC_KEY=
     RECAPTCHA_SECRET_KEY=
-    # Binding Cloudflare KV (ex.: CACHE_KV)
     MASTER_KEY=
-    CRON_SECRET=
 
-    # Firebase Admin / API
+    # Firebase Admin (app e cron)
     FIREBASE_PROJECT_ID=
     FIREBASE_CLIENT_EMAIL=
     FIREBASE_PRIVATE_KEY=
@@ -127,18 +119,22 @@ Para rodar o projeto localmente:
     npm run build
     ```
 
-    O build gera saída estática compatível com deploy em hosts que suportem arquivos estáticos e funções serverless.
+    O plugin Cloudflare gera o Worker do app, os Static Assets e uma configuração de deploy dentro de `dist/`. O comando `wrangler deploy` usa automaticamente essa configuração gerada.
 
 ## Arquitetura da API
 
-A API foi organizada em funções serverless, com a pasta `functions/api` e roteamento centralizado em [functions/api/[[path]].ts](functions/api/[[path]].ts). A implementação foi escrita para funcionar em runtimes compatíveis com serverless, sem depender de integrações exclusivas de um provedor.
+O projeto possui dois Workers independentes:
+
+1. `abrigo-do-wlad`: serve a SPA por Static Assets e executa as rotas `/api/*` em [workers/app/index.ts](workers/app/index.ts).
+2. `abrigo-do-wlad-cron`: executa somente a atualização diária do cachorro em destaque, definida em [workers/cron/index.ts](workers/cron/index.ts).
+
+Os dois Workers compartilham o mesmo namespace KV. Apenas o Worker de cron possui `triggers.crons`; o Worker do app não exporta um handler `scheduled`.
 
 ### Estrutura de rotas
 
 - `GET /api/hero-dog/get` — retorna o cachorro em destaque
 - `POST /api/adoption/create` — cria a submissão da adoção
-- `GET /api/tests/email` — rota de debug para teste de e-mail local
-- `GET /api/hero-dog/update` — atualização do destaque via autenticidade configurada em `CRON_SECRET`
+- `GET /api/tests/email` — rota disponível somente com `NODE_ENV=development`
 
 ### Convenção de ambiente
 
@@ -148,7 +144,31 @@ Todos os módulos internos da API devem ler variáveis a partir do ambiente do r
 const value = env?.MY_KEY ?? process.env.MY_KEY;
 ```
 
-Isso garante que os serviços de cache em Cloudflare KV, Firebase, reCAPTCHA, e-mail e criptografia funcionem corretamente em diferentes provedores de deploy, sem acoplamento exclusivo a um ambiente.
+As variáveis `VITE_*` existem somente durante o build e são incorporadas ao frontend. Credenciais do Firebase Admin, reCAPTCHA, criptografia e e-mail são variáveis ou secrets de runtime configurados separadamente em cada Worker.
+
+| Destino | Configuração necessária |
+| --- | --- |
+| Build do `abrigo-do-wlad` | Todas as variáveis `VITE_*` do `.env.example` |
+| Runtime do `abrigo-do-wlad` | `NODE_ENV`, `ALLOWED_ORIGIN`, `RECAPTCHA_SECRET_KEY`, `MASTER_KEY`, credenciais Firebase Admin e configurações de e-mail |
+| Runtime do `abrigo-do-wlad-cron` | Credenciais Firebase Admin; o binding `KV` já está no Wrangler |
+
+Os dois arquivos Wrangler usam `keep_vars: true` para preservar as variáveis configuradas pelo painel durante novos deploys. Valores sensíveis não devem ser adicionados aos arquivos Wrangler.
+
+## Deploy
+
+O Worker do app é o deploy principal conectado ao Git:
+
+```bash
+npm run deploy
+```
+
+O Worker de cron possui deploy separado:
+
+```bash
+npm run deploy:cron
+```
+
+No Workers Builds, mantenha `npm run build` como Build command e `npx wrangler deploy` como Deploy command do Worker `abrigo-do-wlad`. O Worker `abrigo-do-wlad-cron` deve ser publicado separadamente com seu próprio comando/configuração; não use comandos `wrangler pages` neste repositório.
 
 ## Autores
 

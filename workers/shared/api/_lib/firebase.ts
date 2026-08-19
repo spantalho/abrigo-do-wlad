@@ -19,7 +19,3 @@ export function getDb(env?: CloudflareEnv) {
 
   return getFirestore(app);
 }
-
-const db = getDb();
-
-export { db };

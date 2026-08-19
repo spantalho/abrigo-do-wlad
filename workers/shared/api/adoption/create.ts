@@ -1,8 +1,8 @@
-import { db } from "../_lib/firebase";
+import { getDb } from "../_lib/firebase";
 import { encryptData } from "../_lib/encryption";
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
 import { sendEmail, generateAdoptionApplicationEmail } from "../_lib/email";
-import { fullFormSchema } from "../../../src/pages/BetaForm/components/WizardForm/schema";
+import { fullFormSchema } from "../../../../src/pages/BetaForm/components/WizardForm/schema";
 import { z } from "zod";
 import { sanitizeFormFields, verifyRecaptcha } from "../_lib/security";
 import {
@@ -10,14 +10,18 @@ import {
   HTTP_STATUS,
   MAX_REQUEST_SIZE,
 } from "../_lib/constants";
-import { jsonResponse, getEnvValue } from "../_lib/env";
+import {
+  jsonResponse,
+  getEnvValue,
+  type CloudflareEnv,
+} from "../_lib/env";
 
 type AdoptionApplicationData = z.infer<typeof fullFormSchema>;
 
 async function sendAdoptionApplicationEmail(
   applicationData: Record<string, unknown>,
   applicationId: string,
-  env: Record<string, string | undefined>,
+  env: CloudflareEnv,
 ): Promise<void> {
   try {
     const { html, text } = generateAdoptionApplicationEmail(
@@ -59,7 +63,7 @@ export async function onRequest({
   env,
 }: {
   request: Request;
-  env: Record<string, string | undefined>;
+  env: CloudflareEnv;
 }) {
   if (request.method !== "POST") {
     return jsonResponse(HTTP_STATUS.METHOD_NOT_ALLOWED, {
@@ -107,7 +111,11 @@ export async function onRequest({
       });
     }
 
-    const { captchaToken, ...rawApplicationData } = validationResult.data;
+    const rawApplicationData = Object.fromEntries(
+      Object.entries(validationResult.data).filter(
+        ([key]) => key !== "captchaToken",
+      ),
+    );
     const applicationData = sanitizeFormFields(rawApplicationData);
     const sensitiveData: Record<string, unknown> = {};
     const publicData: Record<string, unknown> = {};
@@ -134,6 +142,7 @@ export async function onRequest({
       status: "pending",
     };
 
+    const db = getDb(env);
     const docRef = await db.collection("adoption_application").add(documentData);
 
     await sendAdoptionApplicationEmail(applicationData, docRef.id, env);

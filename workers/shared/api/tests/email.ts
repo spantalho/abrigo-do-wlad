@@ -1,13 +1,13 @@
 import { sendEmail, generateAdoptionApplicationEmail } from "../_lib/email";
 import { HTTP_STATUS } from "../_lib/constants";
-import { getEnvValue, jsonResponse } from "../_lib/env";
+import { getEnvValue, jsonResponse, type CloudflareEnv } from "../_lib/env";
 
 export async function onRequest({
   request,
   env,
 }: {
   request: Request;
-  env: Record<string, string | undefined>;
+  env: CloudflareEnv;
 }) {
   if (request.method !== "GET") {
     return jsonResponse(HTTP_STATUS.METHOD_NOT_ALLOWED, {
@@ -32,6 +32,7 @@ export async function onRequest({
     const { html, text } = generateAdoptionApplicationEmail(
       mockApplicationData,
       mockApplicationId,
+      env,
     );
 
     const debugRecipient =
@@ -43,12 +44,15 @@ export async function onRequest({
       throw new Error("No recipient email configured for debug");
     }
 
-    await sendEmail({
-      to: debugRecipient as string,
-      subject: `[TESTE DEBUG] Nova Candidatura de Adoção: ${mockApplicationData.animal_especifico}`,
-      html,
-      text,
-    });
+    await sendEmail(
+      {
+        to: debugRecipient,
+        subject: `[TESTE DEBUG] Nova Candidatura de Adoção: ${mockApplicationData.animal_especifico}`,
+        html,
+        text,
+      },
+      env,
+    );
 
     return jsonResponse(HTTP_STATUS.OK, {
       message: "Debug email sent successfully",

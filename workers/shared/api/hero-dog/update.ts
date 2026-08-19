@@ -1,9 +1,8 @@
 import { getKvStore } from "../_lib/kv";
 import { FieldPath } from "firebase-admin/firestore";
 import { getDb } from "../_lib/firebase";
-import { validateAuthHeader } from "../_lib/security";
 import { HTTP_STATUS } from "../_lib/constants";
-import { getEnvValue, jsonResponse, type CloudflareEnv } from "../_lib/env";
+import type { CloudflareEnv } from "../_lib/env";
 
 const DOGS_COLLECTION = "dogs";
 
@@ -83,43 +82,4 @@ export async function updateHeroDog(env?: CloudflareEnv) {
       },
     };
   }
-}
-
-export async function onRequest({
-  request,
-  env,
-}: {
-  request: Request;
-  env: CloudflareEnv;
-}) {
-  if (request.method !== "GET") {
-    return jsonResponse(HTTP_STATUS.METHOD_NOT_ALLOWED, {
-      message: "Method not allowed",
-    });
-  }
-
-  const authHeader = request.headers.get("authorization") || "";
-  const cronSecret = getEnvValue(env, "CRON_SECRET") || "";
-
-  if (!validateAuthHeader(authHeader, cronSecret)) {
-    return jsonResponse(HTTP_STATUS.UNAUTHORIZED, {
-      message: "Unauthorized",
-    });
-  }
-
-  const result = await updateHeroDog(env);
-  return jsonResponse(result.status, result.body);
-}
-
-export async function scheduled({
-  cron,
-  env,
-}: {
-  cron: string;
-  env: CloudflareEnv;
-}) {
-  console.log(`Scheduled hero-dog update triggered via cron: ${cron}`);
-
-  const result = await updateHeroDog(env);
-  return jsonResponse(result.status, result.body);
 }
