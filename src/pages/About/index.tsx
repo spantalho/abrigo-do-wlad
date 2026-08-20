@@ -100,7 +100,7 @@ export default function About() {
             </p>
 
             <div data-subsection="Captação de Recursos">
-              <CardComponent.Card color="secondary" variant="quote">
+              <CardComponent.Card tone="info" variant="callout">
                 <CardComponent.CardBody>
                   <CardComponent.CardHeader>
                     <CardComponent.CardIcon>

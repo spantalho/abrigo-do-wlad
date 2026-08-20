@@ -38,7 +38,8 @@ export function DogCard({ data, onClick, isLoading }: DogCardProps) {
 
   return (
     <Card
-      imageSrc={dogImageUrl}
+      variant="image"
+      interactive
       // disable click if loading
       onClick={isLoading ? undefined : handleClick}
       style={{

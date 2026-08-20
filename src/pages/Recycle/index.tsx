@@ -175,7 +175,7 @@ export default function Recycle() {
                 <p>Carregando pontos de coleta...</p>
               </div>
             ) : collectionPoints.length === 0 ? (
-              <CardComponent.Card color="primary">
+              <CardComponent.Card>
                 <CardComponent.CardBody>
                   <CardComponent.CardContent>
                     <p
@@ -212,8 +212,7 @@ export default function Recycle() {
                         {zone.locations.map((location) => (
                           <CardComponent.Card
                             key={location.id}
-                            variant="default"
-                            color="secondary"
+                            tone="info"
                             size="sm"
                           >
                             <CardComponent.CardBody>

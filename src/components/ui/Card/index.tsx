@@ -3,36 +3,39 @@ import styles from "./Card.module.css";
 import { cn } from "@/lib/utils";
 
 type CardProps = HTMLAttributes<HTMLDivElement> & {
-  variant?: "default" | "quote";
-  color?: "primary" | "secondary" | "red" | "green";
+  variant?: "default" | "callout" | "image";
+  tone?: "neutral" | "info" | "success" | "warning" | "danger";
   size?: "sm" | "md" | "lg";
-  imageSrc?: string;
+  layout?: "stacked" | "inline";
+  interactive?: boolean;
 };
 
 /**
- * A container component that groups related content.
- * @param param0 
- * @returns a JSX element representing the card container.
+ * Groups related content with independent visual purpose, tone and layout.
  */
 export function Card({
   className,
   variant = "default",
-  color = "primary",
+  tone = "neutral",
   size = "md",
-  imageSrc,
+  layout = "stacked",
+  interactive = false,
   ...props
 }: CardProps) {
   return (
     <div
       className={cn(
         styles.card,
-        variant === "quote" && styles.quote,
-        color === "secondary" && styles.colorSecondary,
-        color === "green" && styles.colorGreen,
-        color === "red" && styles.colorRed,
+        variant === "callout" && styles.callout,
+        variant === "image" && styles.imageVariant,
+        tone === "info" && styles.toneInfo,
+        tone === "success" && styles.toneSuccess,
+        tone === "warning" && styles.toneWarning,
+        tone === "danger" && styles.toneDanger,
         size === "sm" && styles.sm,
         size === "lg" && styles.lg,
-        imageSrc && styles.imageVariant,
+        layout === "inline" && styles.layoutInline,
+        interactive && styles.interactive,
         className,
       )}
       {...props}

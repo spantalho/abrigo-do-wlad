@@ -48,6 +48,7 @@
   --feedback-hover-bg: #c6e3e5;
 
   /* Accent Colors */
+  --accent-neutral: var(--surface-water);
   --accent-primary: var(--surface-water);
   --accent-secondary: var(--surface-earth);
   --accent-green: var(--surface-leaf);
@@ -166,6 +167,7 @@ body.dark-mode {
   --action: #ff7950;
   --action-hover: #ff9875;
   --focus-ring: rgba(255, 121, 80, 0.3);
+  --accent-neutral: var(--surface-water);
   --accent-primary: var(--surface-earth);
   --accent-secondary: var(--surface-earth);
   --accent-green: var(--surface-leaf);

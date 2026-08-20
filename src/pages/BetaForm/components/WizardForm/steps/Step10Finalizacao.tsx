@@ -54,7 +54,12 @@ export function Step10Finalizacao({
         />
       </FieldWrapper>
 
-      <Card color="red" variant="quote" size="sm">
+      <Card
+        variant="callout"
+        tone="danger"
+        size="sm"
+        layout="inline"
+      >
         <CardBody>
           <CardIcon>
             <CircleAlert />
