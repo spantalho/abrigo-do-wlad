@@ -104,7 +104,6 @@
   transition: 0.3s;
   padding: 10px;
   background-color: var(--contact-bg);
-  border: 1px solid var(--contact-border);
   border-radius: var(--radius);
 }
 

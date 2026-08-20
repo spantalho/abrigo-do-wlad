@@ -95,6 +95,7 @@ input {
   cursor: pointer;
   transition: var(--transition);
   flex-shrink: 0;
+  padding: 0.5rem;
 }
 .closeButton:hover {
   color: var(--text-primary);

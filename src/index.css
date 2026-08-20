@@ -10,7 +10,7 @@
   --text-on-success: #ffffff;
   --text-on-image: #ffffff;
 
-  /* Brand: water, sky, earth and vegetation */
+  /* Water, sky, earth and vegetation */
   --brand-navy: #02264b;
   --brand-water: #057685;
   --brand-coral: #f95c33;
@@ -41,7 +41,6 @@
   /* Contextual surfaces */
   --footer-bg: var(--surface-water);
   --contact-bg: #c2e1e4;
-  --contact-border: #96c8cd;
   --contact-text: var(--secondary);
   --contact-hover-bg: var(--btn-secondary-hover);
   --contact-hover-text: var(--text-on-secondary);
@@ -119,6 +118,7 @@
   --scroll-track: #e8f1f1;
   --scroll-thumb: #91aaab;
   --scroll-corner: #d7e2e1;
+  --scroll-shadow: rgba(2, 38, 75, 0.2);
 
   /* Card Gradients */
   --card-image-gradient: rgba(5, 118, 133, 0.16);
@@ -152,7 +152,6 @@ body.dark-mode {
   /* Contextual surfaces */
   --footer-bg: #24140e;
   --contact-bg: #422117;
-  --contact-border: #653323;
   --contact-text: #ff9875;
   --contact-hover-bg: #ff7950;
   --contact-hover-text: #21100b;
@@ -213,6 +212,7 @@ body.dark-mode {
   --scroll-track: var(--bg-body);
   --scroll-thumb: #76503d;
   --scroll-corner: var(--surface-card);
+  --scroll-shadow: rgba(7, 3, 2, 0.55);
 
   /* Card Gradients */
   --card-image-gradient: rgba(255, 121, 80, 0.16);

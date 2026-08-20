@@ -1,10 +1,17 @@
+.pixScrollArea {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: min(58vh, 620px);
+  border: none;
+  border-radius: var(--radius);
+}
+
 .pixModalContainer {
   display: flex;
   flex-direction: column;
   gap: 25px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  flex-grow: 1;
+  padding-right: 14px;
+  padding-bottom: 2px;
 }
 
 .pixModalCode {
@@ -63,6 +70,10 @@
 }
 
 @media (max-width: 768px) {
+  .pixScrollArea {
+    height: min(52vh, 520px);
+  }
+
   .beneficiaryData li {
     flex-direction: column;
     text-align: center;
