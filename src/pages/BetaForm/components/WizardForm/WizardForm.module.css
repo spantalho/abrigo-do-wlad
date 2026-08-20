@@ -4,7 +4,7 @@
   margin: 2rem auto;
   padding: 2rem;
   max-width: 900px;
-  background-color: var(--white);
+  background-color: var(--surface-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
@@ -113,7 +113,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 0.95rem;
-  background: var(--white);
+  background: var(--surface-card);
   color: var(--text-primary);
   transition: var(--transition);
   height: 40px;
@@ -125,7 +125,7 @@
 .field textarea:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(255, 108, 55, 0.15);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .field textarea {

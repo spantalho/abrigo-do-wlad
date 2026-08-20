@@ -22,7 +22,7 @@ input {
 
 .content {
   z-index: 9999;
-  background-color: var(--white);
+  background-color: var(--surface-elevated);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
@@ -68,7 +68,7 @@ input {
   gap: 0.8rem;
   margin: 0;
   font-weight: 700;
-  color: var(--title-primary);
+  color: var(--text-primary);
   text-align: left;
   max-width: 350px;
   font-size: 17px;
@@ -78,7 +78,7 @@ input {
 .description {
   margin: 10px auto 20px;
   max-width: 400px;
-  color: var(--title-secondary);
+  color: var(--text-secondary);
   font-size: 15px;
   text-align: left;
   line-height: 1.5;
@@ -90,11 +90,12 @@ input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--white);
+  background-color: var(--surface-card);
   color: var(--text-secondary);
   cursor: pointer;
   transition: var(--transition);
   flex-shrink: 0;
+  padding: 0.5rem;
 }
 .closeButton:hover {
   color: var(--text-primary);

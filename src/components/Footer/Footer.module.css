@@ -1,5 +1,5 @@
 .footer {
-  background: var(--accent-primary);
+  background: var(--footer-bg);
   color: var(--text-primary);
   padding: 5rem 0 0;
   margin-top: 6rem;
@@ -99,17 +99,17 @@
   align-items: center;
   gap: 15px;
   margin-bottom: 1.2rem;
-  color: var(--text-primary);
+  color: var(--contact-text);
   text-decoration: none;
   transition: 0.3s;
   padding: 10px;
-  background-color: var(--btn-primary);
+  background-color: var(--contact-bg);
   border-radius: var(--radius);
 }
 
 .contactItem:hover {
-  background: var(--btn-primary-hover);
-  color: var(--white);
+  background: var(--contact-hover-bg);
+  color: var(--contact-hover-text);
   transform: translateY(-3px);
 }
 
@@ -119,13 +119,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--primary);
+  color: var(--contact-text);
   transition: 0.3s;
   flex-shrink: 0;
 }
 
 .contactItem:hover .iconBox {
-  color: var(--white);
+  color: var(--contact-hover-text);
 }
 
 /* lower footer */
