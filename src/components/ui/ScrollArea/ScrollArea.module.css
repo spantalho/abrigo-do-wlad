@@ -59,8 +59,8 @@
 .ScrollShadow {
   position: absolute;
   z-index: 2;
-  left: 0;
-  right: 10px;
+  left: var(--scroll-shadow-inline-start, 0);
+  right: var(--scroll-shadow-inline-end, 10px);
   height: 24px;
   pointer-events: none;
   opacity: 0;
