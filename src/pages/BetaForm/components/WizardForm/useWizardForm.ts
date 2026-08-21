@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router";
 
 import * as Lucide from "lucide-react";
 import { ADOPTION_IDEMPOTENCY_STORAGE_KEY } from "./submission";
+import { WIZARD_STORAGE_KEYS } from "./wizardStorage";
 
 export interface FieldError {
   [key: string]: string;
@@ -39,7 +40,7 @@ export function useWizardForm() {
 
   const [formData, setFormData] = React.useState<Partial<FormData>>(() => {
     try {
-      const saved = sessionStorage.getItem("wizardFormData");
+      const saved = sessionStorage.getItem(WIZARD_STORAGE_KEYS.formData);
       return saved ? (JSON.parse(saved) as Partial<FormData>) : {};
     } catch {
       return {};
@@ -49,8 +50,13 @@ export function useWizardForm() {
   const [highestCompletedStep, setHighestCompletedStep] =
     React.useState<number>(() => {
       try {
-        const saved = sessionStorage.getItem("wizardHighestStep");
-        return saved ? parseInt(saved, 10) : 0;
+        const saved = sessionStorage.getItem(WIZARD_STORAGE_KEYS.highestStep);
+        const parsed = saved ? parseInt(saved, 10) : 0;
+        return Number.isInteger(parsed) &&
+          parsed >= 0 &&
+          parsed < stepSchemas.length
+          ? parsed
+          : 0;
       } catch {
         return 0;
       }
@@ -63,14 +69,17 @@ export function useWizardForm() {
       stepNumber >= 1 &&
       stepNumber <= stepSchemas.length;
 
-    if (!isValidStep || parseInt(step ?? "1", 10) !== stepNumber) {
+    if (!isValidStep || String(stepNumber) !== (step ?? "1")) {
       navigate(`/beta/formulario/step/1`, { replace: true });
     }
   }, [step, navigate, parsedStep]);
 
   React.useEffect(() => {
     try {
-      sessionStorage.setItem("wizardFormData", JSON.stringify(formData));
+      sessionStorage.setItem(
+        WIZARD_STORAGE_KEYS.formData,
+        JSON.stringify(formData),
+      );
     } catch {
       /* sem suporte a sessionStorage */
     }
@@ -78,7 +87,10 @@ export function useWizardForm() {
 
   React.useEffect(() => {
     try {
-      sessionStorage.setItem("wizardHighestStep", String(highestCompletedStep));
+      sessionStorage.setItem(
+        WIZARD_STORAGE_KEYS.highestStep,
+        String(highestCompletedStep),
+      );
     } catch {
       /* sem suporte a sessionStorage */
     }
@@ -155,9 +167,17 @@ export function useWizardForm() {
   );
 
   const resetForm = React.useCallback(() => {
-    sessionStorage.removeItem("wizardFormData");
-    sessionStorage.removeItem("wizardHighestStep");
-    sessionStorage.removeItem(ADOPTION_IDEMPOTENCY_STORAGE_KEY);
+    [
+      WIZARD_STORAGE_KEYS.formData,
+      WIZARD_STORAGE_KEYS.highestStep,
+      ADOPTION_IDEMPOTENCY_STORAGE_KEY,
+    ].forEach((key) => {
+      try {
+        sessionStorage.removeItem(key);
+      } catch {
+        /* sem suporte a sessionStorage */
+      }
+    });
     setFormData({});
     setErrors({});
     setHighestCompletedStep(0);
