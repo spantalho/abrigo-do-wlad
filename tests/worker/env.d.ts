@@ -1,2 +1,2 @@
-// Worker-specific test type augmentations will live here as bindings are added.
+// Project bindings are generated in ../../worker-configuration.d.ts.
 export {};

@@ -12,6 +12,7 @@ export default defineConfig([
     'coverage',
     'playwright-report',
     'test-results',
+    'worker-configuration.d.ts',
   ]),
   {
     files: ['**/*.{ts,tsx}'],

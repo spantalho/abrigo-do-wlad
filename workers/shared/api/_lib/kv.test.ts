@@ -1,9 +1,10 @@
 import { test } from "vitest";
 import assert from "node:assert/strict";
 
-import { kv } from "./kv.ts";
+import { getKvStore } from "./kv.ts";
 
 test("kv handles object values and counter operations", async () => {
+  const kv = getKvStore();
   const key = "test:kv:store";
 
   await kv.set(key, { name: "Wlad", visits: 1 });
