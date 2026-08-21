@@ -21,6 +21,7 @@ import {
   type AdoptionSubmissionResult,
 } from "./submission";
 import { ADOPTION_RECAPTCHA_ACTION } from "./recaptcha";
+import { WIZARD_STORAGE_KEYS } from "./wizardStorage";
 
 import styles from "./WizardForm.module.css";
 
@@ -38,7 +39,7 @@ export function WizardForm({ onSubmitSuccess }: WizardFormProps) {
   const [submitError, setSubmitError] = React.useState<string | null>(null);
   const [showWarning, setShowWarning] = React.useState<boolean>(() => {
     try {
-      const saved = sessionStorage.getItem("wizardShowWarning");
+      const saved = sessionStorage.getItem(WIZARD_STORAGE_KEYS.showWarning);
       return saved === null ? true : saved === "true";
     } catch {
       return true;
@@ -48,11 +49,11 @@ export function WizardForm({ onSubmitSuccess }: WizardFormProps) {
   const [showResumeDialog, setShowResumeDialog] = React.useState<boolean>(
     () => {
       try {
-        const savedData = sessionStorage.getItem("wizardFormData");
+        const savedData = sessionStorage.getItem(WIZARD_STORAGE_KEYS.formData);
         return (
           !!savedData &&
           savedData !== "{}" &&
-          !sessionStorage.getItem("wizardDialogShown")
+          !sessionStorage.getItem(WIZARD_STORAGE_KEYS.dialogShown)
         );
       } catch {
         return false;
@@ -92,7 +93,7 @@ export function WizardForm({ onSubmitSuccess }: WizardFormProps) {
   const handleResume = () => {
     setShowResumeDialog(false);
     try {
-      sessionStorage.setItem("wizardDialogShown", "true");
+      sessionStorage.setItem(WIZARD_STORAGE_KEYS.dialogShown, "true");
     } catch {
       /* sem suporte a sessionStorage */
     }
@@ -103,7 +104,7 @@ export function WizardForm({ onSubmitSuccess }: WizardFormProps) {
     submissionKeyRef.current = null;
     setShowResumeDialog(false);
     try {
-      sessionStorage.setItem("wizardDialogShown", "true");
+      sessionStorage.setItem(WIZARD_STORAGE_KEYS.dialogShown, "true");
     } catch {
       /* sem suporte a sessionStorage */
     }
@@ -111,7 +112,10 @@ export function WizardForm({ onSubmitSuccess }: WizardFormProps) {
 
   React.useEffect(() => {
     try {
-      sessionStorage.setItem("wizardShowWarning", String(showWarning));
+      sessionStorage.setItem(
+        WIZARD_STORAGE_KEYS.showWarning,
+        String(showWarning),
+      );
     } catch {
       /* sem suporte a sessionStorage */
     }

@@ -3,12 +3,8 @@ import { getEnvValue, jsonResponse, type CloudflareEnv } from "../shared/api/_li
 import { onRequest as getHeroDog } from "../shared/api/hero-dog/get";
 import { onRequest as sendDebugEmail } from "../shared/api/tests/email";
 
-interface AssetsBinding {
-  fetch(request: Request): Promise<Response>;
-}
-
 export type AppEnv = CloudflareEnv & {
-  ASSETS: AssetsBinding;
+  ASSETS: Pick<Env["ASSETS"], "fetch">;
 };
 
 async function handleApiRequest(request: Request, env: AppEnv): Promise<Response> {
@@ -42,4 +38,4 @@ export default {
 
     return env.ASSETS.fetch(request);
   },
-};
+} satisfies ExportedHandler<Env>;

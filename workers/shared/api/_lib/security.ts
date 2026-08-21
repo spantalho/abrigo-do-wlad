@@ -96,13 +96,25 @@ export function validateOrigin(
   req: Request | IncomingMessage,
   env?: CloudflareEnv,
 ): boolean {
-  const origin =
+  const originOrReferer =
     getHeaderValue(req.headers, "origin") ??
     getHeaderValue(req.headers, "referer");
 
-  if (!origin) return false;
+  if (!originOrReferer) return false;
 
-  return getAllowedOrigins(env).some((allowed) => origin.startsWith(allowed));
+  try {
+    const requestOrigin = new URL(originOrReferer).origin;
+
+    return getAllowedOrigins(env).some((allowed) => {
+      try {
+        return new URL(allowed).origin === requestOrigin;
+      } catch {
+        return false;
+      }
+    });
+  } catch {
+    return false;
+  }
 }
 
 export function validateContentType(req: Request | IncomingMessage): boolean {
@@ -114,7 +126,13 @@ export function validateRequestSize(
   contentLength: string | undefined,
 ): boolean {
   if (!contentLength) return false;
-  return parseInt(contentLength, 10) <= MAX_REQUEST_SIZE;
+
+  const parsedLength = Number(contentLength);
+  return (
+    Number.isSafeInteger(parsedLength) &&
+    parsedLength >= 0 &&
+    parsedLength <= MAX_REQUEST_SIZE
+  );
 }
 
 export function validateAuthHeader(

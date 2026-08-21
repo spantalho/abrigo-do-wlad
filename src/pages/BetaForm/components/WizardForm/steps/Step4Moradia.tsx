@@ -5,6 +5,7 @@ import styles from "../WizardForm.module.css";
 import * as SelectComponent from "@/components/ui/Select";
 import * as RadioComponent from "@/components/ui/RadioGroup";
 import { Label } from "@/components/ui/Label";
+import { FieldRadioGroup, FieldSelectTrigger } from "../FieldControls";
 
 interface StepProps {
   formData: Partial<FormData>;
@@ -63,7 +64,7 @@ export function Step4Moradia({ formData, errors, updateField }: StepProps) {
         required
         errors={errors}
       >
-        <RadioComponent.RadioGroup
+        <FieldRadioGroup
           value={formData.tipo_moradia || ""}
           onValueChange={(val) => updateField("tipo_moradia", val)}
           className={styles.radioGroup}
@@ -82,7 +83,7 @@ export function Step4Moradia({ formData, errors, updateField }: StepProps) {
             />
             <Label htmlFor="moradia_alugada">Alugada</Label>
           </div>
-        </RadioComponent.RadioGroup>
+        </FieldRadioGroup>
       </FieldWrapper>
 
       <FieldWrapper
@@ -90,7 +91,7 @@ export function Step4Moradia({ formData, errors, updateField }: StepProps) {
         label="4.5. Se alugada, proprietário permite animais?"
         errors={errors}
       >
-        <RadioComponent.RadioGroup
+        <FieldRadioGroup
           value={formData.proprietario_permite || "Nao aplica"}
           onValueChange={(val) => updateField("proprietario_permite", val)}
           className={styles.radioGroup}
@@ -119,7 +120,7 @@ export function Step4Moradia({ formData, errors, updateField }: StepProps) {
               Minha casa é própria
             </Label>
           </div>
-        </RadioComponent.RadioGroup>
+        </FieldRadioGroup>
       </FieldWrapper>
 
       <FieldWrapper
@@ -132,9 +133,9 @@ export function Step4Moradia({ formData, errors, updateField }: StepProps) {
           value={formData.detalhes_moradia || ""}
           onValueChange={(val) => updateField("detalhes_moradia", val)}
         >
-          <SelectComponent.SelectTrigger>
+          <FieldSelectTrigger>
             <SelectComponent.SelectValue placeholder="Selecione" />
-          </SelectComponent.SelectTrigger>
+          </FieldSelectTrigger>
           <SelectComponent.SelectContent>
             <SelectComponent.SelectItem value="Casa quintal">
               Casa com quintal
@@ -246,9 +247,9 @@ export function Step4Moradia({ formData, errors, updateField }: StepProps) {
           value={formData.acesso || ""}
           onValueChange={(val) => updateField("acesso", val)}
         >
-          <SelectComponent.SelectTrigger>
+          <FieldSelectTrigger>
             <SelectComponent.SelectValue placeholder="Selecione" />
-          </SelectComponent.SelectTrigger>
+          </FieldSelectTrigger>
           <SelectComponent.SelectContent>
             <SelectComponent.SelectItem value="Total">
               Acesso total

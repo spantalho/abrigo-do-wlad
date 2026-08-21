@@ -16,7 +16,11 @@ import {
   getEnvValue,
   type CloudflareEnv,
 } from "../_lib/env";
-import { validateRequest } from "../_lib/validation";
+import {
+  readJsonBodyWithLimit,
+  RequestBodyTooLargeError,
+  validateRequest,
+} from "../_lib/validation";
 import { ADOPTION_RECAPTCHA_ACTION } from "../../../../src/pages/BetaForm/components/WizardForm/recaptcha";
 
 type AdoptionApplicationData = z.infer<typeof fullFormSchema>;
@@ -24,6 +28,23 @@ type AdoptionApplicationData = z.infer<typeof fullFormSchema>;
 const IDEMPOTENCY_KEY_HEADER = "Idempotency-Key";
 const UUID_V4_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+type AdoptionApplicationRepository = Pick<
+  ReturnType<typeof createFirestoreClient>,
+  "createDocument"
+>;
+
+export interface AdoptionApplicationDependencies {
+  createFirestoreClient: (env?: CloudflareEnv) => AdoptionApplicationRepository;
+  encryptData: typeof encryptData;
+  verifyRecaptcha: typeof verifyRecaptcha;
+  sendNotification: (
+    applicationData: Record<string, unknown>,
+    applicationId: string,
+    env: CloudflareEnv,
+  ) => Promise<boolean>;
+  now: () => Date;
+}
 
 export function getIdempotencyKey(request: Request): string | undefined {
   const value = request.headers.get(IDEMPOTENCY_KEY_HEADER)?.trim();
@@ -76,144 +97,170 @@ const SENSITIVE_FIELDS = [
   "idade",
 ];
 
-export async function onRequest({
-  request,
-  env,
-}: {
-  request: Request;
-  env: CloudflareEnv;
-}) {
-  const validationError = await validateRequest(
+const defaultDependencies: AdoptionApplicationDependencies = {
+  createFirestoreClient,
+  encryptData,
+  verifyRecaptcha,
+  sendNotification: sendAdoptionApplicationEmail,
+  now: () => new Date(),
+};
+
+export function createAdoptionApplicationHandler(
+  overrides: Partial<AdoptionApplicationDependencies> = {},
+) {
+  const dependencies: AdoptionApplicationDependencies = {
+    ...defaultDependencies,
+    ...overrides,
+  };
+
+  return async function onRequest({
     request,
-    { expectedMethod: "POST" },
     env,
-  );
-  if (validationError) {
-    return validationError;
-  }
-
-  try {
-    const data = (await request.json()) as AdoptionApplicationData;
-    const idempotencyKey = getIdempotencyKey(request);
-
-    if (!idempotencyKey || !isValidIdempotencyKey(idempotencyKey)) {
-      return jsonResponse(HTTP_STATUS.BAD_REQUEST, {
-        message: "Missing or invalid idempotency key",
-      });
-    }
-
-    const recaptchaSecret = getEnvValue(env, "RECAPTCHA_SECRET_KEY");
-    if (!recaptchaSecret) {
-      return jsonResponse(HTTP_STATUS.INTERNAL_SERVER_ERROR, {
-        message: "reCAPTCHA secret is not configured.",
-      });
-    }
-
-    const captchaValid = await verifyRecaptcha(data.captchaToken, env, {
-      expectedAction: ADOPTION_RECAPTCHA_ACTION,
-      expectedHostname: new URL(request.url).hostname,
-    });
-    if (!captchaValid) {
-      return jsonResponse(HTTP_STATUS.BAD_REQUEST, {
-        message: "reCAPTCHA validation failed",
-      });
-    }
-
-    const validationResult = fullFormSchema.safeParse(data);
-
-    if (!validationResult.success) {
-      return jsonResponse(HTTP_STATUS.BAD_REQUEST, {
-        message: "Validation failed",
-        errors: z.treeifyError(validationResult.error),
-      });
-    }
-
-    const rawApplicationData = Object.fromEntries(
-      Object.entries(validationResult.data).filter(
-        ([key]) => key !== "captchaToken",
-      ),
+  }: {
+    request: Request;
+    env: CloudflareEnv;
+  }): Promise<Response> {
+    const validationError = await validateRequest(
+      request,
+      { expectedMethod: "POST" },
+      env,
     );
-    const applicationData = sanitizeFormFields(rawApplicationData);
-    const sensitiveData: Record<string, unknown> = {};
-    const publicData: Record<string, unknown> = {};
-
-    for (const [key, value] of Object.entries(applicationData)) {
-      if (SENSITIVE_FIELDS.includes(key)) {
-        sensitiveData[key] = value;
-      } else {
-        publicData[key] = value;
-      }
+    if (validationError) {
+      return validationError;
     }
-
-    const { encryptedData, keyVersion } = await encryptData(sensitiveData, env);
-
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + ADOPTION_EXPIRATION_DAYS);
-
-    const documentData = {
-      ...publicData,
-      sensitive: encryptedData,
-      keyVersion,
-      expiresAt,
-      status: "pending",
-    };
-
-    const firestore = createFirestoreClient(env);
-    let applicationId: string;
 
     try {
-      ({ id: applicationId } = await firestore.createDocument(
-        "adoption_application",
-        documentData,
-        {
-          serverTimestampFields: ["submittedAt"],
-          documentId: idempotencyKey,
-        },
-      ));
-    } catch (error) {
-      if (
-        error instanceof FirestoreRestError &&
-        error.status === 409
-      ) {
-        return jsonResponse(HTTP_STATUS.OK, {
-          message: "Application already submitted",
-          data: {
-            id: idempotencyKey,
-            duplicate: true,
-          },
+      const rawData = await readJsonBodyWithLimit(request);
+      const idempotencyKey = getIdempotencyKey(request);
+
+      if (!idempotencyKey || !isValidIdempotencyKey(idempotencyKey)) {
+        return jsonResponse(HTTP_STATUS.BAD_REQUEST, {
+          message: "Missing or invalid idempotency key",
         });
       }
 
-      throw error;
-    }
+      const validationResult = fullFormSchema.safeParse(rawData);
 
-    const notificationEmailSent = await sendAdoptionApplicationEmail(
-      applicationData,
-      applicationId,
-      env,
-    );
+      if (!validationResult.success) {
+        return jsonResponse(HTTP_STATUS.BAD_REQUEST, {
+          message: "Validation failed",
+          errors: z.treeifyError(validationResult.error),
+        });
+      }
 
-    return jsonResponse(HTTP_STATUS.CREATED, {
-      message: "Application submitted successfully",
-      data: { id: applicationId, notificationEmailSent },
-      ...(!notificationEmailSent
-        ? {
-            warning:
-              "A candidatura foi salva, mas a notificação automática falhou. Guarde o ID e entre em contato com o abrigo.",
-          }
-        : {}),
-    });
-  } catch (err) {
-    console.error("Error creating adoption application:", err);
+      const data: AdoptionApplicationData = validationResult.data;
+      const recaptchaSecret = getEnvValue(env, "RECAPTCHA_SECRET_KEY");
+      if (!recaptchaSecret) {
+        return jsonResponse(HTTP_STATUS.INTERNAL_SERVER_ERROR, {
+          message: "reCAPTCHA secret is not configured.",
+        });
+      }
 
-    if (err instanceof SyntaxError) {
-      return jsonResponse(HTTP_STATUS.BAD_REQUEST, {
-        message: "Invalid JSON",
+      const captchaValid = await dependencies.verifyRecaptcha(
+        data.captchaToken,
+        env,
+        {
+          expectedAction: ADOPTION_RECAPTCHA_ACTION,
+          expectedHostname: new URL(request.url).hostname,
+        },
+      );
+      if (!captchaValid) {
+        return jsonResponse(HTTP_STATUS.BAD_REQUEST, {
+          message: "reCAPTCHA validation failed",
+        });
+      }
+
+      const rawApplicationData = Object.fromEntries(
+        Object.entries(data).filter(([key]) => key !== "captchaToken"),
+      );
+      const applicationData = sanitizeFormFields(rawApplicationData);
+      const sensitiveData: Record<string, unknown> = {};
+      const publicData: Record<string, unknown> = {};
+
+      for (const [key, value] of Object.entries(applicationData)) {
+        if (SENSITIVE_FIELDS.includes(key)) {
+          sensitiveData[key] = value;
+        } else {
+          publicData[key] = value;
+        }
+      }
+
+      const { encryptedData, keyVersion } =
+        await dependencies.encryptData(sensitiveData, env);
+
+      const expiresAt = new Date(dependencies.now().getTime());
+      expiresAt.setDate(expiresAt.getDate() + ADOPTION_EXPIRATION_DAYS);
+
+      const documentData = {
+        ...publicData,
+        sensitive: encryptedData,
+        keyVersion,
+        expiresAt,
+        status: "pending",
+      };
+
+      const firestore = dependencies.createFirestoreClient(env);
+      let applicationId: string;
+
+      try {
+        ({ id: applicationId } = await firestore.createDocument(
+          "adoption_application",
+          documentData,
+          {
+            serverTimestampFields: ["submittedAt"],
+            documentId: idempotencyKey,
+          },
+        ));
+      } catch (error) {
+        if (error instanceof FirestoreRestError && error.status === 409) {
+          return jsonResponse(HTTP_STATUS.OK, {
+            message: "Application already submitted",
+            data: {
+              id: idempotencyKey,
+              duplicate: true,
+            },
+          });
+        }
+
+        throw error;
+      }
+
+      const notificationEmailSent = await dependencies.sendNotification(
+        applicationData,
+        applicationId,
+        env,
+      );
+
+      return jsonResponse(HTTP_STATUS.CREATED, {
+        message: "Application submitted successfully",
+        data: { id: applicationId, notificationEmailSent },
+        ...(!notificationEmailSent
+          ? {
+              warning:
+                "A candidatura foi salva, mas a notificação automática falhou. Guarde o ID e entre em contato com o abrigo.",
+            }
+          : {}),
+      });
+    } catch (err) {
+      console.error("Error creating adoption application:", err);
+
+      if (err instanceof RequestBodyTooLargeError) {
+        return jsonResponse(HTTP_STATUS.PAYLOAD_TOO_LARGE, {
+          message: "Request entity too large",
+        });
+      }
+
+      if (err instanceof SyntaxError) {
+        return jsonResponse(HTTP_STATUS.BAD_REQUEST, {
+          message: "Invalid JSON",
+        });
+      }
+
+      return jsonResponse(HTTP_STATUS.INTERNAL_SERVER_ERROR, {
+        message: "Error creating adoption application",
       });
     }
-
-    return jsonResponse(HTTP_STATUS.INTERNAL_SERVER_ERROR, {
-      message: "Error creating adoption application",
-    });
-  }
+  };
 }
+
+export const onRequest = createAdoptionApplicationHandler();

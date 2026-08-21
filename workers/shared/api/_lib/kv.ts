@@ -54,19 +54,7 @@ function isKvStore(value: unknown): value is KvStore {
 }
 
 function getKvBinding(env?: CloudflareEnv): KvStore | null {
-  const candidates = [
-    env?.CACHE_KV,
-    env?.APP_CACHE_KV,
-    env?.KV,
-  ];
-
-  for (const candidate of candidates) {
-    if (isKvStore(candidate)) {
-      return candidate;
-    }
-  }
-
-  return null;
+  return isKvStore(env?.KV) ? env.KV : null;
 }
 
 export function getKvStore(env?: CloudflareEnv): KvCacheStore {
@@ -203,5 +191,3 @@ export function getKvStore(env?: CloudflareEnv): KvCacheStore {
 
   return liveKv;
 }
-
-export const kv = getKvStore();

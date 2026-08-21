@@ -1,6 +1,10 @@
 import { importPKCS8, SignJWT } from "jose";
 
-import { getEnvValue, type CloudflareEnv } from "./env";
+import {
+  getEnvValue,
+  type CloudflareEnv,
+  type CloudflareStringEnvKey,
+} from "./env";
 
 const FIRESTORE_SCOPE = "https://www.googleapis.com/auth/datastore";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -68,7 +72,10 @@ export interface FirestoreRestClientOptions {
 
 let cachedAccessToken: CachedAccessToken | undefined;
 
-function requireEnvValue(env: CloudflareEnv | undefined, key: string): string {
+function requireEnvValue(
+  env: CloudflareEnv | undefined,
+  key: CloudflareStringEnvKey,
+): string {
   const value = getEnvValue(env, key)?.trim();
 
   if (!value) {

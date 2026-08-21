@@ -5,6 +5,7 @@ import styles from "../WizardForm.module.css";
 import * as SelectComponent from "@/components/ui/Select";
 import * as RadioComponent from "@/components/ui/RadioGroup";
 import { Label } from "@/components/ui/Label";
+import { FieldRadioGroup, FieldSelectTrigger } from "../FieldControls";
 
 interface StepProps {
   formData: Partial<FormData>;
@@ -55,9 +56,9 @@ export function Step3Adocao({ formData, errors, updateField }: StepProps) {
             value={formData.porte || ""}
             onValueChange={(val) => updateField("porte", val)}
           >
-            <SelectComponent.SelectTrigger>
+            <FieldSelectTrigger>
               <SelectComponent.SelectValue placeholder="Selecione" />
-            </SelectComponent.SelectTrigger>
+            </FieldSelectTrigger>
             <SelectComponent.SelectContent>
               <SelectComponent.SelectItem value="Nao Importa">
                 Não importa
@@ -82,7 +83,7 @@ export function Step3Adocao({ formData, errors, updateField }: StepProps) {
         </FieldWrapper>
 
         <FieldWrapper name="sexo" label="3.3.2. Sexo" errors={errors}>
-          <RadioComponent.RadioGroup
+          <FieldRadioGroup
             value={formData.sexo || "Não importa"}
             onValueChange={(val) => updateField("sexo", val)}
             className={styles.radioGroup}
@@ -102,7 +103,7 @@ export function Step3Adocao({ formData, errors, updateField }: StepProps) {
               />
               <Label htmlFor="sexo_nao_importa">Não importa</Label>
             </div>
-          </RadioComponent.RadioGroup>
+          </FieldRadioGroup>
         </FieldWrapper>
 
         <FieldWrapper
@@ -115,9 +116,9 @@ export function Step3Adocao({ formData, errors, updateField }: StepProps) {
             value={formData.idade_animal || ""}
             onValueChange={(val) => updateField("idade_animal", val)}
           >
-            <SelectComponent.SelectTrigger>
+            <FieldSelectTrigger>
               <SelectComponent.SelectValue placeholder="Selecione" />
-            </SelectComponent.SelectTrigger>
+            </FieldSelectTrigger>
             <SelectComponent.SelectContent>
               <SelectComponent.SelectItem value="Nao importa">
                 Não importa
@@ -148,9 +149,9 @@ export function Step3Adocao({ formData, errors, updateField }: StepProps) {
             value={formData.personalidade || ""}
             onValueChange={(val) => updateField("personalidade", val)}
           >
-            <SelectComponent.SelectTrigger>
+            <FieldSelectTrigger>
               <SelectComponent.SelectValue placeholder="Selecione" />
-            </SelectComponent.SelectTrigger>
+            </FieldSelectTrigger>
             <SelectComponent.SelectContent>
               <SelectComponent.SelectItem value="Brincalhao">
                 Brincalhão
@@ -181,7 +182,7 @@ export function Step3Adocao({ formData, errors, updateField }: StepProps) {
         required
         errors={errors}
       >
-        <RadioComponent.RadioGroup
+        <FieldRadioGroup
           value={formData.atividade || ""}
           onValueChange={(val) => updateField("atividade", val)}
           className={styles.radioGroup}
@@ -200,7 +201,7 @@ export function Step3Adocao({ formData, errors, updateField }: StepProps) {
             />
             <Label htmlFor="atividade_guarda">Guarda</Label>
           </div>
-        </RadioComponent.RadioGroup>
+        </FieldRadioGroup>
       </FieldWrapper>
     </div>
   );

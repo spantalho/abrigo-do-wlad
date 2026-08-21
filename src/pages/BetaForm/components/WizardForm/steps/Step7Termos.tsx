@@ -4,6 +4,7 @@ import type { FieldError } from "../useWizardForm";
 import styles from "../WizardForm.module.css";
 import * as RadioComponent from "@/components/ui/RadioGroup";
 import { Label } from "@/components/ui/Label";
+import { FieldRadioGroup } from "../FieldControls";
 
 interface StepProps {
   formData: Partial<FormData>;
@@ -34,7 +35,7 @@ export function Step7Termos({ formData, errors, updateField }: StepProps) {
         required
         errors={errors}
       >
-        <RadioComponent.RadioGroup
+        <FieldRadioGroup
           value={formData.noticias || ""}
           onValueChange={(val) => updateField("noticias", val)}
           className={styles.radioGroup}
@@ -54,7 +55,7 @@ export function Step7Termos({ formData, errors, updateField }: StepProps) {
             />
             <Label htmlFor="noticias_talvez">Talvez</Label>
           </div>
-        </RadioComponent.RadioGroup>
+        </FieldRadioGroup>
       </FieldWrapper>
 
       <FieldWrapper
@@ -63,7 +64,7 @@ export function Step7Termos({ formData, errors, updateField }: StepProps) {
         required
         errors={errors}
       >
-        <RadioComponent.RadioGroup
+        <FieldRadioGroup
           value={formData.visitas || ""}
           onValueChange={(val) => updateField("visitas", val)}
           className={styles.radioGroup}
@@ -76,7 +77,7 @@ export function Step7Termos({ formData, errors, updateField }: StepProps) {
             <RadioComponent.RadioGroupItem value="Não" id="visitas_nao" />
             <Label htmlFor="visitas_nao">Não</Label>
           </div>
-        </RadioComponent.RadioGroup>
+        </FieldRadioGroup>
       </FieldWrapper>
 
       <FieldWrapper
@@ -85,7 +86,7 @@ export function Step7Termos({ formData, errors, updateField }: StepProps) {
         required
         errors={errors}
       >
-        <RadioComponent.RadioGroup
+        <FieldRadioGroup
           value={formData.fotos_adocao || ""}
           onValueChange={(val) => updateField("fotos_adocao", val)}
           className={styles.radioGroup}
@@ -98,7 +99,7 @@ export function Step7Termos({ formData, errors, updateField }: StepProps) {
             <RadioComponent.RadioGroupItem value="Não" id="fotos_adocao_nao" />
             <Label htmlFor="fotos_adocao_nao">Não</Label>
           </div>
-        </RadioComponent.RadioGroup>
+        </FieldRadioGroup>
       </FieldWrapper>
 
       <FieldWrapper
@@ -107,7 +108,7 @@ export function Step7Termos({ formData, errors, updateField }: StepProps) {
         required
         errors={errors}
       >
-        <RadioComponent.RadioGroup
+        <FieldRadioGroup
           value={formData.contribuicao || ""}
           onValueChange={(val) => updateField("contribuicao", val)}
           className={styles.radioGroup}
@@ -120,7 +121,7 @@ export function Step7Termos({ formData, errors, updateField }: StepProps) {
             <RadioComponent.RadioGroupItem value="Não" id="contribuicao_nao" />
             <Label htmlFor="contribuicao_nao">Não</Label>
           </div>
-        </RadioComponent.RadioGroup>
+        </FieldRadioGroup>
       </FieldWrapper>
 
       <FieldWrapper
@@ -129,7 +130,7 @@ export function Step7Termos({ formData, errors, updateField }: StepProps) {
         required
         errors={errors}
       >
-        <RadioComponent.RadioGroup
+        <FieldRadioGroup
           value={formData.compromisso_vida || ""}
           onValueChange={(val) => updateField("compromisso_vida", val)}
           className={styles.radioGroup}
@@ -149,7 +150,7 @@ export function Step7Termos({ formData, errors, updateField }: StepProps) {
             />
             <Label htmlFor="compromisso_talvez">Talvez</Label>
           </div>
-        </RadioComponent.RadioGroup>
+        </FieldRadioGroup>
       </FieldWrapper>
     </div>
   );

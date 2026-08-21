@@ -3,6 +3,7 @@ import type { FormData } from "../schema";
 import type { FieldError } from "../useWizardForm";
 import styles from "../WizardForm.module.css";
 import * as SelectComponent from "@/components/ui/Select";
+import { FieldSelectTrigger } from "../FieldControls";
 
 interface StepProps {
   formData: Partial<FormData>;
@@ -62,9 +63,9 @@ export function Step1DadosPessoais({
             value={formData.estado_civil || ""}
             onValueChange={(val) => updateField("estado_civil", val)}
           >
-            <SelectComponent.SelectTrigger>
+            <FieldSelectTrigger>
               <SelectComponent.SelectValue placeholder="Selecione" />
-            </SelectComponent.SelectTrigger>
+            </FieldSelectTrigger>
             <SelectComponent.SelectContent>
               <SelectComponent.SelectItem value="Solteiro">
                 Solteiro (a)
