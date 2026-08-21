@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/Card";
 import { CircleAlert } from "lucide-react";
+import { FieldRadioGroup } from "../FieldControls";
 
 interface StepProps {
   formData: Partial<FormData>;
@@ -75,7 +76,7 @@ export function Step10Finalizacao({
         required
         errors={errors}
       >
-        <RadioComponent.RadioGroup
+        <FieldRadioGroup
           value={formData.termo_nao_repassar || ""}
           onValueChange={(val) => updateField("termo_nao_repassar", val)}
           className={styles.radioGroup}
@@ -94,7 +95,7 @@ export function Step10Finalizacao({
             />
             <Label htmlFor="termo_repassar_nao">Não</Label>
           </div>
-        </RadioComponent.RadioGroup>
+        </FieldRadioGroup>
       </FieldWrapper>
 
       <FieldWrapper

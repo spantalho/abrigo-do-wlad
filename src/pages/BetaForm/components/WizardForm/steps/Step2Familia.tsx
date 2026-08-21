@@ -4,6 +4,7 @@ import type { FieldError } from "../useWizardForm";
 import styles from "../WizardForm.module.css";
 import * as RadioComponent from "@/components/ui/RadioGroup";
 import { Label } from "@/components/ui/Label";
+import { FieldRadioGroup } from "../FieldControls";
 
 interface StepProps {
   formData: Partial<FormData>;
@@ -64,7 +65,7 @@ export function Step2Familia({ formData, errors, updateField }: StepProps) {
         required
         errors={errors}
       >
-        <RadioComponent.RadioGroup
+        <FieldRadioGroup
           value={formData.acordo || ""}
           onValueChange={(val) => updateField("acordo", val)}
           className={styles.radioGroup}
@@ -81,7 +82,7 @@ export function Step2Familia({ formData, errors, updateField }: StepProps) {
             <RadioComponent.RadioGroupItem value="Talvez" id="acordo_talvez" />
             <Label htmlFor="acordo_talvez">Talvez</Label>
           </div>
-        </RadioComponent.RadioGroup>
+        </FieldRadioGroup>
       </FieldWrapper>
 
       <FieldWrapper

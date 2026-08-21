@@ -1,4 +1,5 @@
 import * as React from "react";
+import { FieldContext } from "./FieldContext";
 import type { FieldError } from "./useWizardForm";
 import styles from "./WizardForm.module.css";
 
@@ -18,14 +19,22 @@ export function FieldWrapper({
   children,
 }: FieldWrapperProps) {
   const error = errors[name];
+  const labelId = `${name}-label`;
+  const errorId = `${name}-error`;
 
   return (
-    <div className={`${styles.field} ${error ? styles.fieldError : ""}`}>
-      <label htmlFor={name}>
-        {label} {required && <span className={styles.required}>*</span>}
-      </label>
-      {children}
-      {error && <span className={styles.errorMessage}>{error}</span>}
-    </div>
+    <FieldContext.Provider value={{ name, labelId, errorId, error }}>
+      <div className={`${styles.field} ${error ? styles.fieldError : ""}`}>
+        <label id={labelId} htmlFor={name}>
+          {label} {required && <span className={styles.required}>*</span>}
+        </label>
+        {children}
+        {error && (
+          <span id={errorId} role="alert" className={styles.errorMessage}>
+            {error}
+          </span>
+        )}
+      </div>
+    </FieldContext.Provider>
   );
 }

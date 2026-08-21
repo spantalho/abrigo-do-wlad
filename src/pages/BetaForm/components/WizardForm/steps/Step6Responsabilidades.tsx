@@ -5,6 +5,7 @@ import styles from "../WizardForm.module.css";
 import * as SelectComponent from "@/components/ui/Select";
 import * as RadioComponent from "@/components/ui/RadioGroup";
 import { Label } from "@/components/ui/Label";
+import { FieldRadioGroup, FieldSelectTrigger } from "../FieldControls";
 
 interface StepProps {
   formData: Partial<FormData>;
@@ -25,7 +26,7 @@ export function Step6Responsabilidades({
         required
         errors={errors}
       >
-        <RadioComponent.RadioGroup
+        <FieldRadioGroup
           value={formData.coleira || ""}
           onValueChange={(val) => updateField("coleira", val)}
           className={styles.radioGroup}
@@ -42,7 +43,7 @@ export function Step6Responsabilidades({
             <RadioComponent.RadioGroupItem value="Talvez" id="coleira_talvez" />
             <Label htmlFor="coleira_talvez">Talvez</Label>
           </div>
-        </RadioComponent.RadioGroup>
+        </FieldRadioGroup>
       </FieldWrapper>
 
       <FieldWrapper
@@ -51,7 +52,7 @@ export function Step6Responsabilidades({
         required
         errors={errors}
       >
-        <RadioComponent.RadioGroup
+        <FieldRadioGroup
           value={formData.ciencia_adaptacao || ""}
           onValueChange={(val) => updateField("ciencia_adaptacao", val)}
           className={styles.radioGroup}
@@ -71,7 +72,7 @@ export function Step6Responsabilidades({
             />
             <Label htmlFor="adaptacao_talvez">Talvez</Label>
           </div>
-        </RadioComponent.RadioGroup>
+        </FieldRadioGroup>
       </FieldWrapper>
 
       <FieldWrapper
@@ -94,7 +95,7 @@ export function Step6Responsabilidades({
         required
         errors={errors}
       >
-        <RadioComponent.RadioGroup
+        <FieldRadioGroup
           value={formData.adestrador || ""}
           onValueChange={(val) => updateField("adestrador", val)}
           className={styles.radioGroup}
@@ -107,7 +108,7 @@ export function Step6Responsabilidades({
             <RadioComponent.RadioGroupItem value="Não" id="adestrador_nao" />
             <Label htmlFor="adestrador_nao">Não</Label>
           </div>
-        </RadioComponent.RadioGroup>
+        </FieldRadioGroup>
       </FieldWrapper>
 
       <FieldWrapper
@@ -119,9 +120,9 @@ export function Step6Responsabilidades({
           value={formData.motivo_nao_adestrar || ""}
           onValueChange={(val) => updateField("motivo_nao_adestrar", val)}
         >
-          <SelectComponent.SelectTrigger>
+          <FieldSelectTrigger>
             <SelectComponent.SelectValue placeholder="Selecione..." />
-          </SelectComponent.SelectTrigger>
+          </FieldSelectTrigger>
           <SelectComponent.SelectContent>
             <SelectComponent.SelectItem value="Nao se aplica">
               Não se aplica (contratarei)
@@ -148,7 +149,7 @@ export function Step6Responsabilidades({
         required
         errors={errors}
       >
-        <RadioComponent.RadioGroup
+        <FieldRadioGroup
           value={formData.carro || ""}
           onValueChange={(val) => updateField("carro", val)}
           className={styles.radioGroup}
@@ -161,7 +162,7 @@ export function Step6Responsabilidades({
             <RadioComponent.RadioGroupItem value="Não" id="carro_nao" />
             <Label htmlFor="carro_nao">Não</Label>
           </div>
-        </RadioComponent.RadioGroup>
+        </FieldRadioGroup>
       </FieldWrapper>
 
       <FieldWrapper
@@ -174,9 +175,9 @@ export function Step6Responsabilidades({
           value={formData.financeiro_vet || ""}
           onValueChange={(val) => updateField("financeiro_vet", val)}
         >
-          <SelectComponent.SelectTrigger>
+          <FieldSelectTrigger>
             <SelectComponent.SelectValue placeholder="Selecione..." />
-          </SelectComponent.SelectTrigger>
+          </FieldSelectTrigger>
           <SelectComponent.SelectContent>
             <SelectComponent.SelectItem value="Sim">
               Sim, com certeza
@@ -203,7 +204,7 @@ export function Step6Responsabilidades({
         required
         errors={errors}
       >
-        <RadioComponent.RadioGroup
+        <FieldRadioGroup
           value={formData.vacinas || ""}
           onValueChange={(val) => updateField("vacinas", val)}
           className={styles.radioGroup}
@@ -220,7 +221,7 @@ export function Step6Responsabilidades({
             <RadioComponent.RadioGroupItem value="Talvez" id="vacinas_talvez" />
             <Label htmlFor="vacinas_talvez">Talvez</Label>
           </div>
-        </RadioComponent.RadioGroup>
+        </FieldRadioGroup>
       </FieldWrapper>
 
       <FieldWrapper
@@ -233,9 +234,9 @@ export function Step6Responsabilidades({
           value={formData.gasto_mensal || ""}
           onValueChange={(val) => updateField("gasto_mensal", val)}
         >
-          <SelectComponent.SelectTrigger>
+          <FieldSelectTrigger>
             <SelectComponent.SelectValue placeholder="Selecione..." />
-          </SelectComponent.SelectTrigger>
+          </FieldSelectTrigger>
           <SelectComponent.SelectContent>
             <SelectComponent.SelectItem value="100-150">
               entre 100,00 e 150,00
