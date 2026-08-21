@@ -1,10 +1,17 @@
+.pixScrollArea {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: min(58vh, 620px);
+  border: none;
+  border-radius: var(--radius);
+}
+
 .pixModalContainer {
   display: flex;
   flex-direction: column;
   gap: 25px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  flex-grow: 1;
+  padding-right: 14px;
+  padding-bottom: 2px;
 }
 
 .pixModalCode {
@@ -43,7 +50,10 @@
 .beneficiaryData {
   list-style: none;
   margin-top: 25px;
-  background-color: var(--bg-secondary);
+  background-color: var(--accent-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  overflow: hidden;
   font-size: 0.9rem;
   color: var(--text-secondary);
   text-align: left;
@@ -52,7 +62,7 @@
 .beneficiaryData li {
   display: flex;
   justify-content: space-between;
-  padding: 4px 0;
+  padding: 0.65rem 0.85rem;
 }
 
 .beneficiaryData li + li {
@@ -60,6 +70,10 @@
 }
 
 @media (max-width: 768px) {
+  .pixScrollArea {
+    height: min(52vh, 520px);
+  }
+
   .beneficiaryData li {
     flex-direction: column;
     text-align: center;

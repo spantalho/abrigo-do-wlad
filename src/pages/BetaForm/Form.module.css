@@ -32,10 +32,10 @@
   text-align: center;
   gap: 1rem;
   padding: 4rem 1rem;
-  background: var(--bg-secondary);
+  background: var(--surface-card);
   border-radius: var(--radius-lg);
   margin-top: 2rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
 }
 
 .notAcceptingContainer h2 {

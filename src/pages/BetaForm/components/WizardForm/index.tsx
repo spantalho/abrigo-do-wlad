@@ -234,7 +234,7 @@ export function WizardForm({ onSubmitSuccess }: WizardFormProps) {
   if (showWarning) {
     return (
       <div className={styles.wizardContainer}>
-        <CardComponent.Card variant="quote" size="lg">
+        <CardComponent.Card variant="callout" tone="warning" size="lg">
           <CardComponent.CardBody>
             <CardComponent.CardHeader>
               <CardComponent.CardIcon>

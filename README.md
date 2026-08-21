@@ -25,6 +25,10 @@ Este projeto foi inicialmente desenvolvido como projeto acadêmico de extensão 
 - **Cloudflare Workers** (API, Static Assets e Cron Triggers)
 - **Cloudflare KV** (cache compartilhado entre Workers)
 
+## Identidade Visual
+
+O tema visual foi apelidado de Jaci (do tupi Îasy e do guarani Jasy), em referência à [deusa da Lua](https://pt.wikipedia.org/wiki/Jaci). Suas cores remetem à Terra, com tons inspirados no céu, na água, no solo e na vegetação, somando a identidade já existente do Abrigo do Wlad. A paleta e os demais estilos globais estão centralizados em [`src/index.css`](src/index.css).
+
 ## Estrutura e Componentes
 
 Abaixo está listada a estrutura atual do projeto:

@@ -38,7 +38,8 @@ export function ActionCards() {
     <section className={styles.cardsContainer} ref={sectionRef}>
       {/* adoption */}
       <Card.Card
-        color="red"
+        tone="danger"
+        interactive
         className={`${styles.card} ${isVisible ? styles.visible : ""}`}
       >
         <Card.CardBody>
@@ -67,6 +68,7 @@ export function ActionCards() {
 
       {/* donations & pix modal */}
       <Card.Card
+        interactive
         className={`${styles.card} ${styles.cardDelay1} ${isVisible ? styles.visible : ""}`}
       >
         <Card.CardBody>
@@ -98,7 +100,8 @@ export function ActionCards() {
 
       {/* tampinhas */}
       <Card.Card
-        color="green"
+        tone="success"
+        interactive
         className={`${styles.card} ${styles.cardDelay2} ${isVisible ? styles.visible : ""}`}
       >
         <Card.CardBody>

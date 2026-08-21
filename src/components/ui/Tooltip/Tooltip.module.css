@@ -9,7 +9,7 @@
   text-align: center;
   line-height: 1;
   max-width: 23rem;
-  color: var(--white);
+  color: var(--text-on-secondary);
   background-color: var(--secondary);
   box-shadow: var(--shadow-sm);
   user-select: none;

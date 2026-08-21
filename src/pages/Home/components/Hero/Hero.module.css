@@ -11,8 +11,8 @@
 }
 
 .badge {
-  background: var(--primary);
-  color: var(--white);
+  background: var(--action);
+  color: var(--text-on-action);
   padding: 0.6rem 1.5rem;
   border-radius: 50px;
   text-transform: uppercase;
@@ -36,7 +36,7 @@
 .description {
   font-size: 1.3rem;
   margin-bottom: 2.5rem;
-  font-weight: 300;
+  font-weight: 400;
   opacity: 0.95;
   max-width: 700px;
   color: var(--text-secondary);
