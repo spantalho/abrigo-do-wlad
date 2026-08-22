@@ -1,0 +1,39 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // O catálogo público continua legível diretamente pelo site.
+    match /dogs/{dogId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /recycle_points/{pointId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /system/settings {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Formulários, estatísticas, chaves e toda operação administrativa passam
+    // pelos Workers com conta de serviço e IAM; clientes não têm acesso.
+    match /adoption_application/{applicationId} {
+      allow read, write: if false;
+    }
+
+    match /users/{userId} {
+      allow read, write: if false;
+    }
+
+    match /system/{documentId} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

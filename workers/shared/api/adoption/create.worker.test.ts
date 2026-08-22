@@ -1,7 +1,7 @@
 import { env } from "cloudflare:workers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { buildValidAdoptionApplication } from "../../../../src/test/fixtures/adoption";
+import { buildValidAdoptionApplication } from "../../../../apps/public/src/test/fixtures/adoption";
 import { FirestoreRestError } from "../_lib/firestore";
 import type { CloudflareEnv } from "../_lib/env";
 import {

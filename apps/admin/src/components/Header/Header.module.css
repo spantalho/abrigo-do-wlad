@@ -1,0 +1,110 @@
+.header {
+  background-color: #ffffff;
+  border-bottom: 3px solid rgb(255, 205, 152); 
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 105px;
+  display: flex;
+  align-items: center;
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* --- LADO ESQUERDO --- */
+.brandArea {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.brandArea:hover {
+  opacity: 0.8;
+}
+
+.logo {
+  height: 75px;
+  width: auto;
+  object-fit: contain;
+}
+
+.divider {
+  width: 1px;
+  height: 30px;
+  background-color: #e5e7eb;
+}
+
+.adminTag {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #f97316;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background-color: rgba(255, 205, 152, 0.2);
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+}
+
+/* --- LADO DIREITO --- */
+.userArea {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+
+.welcomeLabel {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.userName {
+  font-weight: 600;
+  color: #374151;
+  font-size: 1rem;
+}
+
+.logoutBtn {
+  background-color: #fee2e2;
+  color: #ef4444;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logoutBtn:hover {
+  background-color: #ef4444;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+/* Responsividade simples */
+@media (max-width: 600px) {
+  .welcomeLabel { display: none; }
+  .adminTag > span:last-child { display: none; }
+  .logo { height: 60px; }
+}

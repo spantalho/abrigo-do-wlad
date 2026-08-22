@@ -1,0 +1,34 @@
+.wrapper {
+  margin-top: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+  padding-bottom: 2rem;
+}
+
+.link, .devLink {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #4b5563;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.link:hover, .devLink:hover {
+  color: #f59e0b; 
+  text-decoration: underline;
+}
+
+.divider {
+  color: #d1d5db;
+  margin: 0 0.5rem;
+}
+
+.text {
+  color: #9ca3af;
+}

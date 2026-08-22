@@ -1,0 +1,18 @@
+# Valores não secretos fornecidos pela aplicação Access no Zero Trust.
+CF_ACCESS_TEAM_DOMAIN=your-team.cloudflareaccess.com
+CF_ACCESS_AUD=your-access-application-audience
+
+# Autorização do backend; listas separadas por vírgula.
+ADMIN_DEVELOPER_EMAILS=developer-one@example.test,developer-two@example.test
+ADMIN_ADMINISTRATOR_EMAILS=administrator@example.test
+
+# Firestore REST (segredos locais; em produção use wrangler secret/dashboard)
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=service-account@example.test
+FIREBASE_PRIVATE_KEY=replace-with-json-escaped-private-key
+MASTER_KEY=replace-me
+
+# Cloudinary assinado no Worker
+CLOUDINARY_CLOUD_NAME=your-cloud
+CLOUDINARY_API_KEY=replace-me
+CLOUDINARY_API_SECRET=replace-me

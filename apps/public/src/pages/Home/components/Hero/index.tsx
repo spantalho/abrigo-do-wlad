@@ -1,0 +1,100 @@
+import { Link } from "react-router";
+import * as Lucide from "lucide-react";
+
+import { Button } from "@abrigo/ui/Button";
+import { Badge } from "@abrigo/ui/Badge";
+import { Skeleton } from "@abrigo/ui/Skeleton";
+import { analytics } from "@/utils/analytics";
+
+import type { Dog } from "@/types/dogs";
+import { getOptimizedImageUrl, getThumbnaillUrl } from "@/utils/cdn";
+
+import styles from "./Hero.module.css";
+
+interface HeroProps {
+  dog: Dog | null;
+}
+
+export function Hero({ dog }: HeroProps) {
+  const mainImage = dog?.fotos?.[0] ?? null;
+  const secondaryImage = dog?.fotos?.[1] ?? null;
+
+  const heroImageUrl = mainImage
+    ? getOptimizedImageUrl(mainImage, {
+        crop: "fill",
+        gravity: "auto",
+        width: 600,
+        height: 500,
+      })
+    : "";
+
+  const thumbnailImageUrl = secondaryImage
+    ? getThumbnaillUrl(secondaryImage, 128, 200)
+    : "";
+
+  return (
+    <section className={styles.heroContainer}>
+      <div className={styles.heroContent}>
+        <h1 className={styles.title}>
+          Transformando abandono em finais felizes.
+        </h1>
+
+        <p className={styles.description}>
+          O <strong>Abrigo do Wlad</strong> é refúgio, cura e esperança para
+          centenas de cães que só conheciam a dor. Adote, doe, faça parte.
+        </p>
+
+        <div className={styles.btnGroup}>
+          <Link to="/caes" className="btn-primary" onClick={() => analytics.trackButtonClick("hero_dogs_list")}>
+            <Button size="lg">Conheça Nossos Cães</Button>
+          </Link>
+
+          <a href="#historia" className="btn-secondary" onClick={() => analytics.trackButtonClick("hero_our_story")}>
+            <Button size="lg" variant="text">
+              Nossa História
+              <Lucide.ChevronRight size={25} />
+            </Button>
+          </a>
+        </div>
+      </div>
+
+      {/* image */}
+      <div className={styles.heroOverlay}>
+        {heroImageUrl ? (
+          <img
+            className={styles.heroImage}
+            src={heroImageUrl}
+            alt={dog ? `Foto de ${dog.nome}` : "Cachorro para adoção"}
+          />
+        ) : (
+          <Skeleton className={styles.heroImage} />
+        )}
+
+        {mainImage && secondaryImage && thumbnailImageUrl && (
+          <img
+            className={styles.heroThumbnail}
+            src={thumbnailImageUrl}
+            alt={dog ? `Foto de ${dog.nome}` : "Cachorro para adoção"}
+          />
+        )}
+        {dog && dog.nome && (
+          <Badge
+            variant="primary"
+            size="md"
+            leftIcon={<Lucide.Dog />}
+            style={{
+              position: "absolute",
+              bottom: "-0.5rem",
+              right: "-0.5rem",
+              zIndex: 10,
+              pointerEvents: "none",
+              border: "3px solid var(--bg-body)",
+            }}
+          >
+            {dog.nome}
+          </Badge>
+        )}
+      </div>
+    </section>
+  );
+}

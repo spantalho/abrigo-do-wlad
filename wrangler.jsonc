@@ -5,6 +5,20 @@
   "keep_vars": true,
   "compatibility_date": "2026-08-19",
   "compatibility_flags": ["nodejs_compat"],
+  "secrets": {
+    "required": [
+      "ALLOWED_ORIGIN",
+      "RECAPTCHA_SECRET_KEY",
+      "MASTER_KEY",
+      "FIREBASE_PROJECT_ID",
+      "FIREBASE_CLIENT_EMAIL",
+      "FIREBASE_PRIVATE_KEY",
+      "GMAIL_USER",
+      "GMAIL_PASS",
+      "ADOPTION_EMAIL_RECIPIENT",
+      "ADMIN_PANEL_URL"
+    ]
+  },
   "assets": {
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",

@@ -7,6 +7,15 @@ export type AppEnv = CloudflareEnv & {
   ASSETS: Pick<Env["ASSETS"], "fetch">;
 };
 
+function secureAssetResponse(response: Response): Response {
+  const secured = new Response(response.body, response);
+  secured.headers.set("Permissions-Policy", "camera=(), geolocation=(), microphone=()");
+  secured.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  secured.headers.set("X-Content-Type-Options", "nosniff");
+  secured.headers.set("X-Frame-Options", "DENY");
+  return secured;
+}
+
 async function handleApiRequest(request: Request, env: AppEnv): Promise<Response> {
   const pathname = new URL(request.url).pathname;
 
@@ -36,6 +45,6 @@ export default {
       return handleApiRequest(request, env);
     }
 
-    return env.ASSETS.fetch(request);
+    return secureAssetResponse(await env.ASSETS.fetch(request));
   },
 } satisfies ExportedHandler<Env>;

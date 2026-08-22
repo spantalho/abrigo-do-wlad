@@ -1,0 +1,84 @@
+.footer {
+  background-color: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  padding: 1.5rem 0;
+  margin-top: auto;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* GRUPO DA ESQUERDA */
+.infoGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.divider {
+  color: #d1d5db;
+}
+
+.portalLink {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #4b5563;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.portalLink:hover {
+  color: #f97316;
+  text-decoration: underline;
+}
+
+/* GRUPO DA DIREITA (CRÉDITOS) */
+.creditsGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.devLink {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #374151;
+  font-weight: 600;
+  text-decoration: none;
+  background-color: #f3f4f6;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.devLink:hover {
+  background-color: rgb(255, 205, 152);
+  color: #1f2937;
+  transform: translateY(-2px);
+}
+
+/* Responsividade para celular */
+@media (max-width: 600px) {
+  .content {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+  
+  .infoGroup {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .divider { display: none; }
+}

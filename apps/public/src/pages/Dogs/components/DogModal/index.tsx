@@ -1,0 +1,275 @@
+import { useState } from "react";
+import * as Lucide from "lucide-react";
+import { Link } from "react-router";
+import { type Dog, CORES_MAP } from "@/types/dogs";
+import styles from "./DogModal.module.css";
+import { Button } from "@abrigo/ui/Button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@abrigo/ui/Dialog";
+import { Badge } from "@abrigo/ui/Badge";
+import { ExternalLink } from "@/components/common/ExternalLink";
+import * as CardComponent from "@abrigo/ui/Card";
+import { Carousel, type CarouselAPI } from "@abrigo/ui/Carousel";
+import { ScrollArea } from "@abrigo/ui/ScrollArea";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
+import { analytics } from "@/utils/analytics";
+
+interface ModalProps {
+  dog: Dog | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function DogModal({ dog: parentDog, isOpen, onClose }: ModalProps) {
+  const isDesktop = useIsDesktop();
+
+  const [prevParentDog, setPrevParentDog] = useState<Dog | null>(parentDog);
+  const [displayedDog, setDisplayedDog] = useState<Dog | null>(parentDog);
+
+  if (parentDog && parentDog !== prevParentDog) {
+    setPrevParentDog(parentDog);
+    setDisplayedDog(parentDog);
+  }
+
+  const dog = displayedDog;
+
+  if (!dog) return null;
+
+  const photos = dog.fotos || [];
+  const hasMultipleImages = photos.length > 1;
+
+  const handleClose = () => {
+    onClose();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className={styles.modalContent}>
+        <div
+          style={{
+            position: "absolute",
+            width: 1,
+            height: 1,
+            padding: 0,
+            margin: -1,
+            overflow: "hidden",
+            clip: "rect(0, 0, 0, 0)",
+            whiteSpace: "nowrap",
+            border: 0,
+          }}
+        >
+          <DialogTitle>{dog.nome}</DialogTitle>
+          <DialogDescription>
+            Detalhes do cachorro {dog.nome}, {dog.idade}, {dog.sexo}.
+          </DialogDescription>
+        </div>
+
+        <ScrollArea className={styles.modalScrollArea} showScrollShadows>
+          <div className={styles.contentGrid}>
+            {/* --- CARROSSEL DE IMAGENS --- */}
+            <div className={styles.carouselContainer}>
+              <Carousel
+                render={(api: CarouselAPI) => (
+                  <div className={styles.carouselButtons}>
+                    {!isDesktop && (
+                      <div>
+                        <Button
+                          blur={true}
+                          variant="outline"
+                          onClick={handleClose}
+                          size="icon"
+                        >
+                          <Lucide.X size={20} />
+                        </Button>
+                      </div>
+                    )}
+                    {hasMultipleImages && (
+                      <div className={styles.carouselNavContainer}>
+                        <div className={styles.carouselNav}>
+                          <div className={styles.carouselNavButtons}>
+                            <Button
+                              variant="primary"
+                              size="icon"
+                              onClick={api.goPrev}
+                            >
+                              <Lucide.ChevronLeft size={24} />
+                            </Button>
+                            <Button
+                              variant="primary"
+                              size="icon"
+                              onClick={api.goNext}
+                            >
+                              <Lucide.ChevronRight size={24} />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className={styles.carouselNavDots}>
+                          {photos.map((_, index) => (
+                            <button
+                              key={index}
+                              className={`${styles.dot} ${
+                                api.page === index ? styles.dotActive : ""
+                              }`}
+                              onClick={() => api.goTo(index)}
+                              aria-label={`Ir para imagem ${index + 1}`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              >
+                {photos.map((photo, index) => (
+                  <img
+                    key={index}
+                    src={photo}
+                    alt={`${dog.nome} - foto ${index + 1}`}
+                    className={styles.carouselImage}
+                  />
+                ))}
+              </Carousel>
+            </div>
+            {/* --- DETALHES DO DOG --- */}
+            <div className={styles.details}>
+              <div className={styles.detailsHeader}>
+                <div className={styles.titleWrapper}>
+                  <h2 className={styles.title}>{dog.nome}</h2>
+                  {isDesktop && (
+                    <div className={styles.closeButton}>
+                      <Button variant="ghost" onClick={handleClose} size="icon">
+                        <Lucide.X size={22} />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                <div className={styles.badges}>
+                  <Badge
+                    variant="secondary"
+                    leftIcon={<Lucide.Calendar size={14} />}
+                  >
+                    {dog.idade}
+                  </Badge>
+
+                  <Badge
+                    variant="secondary"
+                    leftIcon={
+                      dog.sexo === "Macho" ? (
+                        <Lucide.Mars size={14} />
+                      ) : (
+                        <Lucide.Venus size={14} />
+                      )
+                    }
+                  >
+                    {dog.sexo}
+                  </Badge>
+                </div>
+
+                {dog.instaLink && (
+                  <ExternalLink
+                    href={dog.instaLink as string}
+                    style={{ textDecoration: "none" }}
+                  >
+                    <div className={styles.instagramPill}>
+                      <Lucide.Instagram size={18} />
+                      <span>Conhecer no Instagram</span>
+                    </div>
+                  </ExternalLink>
+                )}
+
+                <p className={styles.description}>
+                  {dog.descricaoCompleta ||
+                    `O ${dog.nome} é um cãozinho incrível que está esperando por um lar.`}
+                </p>
+              </div>
+
+              <div className={styles.callouts}>
+                <CardComponent.Card
+                  variant="callout"
+                  tone="success"
+                  size="sm"
+                  layout="inline"
+                >
+                  <CardComponent.CardBody>
+                    <CardComponent.CardIcon>
+                      <Lucide.BriefcaseMedical size={24} />
+                    </CardComponent.CardIcon>
+                    <CardComponent.CardTitle>Saúde</CardComponent.CardTitle>
+                    <CardComponent.CardContent>
+                      <p>
+                        <strong>{dog.status}</strong>
+                      </p>
+                    </CardComponent.CardContent>
+                  </CardComponent.CardBody>
+                </CardComponent.Card>
+
+                <CardComponent.Card
+                  variant="callout"
+                  tone="info"
+                  size="sm"
+                  layout="inline"
+                >
+                  <CardComponent.CardBody>
+                    <CardComponent.CardIcon>
+                      <Lucide.PawPrint size={24} />
+                    </CardComponent.CardIcon>
+                    <CardComponent.CardTitle>
+                      Temperamento
+                    </CardComponent.CardTitle>
+                    <CardComponent.CardContent>
+                      <p>
+                        Perfil{" "}
+                        <strong>{dog.temperamento?.toLowerCase()}</strong>.
+                        Ideal para lares com o mesmo ritmo.
+                      </p>
+                    </CardComponent.CardContent>
+                  </CardComponent.CardBody>
+                </CardComponent.Card>
+
+                <CardComponent.Card variant="callout" size="sm" layout="inline">
+                  <CardComponent.CardBody>
+                    <CardComponent.CardIcon>
+                      <Lucide.Palette size={24} />
+                    </CardComponent.CardIcon>
+                    <CardComponent.CardTitle>
+                      Característica
+                    </CardComponent.CardTitle>
+                    <CardComponent.CardContent>
+                      <p>
+                        <strong>{CORES_MAP[dog.cor] || dog.cor}</strong>
+                      </p>
+                    </CardComponent.CardContent>
+                  </CardComponent.CardBody>
+                </CardComponent.Card>
+              </div>
+
+              <div className={styles.footer}>
+                <div className={styles.footerBtn}>
+                  <Link
+                    to={`/beta/formulario?pet=${encodeURIComponent(dog.nome)}`}
+                  >
+                    <Button
+                      leftIcon={<Lucide.Heart />}
+                      size={`${isDesktop ? "md" : "lg"}`}
+                      variant="primary"
+                      onClick={() =>
+                        analytics.trackConversionIntent("adopt_form")
+                      }
+                    >
+                      Tenho Interesse
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
+  );
+}

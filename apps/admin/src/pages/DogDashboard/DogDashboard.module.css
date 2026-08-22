@@ -1,0 +1,129 @@
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap; 
+}
+
+/* Pesquisa Bonitona */
+.searchWrapper {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.85rem 1rem 0.85rem 3rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  background-color: white;
+  transition: all 0.2s;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+/* Lado Direito (Contador + Botão) */
+.actionsRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.countBadge {
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.addButton {
+  background-color: var(--primary);
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.addButton:hover {
+  background-color: #ea580c;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px -1px rgba(245, 158, 11, 0.4);
+}
+
+/* Grid (Mantive igual) */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+/* States */
+.loadingState {
+  text-align: center;
+  padding: 4rem;
+  color: #6b7280;
+}
+
+.emptyState {
+  background: white;
+  padding: 4rem;
+  text-align: center;
+  border-radius: 16px;
+  color: #9ca3af;
+  border: 2px dashed #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.emptyState button {
+  color: var(--primary);
+  background: none;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .topBar {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  
+  .searchWrapper {
+    max-width: 100%;
+  }
+
+  .actionsRight {
+    justify-content: space-between;
+  }
+}

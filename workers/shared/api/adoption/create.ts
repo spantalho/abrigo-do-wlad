@@ -4,7 +4,7 @@ import {
 } from "../_lib/firestore";
 import { encryptData } from "../_lib/encryption";
 import { sendEmail, generateAdoptionApplicationEmail } from "../_lib/email";
-import { fullFormSchema } from "../../../../src/pages/BetaForm/components/WizardForm/schema";
+import { fullFormSchema } from "../../../../apps/public/src/pages/BetaForm/components/WizardForm/schema";
 import { z } from "zod";
 import { sanitizeFormFields, verifyRecaptcha } from "../_lib/security";
 import {
@@ -21,7 +21,7 @@ import {
   RequestBodyTooLargeError,
   validateRequest,
 } from "../_lib/validation";
-import { ADOPTION_RECAPTCHA_ACTION } from "../../../../src/pages/BetaForm/components/WizardForm/recaptcha";
+import { ADOPTION_RECAPTCHA_ACTION } from "../../../../apps/public/src/pages/BetaForm/components/WizardForm/recaptcha";
 
 type AdoptionApplicationData = z.infer<typeof fullFormSchema>;
 

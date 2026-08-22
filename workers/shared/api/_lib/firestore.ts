@@ -13,6 +13,8 @@ const TOKEN_REFRESH_MARGIN_MS = 60_000;
 const AUTO_ID_CHARACTERS =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 const AUTO_ID_LENGTH = 20;
+const MAX_COMMIT_WRITES = 500;
+const MAX_QUERY_LIMIT = 500;
 
 type FirestoreValue =
   | { nullValue: null }
@@ -62,6 +64,15 @@ export interface FirestoreDocument<T extends Record<string, unknown>> {
 export interface CreateDocumentOptions {
   serverTimestampFields?: string[];
   documentId?: string;
+}
+
+export interface DeleteDocumentsResult {
+  commitTime?: string;
+  deleted: number;
+}
+
+export interface UpdateDocumentOptions {
+  serverTimestampFields?: string[];
 }
 
 export interface FirestoreRestClientOptions {
@@ -270,6 +281,28 @@ function decodeDocument<T extends Record<string, unknown>>(
   };
 }
 
+function assertCollectionId(collectionId: string): void {
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(collectionId)) {
+    throw new TypeError("Firestore collection ID contains invalid characters.");
+  }
+}
+
+function assertFieldPath(fieldPath: string): void {
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(fieldPath)) {
+    throw new TypeError("Firestore field path contains invalid characters.");
+  }
+}
+
+function assertDocumentName(documentName: string, documentsRoot: string): void {
+  if (
+    !documentName.startsWith(`${documentsRoot}/`) ||
+    documentName.includes("//") ||
+    documentName.split("/").length < documentsRoot.split("/").length + 2
+  ) {
+    throw new TypeError("Firestore document target is outside this database.");
+  }
+}
+
 export function createFirestoreDocumentId(): string {
   const id: string[] = [];
   const maxValidByte =
@@ -458,6 +491,8 @@ export class FirestoreRestClient {
     collectionId: string,
     startingDocumentId?: string,
   ): Promise<FirestoreDocument<T> | null> {
+    assertCollectionId(collectionId);
+
     const structuredQuery: Record<string, unknown> = {
       from: [{ collectionId }],
       orderBy: [
@@ -493,11 +528,277 @@ export class FirestoreRestClient {
     return document ? decodeDocument<T>(document) : null;
   }
 
+  async listDocuments<T extends Record<string, unknown>>(
+    collectionId: string,
+    options: {
+      direction?: "ASCENDING" | "DESCENDING";
+      limit?: number;
+      orderBy?: string;
+    } = {},
+  ): Promise<FirestoreDocument<T>[]> {
+    assertCollectionId(collectionId);
+    const limit = options.limit ?? MAX_QUERY_LIMIT;
+    const orderBy = options.orderBy ?? "__name__";
+    assertFieldPath(orderBy);
+
+    if (!Number.isInteger(limit) || limit < 1 || limit > MAX_QUERY_LIMIT) {
+      throw new RangeError(
+        `Firestore query limit must be between 1 and ${MAX_QUERY_LIMIT}.`,
+      );
+    }
+
+    const results = await this.request<RunQueryResult[]>(
+      `${this.documentsRoot}:runQuery`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          structuredQuery: {
+            from: [{ collectionId }],
+            orderBy: [
+              {
+                field: { fieldPath: orderBy },
+                direction: options.direction ?? "ASCENDING",
+              },
+            ],
+            limit,
+          },
+        }),
+      },
+    );
+
+    return results.flatMap((result) =>
+      result.document ? [decodeDocument<T>(result.document)] : [],
+    );
+  }
+
+  async findFirstDocumentByField<T extends Record<string, unknown>>(
+    collectionId: string,
+    fieldPath: string,
+    value: unknown,
+  ): Promise<FirestoreDocument<T> | null> {
+    assertCollectionId(collectionId);
+    assertFieldPath(fieldPath);
+
+    const results = await this.request<RunQueryResult[]>(
+      `${this.documentsRoot}:runQuery`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          structuredQuery: {
+            from: [{ collectionId }],
+            where: {
+              fieldFilter: {
+                field: { fieldPath },
+                op: "EQUAL",
+                value: encodeFirestoreValue(value),
+              },
+            },
+            limit: 1,
+          },
+        }),
+      },
+    );
+    const document = results.find((result) => result.document)?.document;
+
+    return document ? decodeDocument<T>(document) : null;
+  }
+
+  async findDocumentsByTimestampBefore<T extends Record<string, unknown>>(
+    collectionId: string,
+    fieldPath: string,
+    cutoff: Date,
+    limit: number,
+  ): Promise<FirestoreDocument<T>[]> {
+    assertCollectionId(collectionId);
+    assertFieldPath(fieldPath);
+
+    if (Number.isNaN(cutoff.getTime())) {
+      throw new TypeError("Firestore query cutoff must be a valid Date.");
+    }
+
+    if (!Number.isInteger(limit) || limit < 1 || limit > MAX_QUERY_LIMIT) {
+      throw new RangeError(
+        `Firestore query limit must be between 1 and ${MAX_QUERY_LIMIT}.`,
+      );
+    }
+
+    const results = await this.request<RunQueryResult[]>(
+      `${this.documentsRoot}:runQuery`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          structuredQuery: {
+            from: [{ collectionId }],
+            where: {
+              fieldFilter: {
+                field: { fieldPath },
+                op: "LESS_THAN_OR_EQUAL",
+                value: encodeFirestoreValue(cutoff),
+              },
+            },
+            orderBy: [
+              {
+                field: { fieldPath },
+                direction: "ASCENDING",
+              },
+              {
+                field: { fieldPath: "__name__" },
+                direction: "ASCENDING",
+              },
+            ],
+            limit,
+          },
+        }),
+      },
+    );
+
+    return results.flatMap((result) =>
+      result.document ? [decodeDocument<T>(result.document)] : [],
+    );
+  }
+
+  async deleteDocuments(documentNames: string[]): Promise<DeleteDocumentsResult> {
+    if (documentNames.length === 0) {
+      return { deleted: 0 };
+    }
+
+    if (documentNames.length > MAX_COMMIT_WRITES) {
+      throw new RangeError(
+        `Firestore commit cannot contain more than ${MAX_COMMIT_WRITES} deletes.`,
+      );
+    }
+
+    const uniqueNames = new Set(documentNames);
+    if (uniqueNames.size !== documentNames.length) {
+      throw new TypeError("Firestore delete list contains duplicate documents.");
+    }
+
+    for (const name of documentNames) {
+      assertDocumentName(name, this.documentsRoot);
+    }
+
+    const result = await this.request<{ commitTime?: string }>(
+      `${this.databaseRoot}/documents:commit`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          writes: documentNames.map((name) => ({ delete: name })),
+        }),
+      },
+    );
+
+    return { deleted: documentNames.length, commitTime: result.commitTime };
+  }
+
+  async deleteDocument(documentName: string): Promise<DeleteDocumentsResult> {
+    return this.deleteDocuments([documentName]);
+  }
+
+  async updateDocument(
+    documentName: string,
+    data: Record<string, unknown>,
+    options: UpdateDocumentOptions = {},
+  ): Promise<{ commitTime?: string }> {
+    assertDocumentName(documentName, this.documentsRoot);
+    const fieldPaths = Object.keys(data);
+
+    if (fieldPaths.length === 0) {
+      throw new TypeError("Firestore update must contain at least one field.");
+    }
+
+    fieldPaths.forEach(assertFieldPath);
+    const updateTransforms = (options.serverTimestampFields ?? []).map(
+      (fieldPath) => {
+        assertFieldPath(fieldPath);
+        return { fieldPath, setToServerValue: "REQUEST_TIME" };
+      },
+    );
+    const write = {
+      update: {
+        name: documentName,
+        fields: encodeDocumentFields(data),
+      },
+      updateMask: { fieldPaths },
+      currentDocument: { exists: true },
+      ...(updateTransforms.length > 0 ? { updateTransforms } : {}),
+    };
+
+    return this.request<{ commitTime?: string }>(
+      `${this.databaseRoot}/documents:commit`,
+      {
+        method: "POST",
+        body: JSON.stringify({ writes: [write] }),
+      },
+    );
+  }
+
+  async incrementDocumentField(
+    documentPath: string,
+    fieldPath: string,
+    amount: number,
+  ): Promise<{ commitTime?: string }> {
+    assertFieldPath(fieldPath);
+    if (!Number.isFinite(amount)) {
+      throw new TypeError("Firestore increment amount must be finite.");
+    }
+
+    const existing = await this.getDocument<Record<string, unknown>>(documentPath);
+    if (!existing) {
+      const [collectionId, documentId, ...rest] = documentPath.split("/");
+      if (!collectionId || !documentId || rest.length > 0) {
+        throw new TypeError("Firestore counter path must target a root document.");
+      }
+
+      return this.request<{ commitTime?: string }>(
+        `${this.databaseRoot}/documents:commit`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            writes: [
+              {
+                update: {
+                  name: `${this.documentsRoot}/${collectionId}/${documentId}`,
+                  fields: { [fieldPath]: encodeFirestoreValue(amount) },
+                },
+                currentDocument: { exists: false },
+              },
+            ],
+          }),
+        },
+      );
+    }
+
+    return this.request<{ commitTime?: string }>(
+      `${this.databaseRoot}/documents:commit`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          writes: [
+            {
+              transform: {
+                document: existing.name,
+                fieldTransforms: [
+                  {
+                    fieldPath,
+                    increment: encodeFirestoreValue(amount),
+                  },
+                ],
+              },
+              currentDocument: { exists: true },
+            },
+          ],
+        }),
+      },
+    );
+  }
+
   async createDocument(
     collectionId: string,
     data: Record<string, unknown>,
     options: CreateDocumentOptions = {},
   ): Promise<{ id: string; commitTime?: string }> {
+    assertCollectionId(collectionId);
+
     const id = options.documentId ?? this.documentIdGenerator();
 
     if (!/^[A-Za-z0-9_-]{1,128}$/.test(id)) {
