@@ -1,8 +1,11 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Dog, Recycle, ClipboardList } from "lucide-react";
+import { LayoutDashboard, Dog, Recycle, ClipboardList, KeyRound } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
 import styles from "./AdminNav.module.css";
 
 export function AdminNav() {
+  const { user } = useAuth();
+
   return (
     <div className={styles.navContainer}>
       <div className={`container ${styles.navWrapper}`}>
@@ -38,6 +41,16 @@ export function AdminNav() {
           <ClipboardList size={20} />
           <span>Solicitações</span>
         </NavLink>
+
+        {user?.role === "developer" && (
+          <NavLink
+            to="/admin/system-keys"
+            className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
+          >
+            <KeyRound size={20} />
+            <span>Chaves (Dev)</span>
+          </NavLink>
+        )}
       </div>
     </div>
   );

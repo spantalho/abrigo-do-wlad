@@ -452,6 +452,35 @@ test("updateDocument uses an existence precondition and an update mask", async (
   });
 });
 
+test("updateDocument can guard security-sensitive writes with an update-time precondition", async () => {
+  let body: Record<string, unknown> | undefined;
+  const client = new FirestoreRestClient("test-project", {
+    fetcher: mockFetch((_url, init) => {
+      body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      return Response.json({ commitTime: "2026-08-21T00:00:01Z" });
+    }),
+    tokenProvider: async () => "test-token",
+  });
+  const name = "projects/test-project/databases/(default)/documents/system/keys";
+
+  await client.updateDocument(
+    name,
+    { active_key_id: "new-key" },
+    { expectedUpdateTime: "2026-08-21T00:00:00Z" },
+  );
+
+  assert.deepEqual(body, {
+    writes: [{
+      update: {
+        name,
+        fields: { active_key_id: { stringValue: "new-key" } },
+      },
+      updateMask: { fieldPaths: ["active_key_id"] },
+      currentDocument: { updateTime: "2026-08-21T00:00:00Z" },
+    }],
+  });
+});
+
 test("Firestore API errors retain their status and message", async () => {
   const client = new FirestoreRestClient("test-project", {
     fetcher: mockFetch(() =>

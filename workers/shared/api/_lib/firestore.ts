@@ -73,6 +73,7 @@ export interface DeleteDocumentsResult {
 
 export interface UpdateDocumentOptions {
   serverTimestampFields?: string[];
+  expectedUpdateTime?: string;
 }
 
 export interface FirestoreRestClientOptions {
@@ -719,7 +720,9 @@ export class FirestoreRestClient {
         fields: encodeDocumentFields(data),
       },
       updateMask: { fieldPaths },
-      currentDocument: { exists: true },
+      currentDocument: options.expectedUpdateTime
+        ? { updateTime: options.expectedUpdateTime }
+        : { exists: true },
       ...(updateTransforms.length > 0 ? { updateTransforms } : {}),
     };
 

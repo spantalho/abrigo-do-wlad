@@ -9,6 +9,7 @@ import EditRecycle from "./pages/EditRecycle";
 import NewDog from "./pages/NewDog";
 import NewRecycle from "./pages/NewRecycle";
 import RecycleDashboard from "./pages/RecycleDashboard";
+import SystemKeys from "./pages/SystemKeys";
 
 function ProtectedLayout() {
   const { user, loading, error } = useAuth();
@@ -28,6 +29,11 @@ function ProtectedLayout() {
   return <Outlet />;
 }
 
+function DeveloperLayout() {
+  const { user } = useAuth();
+  return user?.role === "developer" ? <Outlet /> : <Navigate to="/admin" replace />;
+}
+
 export default function AppRoutes() {
   return (
     <AuthProvider>
@@ -43,6 +49,9 @@ export default function AppRoutes() {
               <Route path="/admin/recycle/new" element={<NewRecycle />} />
               <Route path="/admin/recycle/edit/:id" element={<EditRecycle />} />
               <Route path="/admin/adoptions" element={<AdoptionsDashboard />} />
+              <Route element={<DeveloperLayout />}>
+                <Route path="/admin/system-keys" element={<SystemKeys />} />
+              </Route>
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/admin" replace />} />

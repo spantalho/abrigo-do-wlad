@@ -40,6 +40,27 @@ function decryptSystemKey(encryptedKeyString: string, env?: CloudflareEnv): stri
   return decryptedKey;
 }
 
+export function encryptSystemKey(
+  plainKey: string,
+  env?: CloudflareEnv,
+): string {
+  const masterKey = getEnvValue(env, "MASTER_KEY");
+  if (!masterKey) {
+    throw new Error("MASTER_KEY is not defined in environment variables.");
+  }
+  if (!plainKey) {
+    throw new TypeError("System encryption key cannot be empty.");
+  }
+
+  const iv = crypto.randomBytes(16);
+  const masterCipherKey = crypto.createHash("sha256").update(masterKey).digest();
+  const cipher = crypto.createCipheriv("aes-256-gcm", masterCipherKey, iv);
+  let encryptedKey = cipher.update(plainKey, "utf8", "hex");
+  encryptedKey += cipher.final("hex");
+
+  return `${iv.toString("hex")}:${cipher.getAuthTag().toString("hex")}:${encryptedKey}`;
+}
+
 async function loadEncryptionKeys(
   env?: CloudflareEnv,
 ): Promise<EncryptionKeyDocument> {

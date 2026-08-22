@@ -8,6 +8,12 @@ import {
 } from "../../../workers/shared/api/_lib/firestore";
 import type { AccessIdentity } from "./access";
 import { createSignedUpload, deleteCloudinaryImage } from "./cloudinary";
+import {
+  listSystemKeys,
+  rotateSystemKey,
+  type RotatedSystemKey,
+  type SystemKeyMetadata,
+} from "./system-keys";
 
 const MAX_BODY_BYTES = 256 * 1024;
 const MANAGED_COLLECTIONS = {
@@ -103,6 +109,22 @@ class ApiError extends Error {
     this.status = status;
   }
 }
+
+function requireDeveloper(identity: AccessIdentity): void {
+  if (identity.role !== "developer") {
+    throw new ApiError(403, "Developer access required.");
+  }
+}
+
+export interface AdminApiDependencies {
+  listSystemKeys(env: Env): Promise<SystemKeyMetadata[]>;
+  rotateSystemKey(env: Env, identity: AccessIdentity): Promise<RotatedSystemKey>;
+}
+
+const productionDependencies: AdminApiDependencies = {
+  listSystemKeys,
+  rotateSystemKey,
+};
 
 function numericDogId(value: string): number {
   if (!/^\d{1,16}$/.test(value)) throw new ApiError(400, "Invalid dog ID.");
@@ -285,9 +307,9 @@ export async function handleAdminApi(
   request: Request,
   env: Env,
   identity: AccessIdentity,
+  dependencies: AdminApiDependencies = productionDependencies,
 ): Promise<Response> {
   try {
-    void identity;
     assertSameOrigin(request);
     const url = new URL(request.url);
     const segments = url.pathname.split("/").filter(Boolean);
@@ -297,6 +319,16 @@ export async function handleAdminApi(
     }
     if (url.pathname === "/api/admin/adoptions" && request.method === "GET") {
       return jsonResponse(200, await listAdoptions(env));
+    }
+    if (url.pathname === "/api/admin/system-keys") {
+      requireDeveloper(identity);
+      if (request.method !== "GET") return methodNotAllowed(["GET"]);
+      return jsonResponse(200, await dependencies.listSystemKeys(env));
+    }
+    if (url.pathname === "/api/admin/system-keys/rotate") {
+      requireDeveloper(identity);
+      if (request.method !== "POST") return methodNotAllowed(["POST"]);
+      return jsonResponse(201, await dependencies.rotateSystemKey(env, identity));
     }
     if (segments[2] === "adoptions" && segments[4] === "status" && segments.length === 5) {
       if (request.method !== "PATCH") return methodNotAllowed(["PATCH"]);
