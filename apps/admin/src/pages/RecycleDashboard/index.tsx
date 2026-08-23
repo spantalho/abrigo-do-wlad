@@ -132,7 +132,7 @@ export default function RecycleDashboard() {
               <div key={point.id} className={styles.pointCard}>
                 <div className={styles.pointInfo}>
                   <div className={styles.pointHeader}>
-                    <span className={styles.zoneBadge}>{point.zone}</span>
+                    <Badge variant="secondary">{point.zone}</Badge>
                     <h3 className={styles.pointNeighborhood}>{point.neighborhood}</h3>
                   </div>
                   {point.name && <p className={styles.pointName}><strong>{point.name}</strong></p>}

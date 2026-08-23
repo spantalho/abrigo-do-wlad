@@ -103,16 +103,6 @@
   margin-bottom: 0.25rem;
 }
 
-.zoneBadge {
-  background-color: var(--warning-bg);
-  color: var(--warning-text);
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 0.25rem 0.6rem;
-  border-radius: var(--radius-sm);
-  text-transform: uppercase;
-}
-
 .pointNeighborhood {
   font-size: 1.1rem;
   color: var(--text-primary);

@@ -75,7 +75,7 @@
 }
 
 .adoptedIcon {
-  background-color: var(--accent-red);
+  background-color: var(--surface-card);
   color: var(--action);
 }
 
@@ -216,5 +216,11 @@
   .alertLink {
     width: 100%;
     justify-content: flex-end;
+  }
+
+  .metricSummary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
 }
