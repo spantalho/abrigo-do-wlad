@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Dog, Recycle, ClipboardList, KeyRound } from "lucide-react";
+import { LayoutDashboard, Dog, Recycle, ClipboardList, Settings2 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import styles from "./AdminNav.module.css";
 
@@ -44,11 +44,11 @@ export function AdminNav() {
 
         {user?.role === "developer" && (
           <NavLink
-            to="/admin/system-keys"
+            to="/admin/dev-options"
             className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
           >
-            <KeyRound size={20} />
-            <span>Chaves (Dev)</span>
+            <Settings2 size={20} />
+            <span>Opções de Dev</span>
           </NavLink>
         )}
       </div>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Dog, Recycle, ClipboardList, AlertTriangle, Clock, ArrowRight, HeartHandshake } from "lucide-react";
+import { Button } from "@jaci/ui/Button";
+import { Card, CardBody, CardContent, CardFooter } from "@jaci/ui/Card";
 import { apiRequest } from "../../services/api";
 
 import styles from "./Dashboard.module.css";
@@ -22,6 +24,7 @@ interface DashboardResponse {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [metrics, setMetrics] = useState({
     dogs: 0,
     recycles: 0,
@@ -58,49 +61,99 @@ export default function Dashboard() {
         <p style={{ color: "var(--text-muted)" }}>Carregando dados...</p>
       ) : (
         <div className={styles.metricsGrid}>
-          {/* Card Cachorros */}
-          <Link to="/admin/dog" className={styles.metricCard}>
-            <div className={styles.iconWrapper}>
-              <Dog size={32} />
-            </div>
-            <div className={styles.metricInfo}>
-              <span className={styles.metricValue}>{metrics.dogs}</span>
-              <span className={styles.metricLabel}>Cães Cadastrados</span>
-            </div>
-          </Link>
+          <Card variant="default" size="sm" className={styles.metricCard}>
+            <CardBody className={styles.metricBody}>
+              <div className={styles.metricSummary}>
+                <div className={styles.iconWrapper}><Dog size={28} /></div>
+                <CardContent className={styles.metricInfo}>
+                  <span className={styles.metricValue}>{metrics.dogs}</span>
+                  <span className={styles.metricLabel}>Cães cadastrados</span>
+                </CardContent>
+              </div>
+            </CardBody>
+            <CardFooter className={styles.metricFooter}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                rightIcon={<ArrowRight size={16} />}
+                onClick={() => navigate("/admin/dog")}
+              >
+                Ver cães
+              </Button>
+            </CardFooter>
+          </Card>
 
-          {/* Card Tampinhas */}
-          <Link to="/admin/recycle" className={styles.metricCard}>
-            <div className={styles.iconWrapper}>
-              <Recycle size={32} />
-            </div>
-            <div className={styles.metricInfo}>
-              <span className={styles.metricValue}>{metrics.recycles}</span>
-              <span className={styles.metricLabel}>Pontos de Coleta</span>
-            </div>
-          </Link>
+          <Card variant="default" size="sm" className={styles.metricCard}>
+            <CardBody className={styles.metricBody}>
+              <div className={styles.metricSummary}>
+                <div className={styles.iconWrapper}><Recycle size={28} /></div>
+                <CardContent className={styles.metricInfo}>
+                  <span className={styles.metricValue}>{metrics.recycles}</span>
+                  <span className={styles.metricLabel}>Pontos de coleta</span>
+                </CardContent>
+              </div>
+            </CardBody>
+            <CardFooter className={styles.metricFooter}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                rightIcon={<ArrowRight size={16} />}
+                onClick={() => navigate("/admin/recycle")}
+              >
+                Ver pontos
+              </Button>
+            </CardFooter>
+          </Card>
 
-          {/* Card Solicitações */}
-          <Link to="/admin/adoptions" className={styles.metricCard}>
-            <div className={styles.iconWrapper}>
-              <ClipboardList size={32} />
-            </div>
-            <div className={styles.metricInfo}>
-              <span className={styles.metricValue}>{metrics.adoptions}</span>
-              <span className={styles.metricLabel}>Solicitações de Adoção</span>
-            </div>
-          </Link>
+          <Card variant="default" size="sm" className={styles.metricCard}>
+            <CardBody className={styles.metricBody}>
+              <div className={styles.metricSummary}>
+                <div className={styles.iconWrapper}><ClipboardList size={28} /></div>
+                <CardContent className={styles.metricInfo}>
+                  <span className={styles.metricValue}>{metrics.adoptions}</span>
+                  <span className={styles.metricLabel}>Solicitações de adoção</span>
+                </CardContent>
+              </div>
+            </CardBody>
+            <CardFooter className={styles.metricFooter}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                rightIcon={<ArrowRight size={16} />}
+                onClick={() => navigate("/admin/adoptions")}
+              >
+                Ver solicitações
+              </Button>
+            </CardFooter>
+          </Card>
 
-          {/* Card Adotados pelo Site */}
-          <div className={styles.metricCard}>
-            <div className={styles.iconWrapper} style={{ backgroundColor: 'var(--accent-red)', color: 'var(--action)' }}>
-              <HeartHandshake size={32} />
-            </div>
-            <div className={styles.metricInfo}>
-              <span className={styles.metricValue}>{metrics.adoptionsViaSite}</span>
-              <span className={styles.metricLabel}>Adotados pelo Site</span>
-            </div>
-          </div>
+          <Card variant="default" size="sm" className={styles.metricCard}>
+            <CardBody className={styles.metricBody}>
+              <div className={styles.metricSummary}>
+                <div className={`${styles.iconWrapper} ${styles.adoptedIcon}`}>
+                  <HeartHandshake size={28} />
+                </div>
+                <CardContent className={styles.metricInfo}>
+                  <span className={styles.metricValue}>{metrics.adoptionsViaSite}</span>
+                  <span className={styles.metricLabel}>Adotados pelo site</span>
+                </CardContent>
+              </div>
+            </CardBody>
+            <CardFooter className={styles.metricFooter}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                rightIcon={<ArrowRight size={16} />}
+                onClick={() => navigate("/admin/adoptions")}
+              >
+                Acompanhar adoções
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
       )}
 

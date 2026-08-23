@@ -4,7 +4,16 @@
   padding: 2rem 1rem 4rem;
 }
 
-.topBar {
+.pageHeader {
+  margin-bottom: 2rem;
+}
+
+.optionSection {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.optionHeader {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -39,6 +48,21 @@
   line-height: 1.6;
 }
 
+.optionTitle {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.4rem;
+  line-height: 1.2;
+}
+
+.optionDescription {
+  max-width: 650px;
+  margin: 0.4rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
 .feedback:empty {
   display: none;
 }
@@ -64,17 +88,14 @@
 }
 
 .summary {
-  align-items: center;
   margin-bottom: 2rem;
 }
 
+.summaryBody {
+  width: 100%;
+}
+
 .summaryIcon {
-  display: grid;
-  width: 56px;
-  height: 56px;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: var(--radius);
   background: var(--surface-earth);
   color: var(--primary-hover);
 }
@@ -106,7 +127,7 @@
   font-size: 0.85rem;
 }
 
-.listSection h2 {
+.listSection h3 {
   margin: 0 0 1rem;
   color: var(--text-primary);
   font-size: 1.25rem;
@@ -169,12 +190,12 @@
 }
 
 @media (max-width: 700px) {
-  .topBar {
+  .optionHeader {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .topBar button {
+  .optionHeader button {
     width: 100%;
   }
 

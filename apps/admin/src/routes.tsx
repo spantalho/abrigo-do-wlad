@@ -10,7 +10,7 @@ import EditRecycle from "./pages/EditRecycle";
 import NewDog from "./pages/NewDog";
 import NewRecycle from "./pages/NewRecycle";
 import RecycleDashboard from "./pages/RecycleDashboard";
-import SystemKeys from "./pages/SystemKeys";
+import DeveloperOptions from "./pages/DeveloperOptions";
 import styles from "./routes.module.css";
 
 function RouteState({ title, message, tone = "neutral" }: {
@@ -62,7 +62,11 @@ export default function AppRoutes() {
               <Route path="/admin/recycle/edit/:id" element={<EditRecycle />} />
               <Route path="/admin/adoptions" element={<AdoptionsDashboard />} />
               <Route element={<DeveloperLayout />}>
-                <Route path="/admin/system-keys" element={<SystemKeys />} />
+                <Route path="/admin/dev-options" element={<DeveloperOptions />} />
+                <Route
+                  path="/admin/system-keys"
+                  element={<Navigate to="/admin/dev-options" replace />}
+                />
               </Route>
             </Route>
           </Route>
