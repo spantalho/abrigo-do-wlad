@@ -220,7 +220,14 @@
 
   .metricSummary {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 0.5rem;
+    text-align: center;
+  }
+
+  .metricInfo {
+    width: 100%;
+    align-items: center;
+    text-align: center;
   }
 }
