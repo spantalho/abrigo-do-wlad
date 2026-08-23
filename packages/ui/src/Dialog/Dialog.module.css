@@ -44,9 +44,10 @@
 
 .header {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: baseline;
-  gap: 1rem;
+  align-items: stretch;
+  gap: 0;
 }
 
 .title {
@@ -79,7 +80,7 @@
   width: 36px;
   height: 36px;
   padding: 0;
-  border: 1px solid var(--control-border);
+  border: 0;
   border-radius: 100%;
   display: inline-flex;
   align-items: center;
@@ -147,7 +148,6 @@
 /* media query */
 @media (max-width: 768px) {
   .header {
-    flex-direction: column-reverse;
     align-items: center;
   }
 
