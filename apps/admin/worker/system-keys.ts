@@ -63,24 +63,24 @@ export async function rotateSystemKey(
 ): Promise<RotatedSystemKey> {
   const firestore = createFirestoreClient(env);
   const document = await firestore.getDocument("system/keys");
-  if (!document) {
-    throw new Error("System encryption key document was not found.");
-  }
-
-  const current = keyDocumentSchema.parse(document.data);
-  const nextVersionNumber = Object.values(current.keys).reduce((highest, key) => {
-    const versionNumber = Number(key.version.slice(1));
-    return Math.max(highest, versionNumber);
-  }, 0) + 1;
+  const current = document ? keyDocumentSchema.parse(document.data) : undefined;
+  const nextVersionNumber = current
+    ? Object.values(current.keys).reduce((highest, key) => {
+        const versionNumber = Number(key.version.slice(1));
+        return Math.max(highest, versionNumber);
+      }, 0) + 1
+    : 1;
   const id = crypto.randomUUID();
   const version = `v${nextVersionNumber}`;
   const encryptedKey = encryptSystemKey(crypto.randomBytes(32).toString("hex"), env);
-  const keys = Object.fromEntries(
-    Object.entries(current.keys).map(([keyId, key]) => [
-      keyId,
-      { ...key, active: false },
-    ]),
-  );
+  const keys = current
+    ? Object.fromEntries(
+        Object.entries(current.keys).map(([keyId, key]) => [
+          keyId,
+          { ...key, active: false },
+        ]),
+      )
+    : {};
 
   keys[id] = {
     id,
@@ -92,17 +92,26 @@ export async function rotateSystemKey(
     active: true,
   };
 
-  await firestore.updateDocument(
-    document.name,
-    { active_key_id: id, keys },
-    { expectedUpdateTime: document.updateTime },
-  );
+  if (document) {
+    await firestore.updateDocument(
+      document.name,
+      { active_key_id: id, keys },
+      { expectedUpdateTime: document.updateTime },
+    );
+  } else {
+    await firestore.createDocument(
+      "system",
+      { active_key_id: id, keys },
+      { documentId: "keys" },
+    );
+  }
 
   console.info(JSON.stringify({
     event: "admin.system-key.rotated",
     actor: identity.email,
     keyId: id,
     version,
+    initialized: !document,
   }));
 
   return { id, version };
