@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Dog, Calendar, Phone, Eye, Inbox, Printer, Check, XCircle, MessageCircle } from "lucide-react";
 import { Button } from "@jaci/ui/Button";
 import { Badge } from "@jaci/ui/Badge";
+import { Card, CardBody, CardContent, CardFooter } from "@jaci/ui/Card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@jaci/ui/Dialog";
 import { ScrollArea } from "@jaci/ui/ScrollArea";
 import { getAdoptionApplications, updateAdoptionStatus } from "../../services/adoptions";
@@ -140,45 +141,47 @@ export default function AdoptionsDashboard() {
       ) : (
         <div className={styles.listContainer}>
           {requests.map((req) => (
-            <div key={req.id} className={styles.card}>
-              <div className={styles.cardInfo}>
-                <div className={styles.applicantName}>
-                  {req.nome_adotante || "Candidato Sem Nome"}
-                  {getStatusBadge(req.status)}
-                </div>
-                <div className={styles.detailsRow}>
-                  <div className={styles.detailItem}>
-                    <Dog size={16} />
-                    <span>{req.animal_especifico || "Qualquer cãozinho"}</span>
+            <Card key={req.id} size="sm" className={styles.card}>
+              <CardBody className={styles.cardBody}>
+                <CardContent className={styles.cardInfo}>
+                  <div className={styles.applicantName}>
+                    {req.nome_adotante || "Candidato Sem Nome"}
+                    {getStatusBadge(req.status)}
                   </div>
-
-                  {/* Link para o whatsapp no telefone */}
-                  {req.telefone ? (
-                    <a
-                      href={getWhatsAppLink(req.telefone, req.nome_adotante)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`${styles.detailItem} ${styles.wppLink}`}
-                      title="Chamar no WhatsApp"
-                    >
-                      <MessageCircle size={16} />
-                      <span>{req.telefone}</span>
-                    </a>
-                  ) : (
+                  <div className={styles.detailsRow}>
                     <div className={styles.detailItem}>
-                      <Phone size={16} />
-                      <span>Sem telefone</span>
+                      <Dog size={16} />
+                      <span>{req.animal_especifico || "Qualquer cãozinho"}</span>
                     </div>
-                  )}
 
-                  <div className={styles.detailItem}>
-                    <Calendar size={16} />
-                    <span>{formatDate(req.submittedAt)}</span>
+                    {/* Link para o whatsapp no telefone */}
+                    {req.telefone ? (
+                      <a
+                        href={getWhatsAppLink(req.telefone, req.nome_adotante)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`${styles.detailItem} ${styles.wppLink}`}
+                        title="Chamar no WhatsApp"
+                      >
+                        <MessageCircle size={16} />
+                        <span>{req.telefone}</span>
+                      </a>
+                    ) : (
+                      <div className={styles.detailItem}>
+                        <Phone size={16} />
+                        <span>Sem telefone</span>
+                      </div>
+                    )}
+
+                    <div className={styles.detailItem}>
+                      <Calendar size={16} />
+                      <span>{formatDate(req.submittedAt)}</span>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </CardBody>
 
-              <div className={styles.cardActions}>
+              <CardFooter className={styles.cardActions}>
                 {req.status === 'pending' && (
                   <>
                     <Button
@@ -203,8 +206,8 @@ export default function AdoptionsDashboard() {
                 <Button variant="secondary" size="sm" className={styles.viewButton} onClick={() => setSelectedReq(req)}>
                   <Eye size={18} /> Ver Ficha
                 </Button>
-              </div>
-            </div>
+              </CardFooter>
+            </Card>
           ))}
         </div>
       )}
