@@ -86,7 +86,7 @@
 .inputGroup textarea {
   width: 100%;
   padding: 0.875rem 1rem;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-sm);
   background-color: var(--bg-body);
   font-size: 1rem;
@@ -104,13 +104,20 @@
   transform: translateY(-1px);
 }
 
+.inputGroup input:focus-visible,
+.inputGroup select:focus-visible,
+.inputGroup textarea:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .inputGroup textarea {
   min-height: 120px;
   resize: vertical;
 }
 
 .dropzone {
-  border: 2px dashed var(--border);
+  border: 2px dashed var(--control-border);
   border-radius: var(--radius);
   padding: 3rem 1rem;
   background-color: var(--bg-body);
@@ -158,7 +165,7 @@
 
 .tagButton {
   background: var(--surface-elevated);
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--control-border);
   padding: 0.5rem 1rem;
   border-radius: var(--radius-xl);
   font-size: 0.9rem;
@@ -214,7 +221,7 @@
   justify-content: center;
   color: var(--error);
   box-shadow: var(--shadow-md);
-  border: none;
+  border: 1px solid var(--error);
   cursor: pointer;
   z-index: 10;
 }

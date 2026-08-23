@@ -6,10 +6,8 @@ export function Footer() {
   return (
     <footer className={styles.footer}>
       <div className={`container ${styles.content}`}>
-
         <div className={styles.infoGroup}>
           <span>&copy; {new Date().getFullYear()} Abrigo do Wlad</span>
-          <span className={styles.divider}>•</span>
           <a
             href={PUBLIC_APP_URL}
             target="_blank"
@@ -33,7 +31,7 @@ export function Footer() {
             Alan <Github size={14} />
           </a>
 
-          <span>&</span>
+          <span>e</span>
 
           <a
             href="https://github.com/spantalho"
@@ -44,7 +42,6 @@ export function Footer() {
             Luis <Github size={14} />
           </a>
         </div>
-
       </div>
     </footer>
   );

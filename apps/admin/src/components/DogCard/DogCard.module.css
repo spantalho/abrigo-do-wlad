@@ -114,7 +114,7 @@
   flex: 0 0 auto;
   width: 42px;
   color: var(--error);
-  border-color: var(--accent-red);
+  border-color: var(--error);
   background: var(--accent-red);
 }
 

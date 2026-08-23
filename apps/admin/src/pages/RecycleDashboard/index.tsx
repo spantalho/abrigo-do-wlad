@@ -72,14 +72,20 @@ export default function RecycleDashboard() {
 
   return (
     <div className="container" style={{ paddingTop: "2rem", paddingBottom: "4rem" }}>
+      <header className={styles.pageHeader}>
+        <h1 className={styles.title}>Pontos de Coleta</h1>
+        <p className={styles.subtitle}>
+          Gerencie os locais que recebem tampinhas em apoio ao abrigo.
+        </p>
+      </header>
 
-      {/* Top Bar: Busca e Botão Adicionar */}
       <div className={styles.topBar}>
 
         <div className={styles.searchWrapper}>
           <Search className={styles.searchIcon} size={20} />
           <Input
             type="text"
+            aria-label="Buscar ponto de coleta"
             placeholder="Buscar por zona, bairro ou nome..."
             value={searchTerm}
             onChange={(e) => {

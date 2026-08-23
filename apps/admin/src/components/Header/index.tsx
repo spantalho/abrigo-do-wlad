@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { LogOut, ShieldCheck } from "lucide-react";
 import { Badge } from "@jaci/ui/Badge";
 import { Button } from "@jaci/ui/Button";
@@ -8,15 +8,18 @@ import logoImg from "../../assets/logo1.png";
 
 export function Header() {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const userName = user?.email || "Usuário";
 
   return (
     <header className={styles.header}>
       <div className={`container ${styles.headerContent}`}>
 
-        {/* Lado Esquerdo: Logo e Título */}
-        <div className={styles.brandArea} onClick={() => navigate("/admin")}>
-          <img src={logoImg} alt="Logo Abrigo" className={styles.logo} />
+        <Link
+          to="/admin"
+          className={styles.brandArea}
+          aria-label="Ir para a visão geral do painel"
+        >
+          <img src={logoImg} alt="Abrigo do Wlad" className={styles.logo} />
           <div className={styles.divider}></div>
           <Badge
             className={styles.adminTag}
@@ -26,15 +29,12 @@ export function Header() {
           >
             Painel Admin
           </Badge>
-        </div>
+        </Link>
 
-        {/* Lado Direito: Usuário e Logout */}
         <div className={styles.userArea}>
-          <div className={styles.userInfo}>
+          <div className={styles.userInfo} title={userName}>
             <span className={styles.welcomeLabel}>Olá,</span>
-            <span className={styles.userName}>
-              {user?.email || "Usuário"}
-            </span>
+            <span className={styles.userName}>{userName}</span>
           </div>
 
           <Button

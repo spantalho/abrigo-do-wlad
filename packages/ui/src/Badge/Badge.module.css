@@ -47,7 +47,7 @@
 .outline {
   background-color: var(--btn-ghost-bg);
   color: var(--text-primary);
-  border-color: var(--border);
+  border-color: var(--control-border);
 }
 
 .danger {

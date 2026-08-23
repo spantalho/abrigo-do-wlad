@@ -12,7 +12,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
   if (totalPages <= 1) return null;
 
   return (
-    <div className={styles.container}>
+    <nav className={styles.container} aria-label="Paginação">
       <Button
         type="button"
         variant="outline"
@@ -40,6 +40,6 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
       >
         <ChevronRight size={20} />
       </Button>
-    </div>
+    </nav>
   );
 }

@@ -1,7 +1,7 @@
 .control {
   width: 100%;
   padding: 0.75rem 0.9rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-sm);
   outline: none;
   background: var(--surface-elevated);
@@ -17,6 +17,11 @@
 .control:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.control:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .control:disabled {

@@ -9,9 +9,9 @@ export function AdminLayout() {
       <Header />
       <AdminNav />
 
-      <div style={{ flex: 1 }}>
+      <main style={{ flex: 1 }}>
         <Outlet />
-      </div>
+      </main>
 
       <Footer />
     </div>

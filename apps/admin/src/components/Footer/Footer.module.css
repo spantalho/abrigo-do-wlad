@@ -1,10 +1,10 @@
 .footer {
   margin-top: auto;
-  padding-block: 1.5rem;
-  border-top: 1px solid var(--border-light);
-  background-color: var(--footer-bg);
-  color: var(--text-muted);
-  font-size: 0.82rem;
+  padding-block: 1.25rem;
+  border-top: 1px solid var(--border);
+  background-color: var(--surface-elevated);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
 }
 
 .content,
@@ -26,10 +26,6 @@
   gap: 0.75rem;
 }
 
-.divider {
-  color: var(--border);
-}
-
 .portalLink,
 .devLink {
   gap: 0.3rem;
@@ -38,12 +34,16 @@
 }
 
 .portalLink {
-  color: var(--secondary);
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--border);
+  color: var(--primary);
 }
 
 .portalLink:hover,
 .devLink:hover {
-  color: var(--primary);
+  color: var(--primary-hover);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
 }
 
 .creditsGroup {
@@ -51,15 +51,7 @@
 }
 
 .devLink {
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--radius-xl);
-  background-color: var(--surface-card);
-  color: var(--text-secondary);
-}
-
-.devLink:hover {
-  background-color: var(--surface-coral);
-  transform: translateY(-1px);
+  color: var(--primary);
 }
 
 @media (max-width: 600px) {
@@ -72,7 +64,13 @@
     text-align: center;
   }
 
-  .divider {
-    display: none;
+  .portalLink {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .creditsGroup {
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }

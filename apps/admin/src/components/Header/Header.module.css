@@ -45,7 +45,7 @@
 }
 
 .adminTag {
-  border-color: var(--border) !important;
+  border-color: var(--control-border) !important;
   background-color: var(--surface-water) !important;
   color: var(--secondary) !important;
   font-weight: 700;
@@ -87,7 +87,7 @@
   width: 42px;
   height: 42px;
   flex: 0 0 auto;
-  border-color: var(--accent-red) !important;
+  border-color: var(--error) !important;
   border-radius: var(--radius-lg) !important;
   background-color: var(--accent-red) !important;
   color: var(--error) !important;
@@ -113,13 +113,8 @@
   }
 
   .divider,
-  .welcomeLabel {
+  .userInfo {
     display: none;
-  }
-
-  .userName {
-    max-width: 120px;
-    font-size: 0.78rem;
   }
 
   .adminTag {

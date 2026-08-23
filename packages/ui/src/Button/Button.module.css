@@ -32,48 +32,56 @@
 
 /* Variants */
 .primary {
+  border-color: var(--action);
   background-color: var(--btn-primary);
   color: var(--action);
 }
 
 .primary:hover:not(:disabled) {
+  border-color: var(--action);
   background-color: var(--btn-primary-hover);
   color: var(--text-on-action);
 }
 
 .secondary {
+  border-color: var(--secondary);
   background-color: var(--btn-secondary);
   color: var(--secondary);
 }
 
 .secondary:hover:not(:disabled) {
+  border-color: var(--secondary);
   background-color: var(--btn-secondary-hover);
   color: var(--text-on-secondary);
 }
 
 .success {
+  border-color: var(--success);
   background-color: var(--btn-success);
   color: var(--success);
 }
 
 .success:hover:not(:disabled) {
+  border-color: var(--success);
   background-color: var(--btn-success-hover);
   color: var(--text-on-success);
 }
 
 .danger {
+  border-color: var(--error);
   background-color: var(--accent-red);
   color: var(--error);
 }
 
 .danger:hover:not(:disabled) {
+  border-color: var(--error);
   background-color: var(--error);
   color: var(--text-on-action);
 }
 
 .outline {
   color: var(--text-primary);
-  border-color: var(--border);
+  border-color: var(--control-border);
   background-color: var(--btn-outline-bg);
 }
 

@@ -7,7 +7,7 @@ export function AdminNav() {
   const { user } = useAuth();
 
   return (
-    <div className={styles.navContainer}>
+    <nav className={styles.navContainer} aria-label="Navegação administrativa">
       <div className={`container ${styles.navWrapper}`}>
         <NavLink
           to="/admin"
@@ -52,6 +52,6 @@ export function AdminNav() {
           </NavLink>
         )}
       </div>
-    </div>
+    </nav>
   );
 }

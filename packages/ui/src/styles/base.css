@@ -48,8 +48,9 @@ img {
 }
 
 :focus-visible {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 2px;
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px var(--focus-ring);
 }
 
 .text-muted {

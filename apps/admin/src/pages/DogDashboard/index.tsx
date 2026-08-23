@@ -90,6 +90,12 @@ export default function DogDashboard() {
 
   return (
     <div className="container" style={{ paddingTop: "2rem", paddingBottom: "4rem" }}>
+      <header className={styles.pageHeader}>
+        <h1 className={styles.title}>Cachorros</h1>
+        <p className={styles.subtitle}>
+          Consulte, cadastre e atualize os animais disponíveis para adoção.
+        </p>
+      </header>
 
       <div className={styles.topBar}>
 
@@ -97,6 +103,7 @@ export default function DogDashboard() {
           <Search className={styles.searchIcon} size={20} />
           <Input
             type="text"
+            aria-label="Buscar cachorro por nome"
             placeholder="Buscar por nome..."
             value={searchTerm}
             onChange={(e) => {

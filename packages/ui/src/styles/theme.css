@@ -36,6 +36,7 @@
   --surface-coral: #fde6df;
   --border: #bdcdcd;
   --border-light: #d7e2e1;
+  --control-border: var(--text-muted);
   --skeleton: #dce7e6;
 
   /* Contextual surfaces */

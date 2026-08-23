@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: space-between;
   border-radius: var(--radius);
-  border: 1px solid transparent;
+  border: 1px solid var(--control-border);
   /* box-shadow: var(--shadow-sm); */
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
