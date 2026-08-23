@@ -1,7 +1,6 @@
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { Card, CardBody, CardContent, CardHeader, CardTitle } from "@jaci/ui/Card";
 import { AdminLayout } from "./components/AdminLayout";
-import { ADMIN_ADOPTION_WORKFLOW_ENABLED } from "./config";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import AdoptionsDashboard from "./pages/AdoptionsDashboard";
 import Dashboard from "./pages/Dashboard";
@@ -61,9 +60,7 @@ export default function AppRoutes() {
               <Route path="/admin/recycle" element={<RecycleDashboard />} />
               <Route path="/admin/recycle/new" element={<NewRecycle />} />
               <Route path="/admin/recycle/edit/:id" element={<EditRecycle />} />
-              {ADMIN_ADOPTION_WORKFLOW_ENABLED && (
-                <Route path="/admin/adoptions" element={<AdoptionsDashboard />} />
-              )}
+              <Route path="/admin/adoptions" element={<AdoptionsDashboard />} />
               <Route element={<DeveloperLayout />}>
                 <Route path="/admin/dev-options" element={<DeveloperOptions />} />
                 <Route

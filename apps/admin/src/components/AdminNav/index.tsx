@@ -1,6 +1,5 @@
 import { NavLink } from "react-router-dom";
 import { LayoutDashboard, Dog, Recycle, ClipboardList, Settings2 } from "lucide-react";
-import { ADMIN_ADOPTION_WORKFLOW_ENABLED } from "../../config";
 import { useAuth } from "../../contexts/AuthContext";
 import styles from "./AdminNav.module.css";
 
@@ -35,15 +34,13 @@ export function AdminNav() {
           <span>Pontos de Coleta</span>
         </NavLink>
 
-        {ADMIN_ADOPTION_WORKFLOW_ENABLED && (
-          <NavLink
-            to="/admin/adoptions"
-            className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
-          >
-            <ClipboardList size={20} />
-            <span>Solicitações</span>
-          </NavLink>
-        )}
+        <NavLink
+          to="/admin/adoptions"
+          className={({ isActive }) => isActive ? `${styles.navItem} ${styles.active}` : styles.navItem}
+        >
+          <ClipboardList size={20} />
+          <span>Solicitações</span>
+        </NavLink>
 
         {user?.role === "developer" && (
           <NavLink
