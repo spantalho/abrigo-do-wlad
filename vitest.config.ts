@@ -18,6 +18,7 @@ export default defineConfig({
           environment: "node",
           include: [
             "apps/public/src/**/*.test.ts",
+            "apps/admin/src/**/*.test.ts",
             "apps/admin/worker/**/*.test.ts",
             "workers/**/*.test.ts",
           ],

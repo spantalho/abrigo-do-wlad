@@ -112,7 +112,11 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
 
     } catch (error: unknown) {
       console.error(error);
-      setErrorInfo({ show: true, message: "Erro ao salvar os dados do cachorro. Verifique sua conexão." });
+      const message =
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : "Erro ao salvar os dados do cachorro. Verifique sua conexão.";
+      setErrorInfo({ show: true, message });
     } finally {
       setIsSubmitting(false);
       setUploadProgress("");

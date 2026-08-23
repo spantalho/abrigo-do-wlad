@@ -8,6 +8,13 @@ interface SignedUpload {
   timestamp: number;
 }
 
+interface CloudinaryUploadResponse {
+  error?: {
+    message?: unknown;
+  };
+  secure_url?: unknown;
+}
+
 export async function uploadImageToCloudinary(file: File): Promise<string> {
   const signed = await apiRequest<SignedUpload>("/api/admin/media/sign-upload", {
     method: "POST",
@@ -22,9 +29,19 @@ export async function uploadImageToCloudinary(file: File): Promise<string> {
     `https://api.cloudinary.com/v1_1/${encodeURIComponent(signed.cloudName)}/image/upload`,
     { method: "POST", body: formData },
   );
-  const payload = (await response.json()) as { secure_url?: unknown };
+  let payload: CloudinaryUploadResponse;
+  try {
+    payload = (await response.json()) as CloudinaryUploadResponse;
+  } catch {
+    throw new Error(`Erro no upload da imagem (HTTP ${response.status}).`);
+  }
   if (!response.ok || typeof payload.secure_url !== "string") {
-    throw new Error("Erro no upload da imagem.");
+    const message = payload.error?.message;
+    throw new Error(
+      typeof message === "string" && message.trim()
+        ? message
+        : "Erro no upload da imagem.",
+    );
   }
   return payload.secure_url;
 }
