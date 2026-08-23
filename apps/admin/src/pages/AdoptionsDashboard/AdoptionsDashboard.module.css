@@ -141,20 +141,22 @@
 .modalContainer {
   width: min(95vw, 800px);
   max-width: 800px;
+  height: min(90vh, 900px);
   max-height: 90vh;
   padding: 0;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .modalHeader {
-  position: sticky;
-  top: 0;
+  position: relative;
+  flex: 0 0 auto;
   background: var(--surface-elevated);
-  padding: 1.5rem;
+  padding: 1.5rem 4.75rem 1.5rem 1.5rem;
   border-bottom: 1px solid var(--border-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   z-index: 10;
   border-radius: var(--radius) var(--radius) 0 0;
 }
@@ -168,6 +170,7 @@
 .modalActions {
   display: flex;
   gap: 1rem;
+  margin-left: auto;
 }
 
 .printBtn {
@@ -181,6 +184,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  white-space: nowrap;
 }
 
 .closeBtn {
@@ -194,6 +198,14 @@
   justify-content: center;
   cursor: pointer;
   color: var(--text-secondary);
+}
+
+.modalScrollArea {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  border: none;
+  border-radius: 0 0 var(--radius) var(--radius);
 }
 
 .modalBody {
@@ -262,10 +274,21 @@
   }
 
   .modalContainer {
+    height: auto;
     max-width: 100%;
     max-height: none;
     box-shadow: none;
     overflow: visible;
+  }
+
+  .modalScrollArea,
+  .modalScrollArea :global([data-radix-scroll-area-viewport]) {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .modalScrollArea :global([data-orientation]) {
+    display: none !important;
   }
 
   .noPrint {
@@ -295,4 +318,7 @@
   .cardActions { width: 100%; flex-direction: column; }
   .actionBtn, .viewButton { width: 100%; justify-content: center; }
   .dataGrid { grid-template-columns: 1fr; }
+  .modalHeader { align-items: flex-start; flex-direction: column; }
+  .modalActions { width: 100%; margin-left: 0; }
+  .printBtn { width: 100%; justify-content: center; }
 }

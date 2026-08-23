@@ -3,6 +3,7 @@ import { Dog, Calendar, Phone, Eye, Inbox, Printer, Check, XCircle, MessageCircl
 import { Button } from "@jaci/ui/Button";
 import { Badge } from "@jaci/ui/Badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@jaci/ui/Dialog";
+import { ScrollArea } from "@jaci/ui/ScrollArea";
 import { getAdoptionApplications, updateAdoptionStatus } from "../../services/adoptions";
 import { ConfirmModal } from "../../components/ConfirmModal";
 import { SuccessModal } from "../../components/SuccessModal";
@@ -223,112 +224,114 @@ export default function AdoptionsDashboard() {
               </div>
             </div>
 
-            <div className={styles.modalBody}>
-              <div style={{ display: 'none' }} className={styles.printArea}>
-                <h1 style={{ marginBottom: '5px' }}>Abrigo do Wlad - Solicitação de Adoção</h1>
-                <p><strong>Data de Envio:</strong> {formatDate(selectedReq.submittedAt)}</p>
-                <hr style={{ margin: '20px 0' }} />
-              </div>
+            <ScrollArea className={styles.modalScrollArea} showScrollShadows>
+              <div className={styles.modalBody}>
+                <div style={{ display: 'none' }} className={styles.printArea}>
+                  <h1 style={{ marginBottom: '5px' }}>Abrigo do Wlad - Solicitação de Adoção</h1>
+                  <p><strong>Data de Envio:</strong> {formatDate(selectedReq.submittedAt)}</p>
+                  <hr style={{ margin: '20px 0' }} />
+                </div>
 
-              <h3 className={styles.sectionTitle}>1. Dados Pessoais</h3>
-              <div className={styles.dataGrid}>
-                <DataItem label="Nome Completo" value={selectedReq.nome_adotante} />
-                <DataItem label="Idade" value={selectedReq.idade} />
-                <DataItem label="Estado Civil" value={selectedReq.estado_civil} />
-                <DataItem label="Profissão" value={selectedReq.profissao} />
-                <DataItem label="Empresa" value={selectedReq.empresa} />
-                <DataItem label="Telefone" value={selectedReq.telefone} />
-                <DataItem label="E-mail" value={selectedReq.email} />
-                <DataItem label="Redes Sociais" value={selectedReq.redes_sociais} />
-                <DataItem label="Endereço Completo" value={selectedReq.endereco} />
-              </div>
+                <h3 className={styles.sectionTitle}>1. Dados Pessoais</h3>
+                <div className={styles.dataGrid}>
+                  <DataItem label="Nome Completo" value={selectedReq.nome_adotante} />
+                  <DataItem label="Idade" value={selectedReq.idade} />
+                  <DataItem label="Estado Civil" value={selectedReq.estado_civil} />
+                  <DataItem label="Profissão" value={selectedReq.profissao} />
+                  <DataItem label="Empresa" value={selectedReq.empresa} />
+                  <DataItem label="Telefone" value={selectedReq.telefone} />
+                  <DataItem label="E-mail" value={selectedReq.email} />
+                  <DataItem label="Redes Sociais" value={selectedReq.redes_sociais} />
+                  <DataItem label="Endereço Completo" value={selectedReq.endereco} />
+                </div>
 
-              <h3 className={styles.sectionTitle}>2. Família e Moradia</h3>
-              <div className={styles.dataGrid}>
-                <DataItem label="Qtd. Adultos" value={selectedReq.qtd_adultos} />
-                <DataItem label="Crianças/Visitas" value={selectedReq.criancas} />
-                <DataItem label="Renda Mensal" value={selectedReq.renda_mensal} />
-                <DataItem label="Todos de Acordo?" value={selectedReq.acordo} />
-                <DataItem label="Alergias na família?" value={selectedReq.alergia} />
-              </div>
+                <h3 className={styles.sectionTitle}>2. Família e Moradia</h3>
+                <div className={styles.dataGrid}>
+                  <DataItem label="Qtd. Adultos" value={selectedReq.qtd_adultos} />
+                  <DataItem label="Crianças/Visitas" value={selectedReq.criancas} />
+                  <DataItem label="Renda Mensal" value={selectedReq.renda_mensal} />
+                  <DataItem label="Todos de Acordo?" value={selectedReq.acordo} />
+                  <DataItem label="Alergias na família?" value={selectedReq.alergia} />
+                </div>
 
-              <h3 className={styles.sectionTitle}>3. Informações da Residência</h3>
-              <div className={styles.dataGrid}>
-                <DataItem label="Tipo de Moradia" value={selectedReq.tipo_moradia} />
-                <DataItem label="Detalhes Moradia" value={selectedReq.detalhes_moradia} />
-                <DataItem label="Proprietário Permite?" value={selectedReq.proprietario_permite} />
-                <DataItem label="Quem mora junto?" value={selectedReq.moradores} />
-                <DataItem label="Onde irá dormir?" value={selectedReq.dormir} />
-                <DataItem label="Acesso aos Cômodos" value={selectedReq.acesso} />
-                <DataItem label="Áreas p/ frequentar" value={selectedReq.areas_frequentar} />
-                <DataItem label="Períodos de acesso" value={selectedReq.periodos} />
-              </div>
+                <h3 className={styles.sectionTitle}>3. Informações da Residência</h3>
+                <div className={styles.dataGrid}>
+                  <DataItem label="Tipo de Moradia" value={selectedReq.tipo_moradia} />
+                  <DataItem label="Detalhes Moradia" value={selectedReq.detalhes_moradia} />
+                  <DataItem label="Proprietário Permite?" value={selectedReq.proprietario_permite} />
+                  <DataItem label="Quem mora junto?" value={selectedReq.moradores} />
+                  <DataItem label="Onde irá dormir?" value={selectedReq.dormir} />
+                  <DataItem label="Acesso aos Cômodos" value={selectedReq.acesso} />
+                  <DataItem label="Áreas p/ frequentar" value={selectedReq.areas_frequentar} />
+                  <DataItem label="Períodos de acesso" value={selectedReq.periodos} />
+                </div>
 
-              <h3 className={styles.sectionTitle}>4. Perfil da Adoção</h3>
-              <div className={styles.dataGrid}>
-                <DataItem label="Motivo da Adoção" value={selectedReq.motivo} />
-                <DataItem label="Animal Específico" value={selectedReq.animal_especifico} />
-                <DataItem label="Porte Desejado" value={selectedReq.porte} />
-                <DataItem label="Sexo Desejado" value={selectedReq.sexo} />
-                <DataItem label="Idade Desejada" value={selectedReq.idade_animal} />
-                <DataItem label="Personalidade" value={selectedReq.personalidade} />
-                <DataItem label="Atividade Principal" value={selectedReq.atividade} />
-              </div>
+                <h3 className={styles.sectionTitle}>4. Perfil da Adoção</h3>
+                <div className={styles.dataGrid}>
+                  <DataItem label="Motivo da Adoção" value={selectedReq.motivo} />
+                  <DataItem label="Animal Específico" value={selectedReq.animal_especifico} />
+                  <DataItem label="Porte Desejado" value={selectedReq.porte} />
+                  <DataItem label="Sexo Desejado" value={selectedReq.sexo} />
+                  <DataItem label="Idade Desejada" value={selectedReq.idade_animal} />
+                  <DataItem label="Personalidade" value={selectedReq.personalidade} />
+                  <DataItem label="Atividade Principal" value={selectedReq.atividade} />
+                </div>
 
-              <h3 className={styles.sectionTitle}>5. Rotina e Responsabilidades</h3>
-              <div className={styles.dataGrid}>
-                <DataItem label="Responsável Principal" value={selectedReq.responsavel} />
-                <DataItem label="Tempo Sozinho" value={selectedReq.horas_sozinho} />
-                <DataItem label="Rotina de Passeios" value={selectedReq.passeios} />
-                <DataItem label="Possui Carro?" value={selectedReq.carro} />
-                <DataItem label="Previsão de Gasto Mensal" value={selectedReq.gasto_mensal} />
-                <DataItem label="Contrataria Adestrador?" value={selectedReq.adestrador} />
-                <DataItem label="Concorda com Coleira/Placa?" value={selectedReq.coleira} />
-                <DataItem label="Vacinação/Vermífugo?" value={selectedReq.vacinas} />
-              </div>
+                <h3 className={styles.sectionTitle}>5. Rotina e Responsabilidades</h3>
+                <div className={styles.dataGrid}>
+                  <DataItem label="Responsável Principal" value={selectedReq.responsavel} />
+                  <DataItem label="Tempo Sozinho" value={selectedReq.horas_sozinho} />
+                  <DataItem label="Rotina de Passeios" value={selectedReq.passeios} />
+                  <DataItem label="Possui Carro?" value={selectedReq.carro} />
+                  <DataItem label="Previsão de Gasto Mensal" value={selectedReq.gasto_mensal} />
+                  <DataItem label="Contrataria Adestrador?" value={selectedReq.adestrador} />
+                  <DataItem label="Concorda com Coleira/Placa?" value={selectedReq.coleira} />
+                  <DataItem label="Vacinação/Vermífugo?" value={selectedReq.vacinas} />
+                </div>
 
-              <h3 className={styles.sectionTitle}>6. Histórico Animal e Veterinário</h3>
-              <div className={styles.dataGrid}>
-                <DataItem label="Tem outros animais?" value={selectedReq.outros_animais} />
-                <DataItem label="Estão castrados?" value={selectedReq.castrados} />
-                <DataItem label="Já teve animais antes?" value={selectedReq.ja_teve} />
-                <DataItem label="Destino dos antigos" value={selectedReq.destino_antigos} />
-                <DataItem label="Veterinário/Clínica" value={selectedReq.veterinario} />
-                <DataItem label="Emergência Financeira Vet." value={selectedReq.financeiro_vet} />
-                <DataItem label="Ração pretendida" value={selectedReq.racao} />
-              </div>
+                <h3 className={styles.sectionTitle}>6. Histórico Animal e Veterinário</h3>
+                <div className={styles.dataGrid}>
+                  <DataItem label="Tem outros animais?" value={selectedReq.outros_animais} />
+                  <DataItem label="Estão castrados?" value={selectedReq.castrados} />
+                  <DataItem label="Já teve animais antes?" value={selectedReq.ja_teve} />
+                  <DataItem label="Destino dos antigos" value={selectedReq.destino_antigos} />
+                  <DataItem label="Veterinário/Clínica" value={selectedReq.veterinario} />
+                  <DataItem label="Emergência Financeira Vet." value={selectedReq.financeiro_vet} />
+                  <DataItem label="Ração pretendida" value={selectedReq.racao} />
+                </div>
 
-              <h3 className={styles.sectionTitle}>7. Situações e Hipóteses</h3>
-              <div className={styles.dataGrid}>
-                <DataItem label="Ciente da Adaptação?" value={selectedReq.ciencia_adaptacao} />
-                <DataItem label="Tempo de adaptação esperado" value={selectedReq.tempo_adaptacao} />
-                <DataItem label="E se alguém engravidar?" value={selectedReq.gravidez} />
-                <DataItem label="E em caso de viagem?" value={selectedReq.viagem} />
-                <DataItem label="E se mudar para casa menor?" value={selectedReq.mudanca_menor} />
-                <DataItem label="E se mudar de cidade/país?" value={selectedReq.mudanca_longe} />
-                <DataItem label="E em caso de separação?" value={selectedReq.separacao} />
-                <DataItem label="Falecimento do responsável?" value={selectedReq.falecimento} />
-                <DataItem label="E se o animal fugir/perder?" value={selectedReq.perder} />
-                <DataItem label="E se o animal adoecer?" value={selectedReq.doenca} />
-                <DataItem label="E se o animal morder alguém?" value={selectedReq.morder} />
-                <DataItem label="E se destruir objetos?" value={selectedReq.destruicao} />
-                <DataItem label="E se fizer xixi no lugar errado?" value={selectedReq.xixi_errado} />
-              </div>
+                <h3 className={styles.sectionTitle}>7. Situações e Hipóteses</h3>
+                <div className={styles.dataGrid}>
+                  <DataItem label="Ciente da Adaptação?" value={selectedReq.ciencia_adaptacao} />
+                  <DataItem label="Tempo de adaptação esperado" value={selectedReq.tempo_adaptacao} />
+                  <DataItem label="E se alguém engravidar?" value={selectedReq.gravidez} />
+                  <DataItem label="E em caso de viagem?" value={selectedReq.viagem} />
+                  <DataItem label="E se mudar para casa menor?" value={selectedReq.mudanca_menor} />
+                  <DataItem label="E se mudar de cidade/país?" value={selectedReq.mudanca_longe} />
+                  <DataItem label="E em caso de separação?" value={selectedReq.separacao} />
+                  <DataItem label="Falecimento do responsável?" value={selectedReq.falecimento} />
+                  <DataItem label="E se o animal fugir/perder?" value={selectedReq.perder} />
+                  <DataItem label="E se o animal adoecer?" value={selectedReq.doenca} />
+                  <DataItem label="E se o animal morder alguém?" value={selectedReq.morder} />
+                  <DataItem label="E se destruir objetos?" value={selectedReq.destruicao} />
+                  <DataItem label="E se fizer xixi no lugar errado?" value={selectedReq.xixi_errado} />
+                </div>
 
-              <h3 className={styles.sectionTitle}>8. Termos Finais</h3>
-              <div className={styles.dataGrid}>
-                <DataItem label="Onde viu a divulgação?" value={selectedReq.divulgacao} />
-                <DataItem label="Aceita mandar notícias?" value={selectedReq.noticias} />
-                <DataItem label="Aceita visitas do abrigo?" value={selectedReq.visitas} />
-                <DataItem label="Permite foto da adoção?" value={selectedReq.fotos_adocao} />
-                <DataItem label="Contribuição de R$300?" value={selectedReq.contribuicao} />
-                <DataItem label="Ciente que vivem 15+ anos?" value={selectedReq.compromisso_vida} />
-                <DataItem label="O que vai comprar de enxoval?" value={selectedReq.enxoval} />
-                <DataItem label="Concorda em NÃO repassar?" value={selectedReq.termo_nao_repassar} />
-                <DataItem label="Condição extrema para devolução" value={selectedReq.devolucao} />
-                <DataItem label="Observações Livres" value={selectedReq.obs} />
+                <h3 className={styles.sectionTitle}>8. Termos Finais</h3>
+                <div className={styles.dataGrid}>
+                  <DataItem label="Onde viu a divulgação?" value={selectedReq.divulgacao} />
+                  <DataItem label="Aceita mandar notícias?" value={selectedReq.noticias} />
+                  <DataItem label="Aceita visitas do abrigo?" value={selectedReq.visitas} />
+                  <DataItem label="Permite foto da adoção?" value={selectedReq.fotos_adocao} />
+                  <DataItem label="Contribuição de R$300?" value={selectedReq.contribuicao} />
+                  <DataItem label="Ciente que vivem 15+ anos?" value={selectedReq.compromisso_vida} />
+                  <DataItem label="O que vai comprar de enxoval?" value={selectedReq.enxoval} />
+                  <DataItem label="Concorda em NÃO repassar?" value={selectedReq.termo_nao_repassar} />
+                  <DataItem label="Condição extrema para devolução" value={selectedReq.devolucao} />
+                  <DataItem label="Observações Livres" value={selectedReq.obs} />
+                </div>
               </div>
-            </div>
+            </ScrollArea>
           </DialogContent>
         )}
       </Dialog>
