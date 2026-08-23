@@ -229,7 +229,7 @@ export default function AdoptionsDashboard() {
 
             <ScrollArea className={styles.modalScrollArea} showScrollShadows>
               <div className={styles.modalBody}>
-                <div style={{ display: 'none' }} className={styles.printArea}>
+                <div className={styles.printHeader}>
                   <h1 style={{ marginBottom: '5px' }}>Abrigo do Wlad - Solicitação de Adoção</h1>
                   <p><strong>Data de Envio:</strong> {formatDate(selectedReq.submittedAt)}</p>
                   <hr style={{ margin: '20px 0' }} />

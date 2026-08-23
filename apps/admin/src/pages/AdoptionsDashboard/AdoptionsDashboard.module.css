@@ -225,6 +225,10 @@
   padding: 2rem 1.5rem;
 }
 
+.printHeader {
+  display: none;
+}
+
 .sectionTitle {
   font-size: 1.1rem;
   font-weight: 800;
@@ -269,6 +273,16 @@
 }
 
 @media print {
+  @page {
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
   body * {
     visibility: hidden;
   }
@@ -287,21 +301,50 @@
   }
 
   .modalContainer {
-    height: auto;
-    max-width: 100%;
-    max-height: none;
-    box-shadow: none;
-    overflow: visible;
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    animation: none !important;
   }
 
   .modalScrollArea,
   .modalScrollArea :global([data-radix-scroll-area-viewport]) {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
     height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
     overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .modalScrollArea :global([data-radix-scroll-area-viewport]) > div {
+    display: block !important;
+    min-width: 0 !important;
   }
 
   .modalScrollArea :global([data-orientation]) {
     display: none !important;
+  }
+
+  .modalBody {
+    padding: 0;
+  }
+
+  .printHeader {
+    display: block !important;
   }
 
   .noPrint {
@@ -317,6 +360,12 @@
 
   .dataGrid {
     gap: 1rem;
+  }
+
+  .dataGroup,
+  .sectionTitle {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .sectionTitle {
