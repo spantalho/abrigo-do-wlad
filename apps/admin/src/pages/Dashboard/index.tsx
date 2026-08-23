@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Dog, Recycle, ClipboardList, AlertTriangle, Clock, ArrowRight, HeartHandshake } from "lucide-react";
 import { Button } from "@jaci/ui/Button";
 import { Card, CardBody, CardContent, CardFooter } from "@jaci/ui/Card";
+import { ADMIN_ADOPTION_WORKFLOW_ENABLED } from "../../config";
 import { apiRequest } from "../../services/api";
 
 import styles from "./Dashboard.module.css";
@@ -107,28 +108,30 @@ export default function Dashboard() {
             </CardFooter>
           </Card>
 
-          <Card variant="default" size="sm" className={styles.metricCard}>
-            <CardBody className={styles.metricBody}>
-              <div className={styles.metricSummary}>
-                <div className={styles.iconWrapper}><ClipboardList size={28} /></div>
-                <CardContent className={styles.metricInfo}>
-                  <span className={styles.metricValue}>{metrics.adoptions}</span>
-                  <span className={styles.metricLabel}>Solicitações de adoção</span>
-                </CardContent>
-              </div>
-            </CardBody>
-            <CardFooter className={styles.metricFooter}>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                rightIcon={<ArrowRight size={16} />}
-                onClick={() => navigate("/admin/adoptions")}
-              >
-                Ver solicitações
-              </Button>
-            </CardFooter>
-          </Card>
+          {ADMIN_ADOPTION_WORKFLOW_ENABLED && (
+            <Card variant="default" size="sm" className={styles.metricCard}>
+              <CardBody className={styles.metricBody}>
+                <div className={styles.metricSummary}>
+                  <div className={styles.iconWrapper}><ClipboardList size={28} /></div>
+                  <CardContent className={styles.metricInfo}>
+                    <span className={styles.metricValue}>{metrics.adoptions}</span>
+                    <span className={styles.metricLabel}>Solicitações de adoção</span>
+                  </CardContent>
+                </div>
+              </CardBody>
+              <CardFooter className={styles.metricFooter}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  rightIcon={<ArrowRight size={16} />}
+                  onClick={() => navigate("/admin/adoptions")}
+                >
+                  Ver solicitações
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
 
           <Card variant="default" size="sm" className={styles.metricCard}>
             <CardBody className={styles.metricBody}>
@@ -142,49 +145,52 @@ export default function Dashboard() {
                 </CardContent>
               </div>
             </CardBody>
-            <CardFooter className={styles.metricFooter}>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                rightIcon={<ArrowRight size={16} />}
-                onClick={() => navigate("/admin/adoptions")}
-              >
-                Acompanhar adoções
-              </Button>
-            </CardFooter>
+            {ADMIN_ADOPTION_WORKFLOW_ENABLED && (
+              <CardFooter className={styles.metricFooter}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  rightIcon={<ArrowRight size={16} />}
+                  onClick={() => navigate("/admin/adoptions")}
+                >
+                  Acompanhar adoções
+                </Button>
+              </CardFooter>
+            )}
           </Card>
         </div>
       )}
 
-      {/* Seção de Alertas Inteligentes */}
-      <div className={styles.recentSection}>
-        <div className={styles.recentHeader}>
-          <h3>Avisos e Pendências</h3>
-        </div>
-
-        {expiringAdoptions.length > 0 ? (
-          <div className={styles.alertList}>
-            {expiringAdoptions.map(alert => (
-              <div key={alert.id} className={`${styles.alertItem} ${alert.daysLeft <= 2 ? styles.alertUrgent : ''}`}>
-                <div className={styles.alertIcon}>
-                  {alert.daysLeft <= 2 ? <AlertTriangle size={20} /> : <Clock size={20} />}
-                </div>
-                <div className={styles.alertContent}>
-                  <p className={styles.alertText}>
-                    A ficha de adoção de <strong>{alert.nome}</strong> expira e será apagada em <strong>{alert.daysLeft} {alert.daysLeft === 1 ? 'dia' : 'dias'}</strong>.
-                  </p>
-                </div>
-                <Link to="/admin/adoptions" className={styles.alertLink}>
-                  Ver ficha <ArrowRight size={16} />
-                </Link>
-              </div>
-            ))}
+      {ADMIN_ADOPTION_WORKFLOW_ENABLED && (
+        <div className={styles.recentSection}>
+          <div className={styles.recentHeader}>
+            <h3>Avisos e Pendências</h3>
           </div>
-        ) : (
-          <p className={styles.emptyRecent}>Nenhum aviso no momento. Tudo em ordem!</p>
-        )}
-      </div>
+
+          {expiringAdoptions.length > 0 ? (
+            <div className={styles.alertList}>
+              {expiringAdoptions.map(alert => (
+                <div key={alert.id} className={`${styles.alertItem} ${alert.daysLeft <= 2 ? styles.alertUrgent : ''}`}>
+                  <div className={styles.alertIcon}>
+                    {alert.daysLeft <= 2 ? <AlertTriangle size={20} /> : <Clock size={20} />}
+                  </div>
+                  <div className={styles.alertContent}>
+                    <p className={styles.alertText}>
+                      A ficha de adoção de <strong>{alert.nome}</strong> expira e será apagada em <strong>{alert.daysLeft} {alert.daysLeft === 1 ? 'dia' : 'dias'}</strong>.
+                    </p>
+                  </div>
+                  <Link to="/admin/adoptions" className={styles.alertLink}>
+                    Ver ficha <ArrowRight size={16} />
+                  </Link>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className={styles.emptyRecent}>Nenhum aviso no momento. Tudo em ordem!</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
