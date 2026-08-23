@@ -1,0 +1,32 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "abrigo-do-wlad-worker",
+  "main": "./index.ts",
+  "keep_vars": true,
+  "compatibility_date": "2026-08-19",
+  "compatibility_flags": ["nodejs_compat"],
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "8b61d3ad6ba44973a54a94eb5590da5f",
+    },
+  ],
+  "triggers": {
+    "crons": ["0 3 * * *"],
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true,
+    },
+    "traces": {
+      "enabled": false,
+      "persist": true,
+      "head_sampling_rate": 1,
+    },
+  },
+}

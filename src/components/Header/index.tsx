@@ -8,6 +8,7 @@ import logoDark from "@/assets/images/logo-dark-mode.png";
 import { Button } from "@/components/ui/Button";
 import * as Dialog from "@/components/ui/Dialog";
 import { ThemeToggle } from "../ThemeToggle";
+import { analytics } from "@/utils/analytics";
 
 import PixModal from "@/components/PixModal";
 import styles from "./Header.module.css";
@@ -83,11 +84,11 @@ export function Header() {
         </NavLink>
 
         <NavLink
-          to="/adotar"
-          className={getLinkClass("/adotar")}
+          to="/caes"
+          className={getLinkClass("/caes")}
           onClick={closeMenu}
         >
-          Adotar
+          Cães
         </NavLink>
 
         <NavLink
@@ -109,7 +110,12 @@ export function Header() {
         {/* Botão de Doação */}
         <Dialog.Dialog>
           <Dialog.DialogTrigger asChild>
-            <Button className={styles.mainBtn} size="md" variant="secondary">
+            <Button 
+              className={styles.mainBtn} 
+              size="md" 
+              variant="secondary"
+              onClick={() => analytics.trackButtonClick("header_donate")}
+            >
               <Lucide.HeartHandshake size={20} />
               <span>Quero Ajudar</span>
             </Button>

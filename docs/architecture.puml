@@ -1,0 +1,65 @@
+@startuml
+!pragma layout smetana
+title Arquitetura do Abrigo do Wlad
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontColor #1F2937
+skinparam ArrowColor #64748B
+skinparam ArrowThickness 1.2
+skinparam packageBorderColor #CBD5E1
+skinparam packageBackgroundColor #F8FAFC
+skinparam componentBorderColor #94A3B8
+skinparam componentBackgroundColor #FFFFFF
+skinparam databaseBorderColor #94A3B8
+skinparam databaseBackgroundColor #FFFFFF
+skinparam noteBorderColor #FDBA74
+skinparam noteBackgroundColor #FFF7ED
+
+actor "Pessoa candidata" as candidate
+
+package "Cloudflare" as cloudflare {
+  package "Worker do app\nabrigo-do-wlad" as app_worker {
+    component "SPA React\nStatic Assets" as spa
+    component "Roteador /api/*" as router
+    component "Candidaturas\nvalidação · sanitização · criptografia" as adoption
+    component "Consulta do\ncão em destaque" as hero_api
+  }
+
+  component "Worker de cron\nabrigo-do-wlad-worker" as cron
+  database "Cloudflare KV\nrate limit · hero-dog" as kv
+}
+
+package "Google" as google {
+  component "reCAPTCHA v3" as recaptcha
+  database "Firestore\ndogs · adoption_application" as firestore
+}
+
+package "Gmail" as gmail {
+  component "Notificação\npor e-mail" as email
+}
+
+candidate --> spa : navega e preenche o formulário
+spa --> router : GET /api/hero-dog
+router --> hero_api
+hero_api --> kv : lê hero-dog
+
+spa --> router : POST /api/adoption/create\nIdempotency-Key: UUID v4
+router --> adoption
+adoption --> kv : rate limit
+adoption --> recaptcha : valida reCAPTCHA
+adoption --> firestore : CREATE candidatura\nID = Idempotency-Key\nprecondição exists: false
+adoption --> email : notifica
+
+cron --> firestore : seleciona cão
+cron --> kv : atualiza hero-dog
+
+note right of adoption
+  Uma repetição com a mesma chave recebe
+  o ID já existente e não cria outro
+  documento nem outra notificação.
+end note
+
+@enduml

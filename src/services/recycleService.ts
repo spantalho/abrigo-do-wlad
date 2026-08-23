@@ -1,16 +1,17 @@
 import { db } from "./_lib/firebase";
+import { fetchWithCache } from "@/lib/cache";
 import { 
-  collection, 
-  getDocs
+  collection,
+  query
 } from "firebase/firestore";
 import type { RecyclePoint } from "../types/recycle";
 
 const RECYCLE_COLLECTION = "recycle_points";
 
-// LISTAR: Busca todos os pontos
 export async function getRecyclePoints(): Promise<RecyclePoint[]> {
   try {
-    const querySnapshot = await getDocs(collection(db, RECYCLE_COLLECTION));
+    const q = query(collection(db, RECYCLE_COLLECTION));
+    const querySnapshot = await fetchWithCache(q, "all_recycle_points");
     
     return querySnapshot.docs.map(doc => ({
       id: doc.id,

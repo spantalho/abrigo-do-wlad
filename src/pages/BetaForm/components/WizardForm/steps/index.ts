@@ -1,0 +1,10 @@
+export { Step1DadosPessoais } from "./Step1DadosPessoais";
+export { Step2Familia } from "./Step2Familia";
+export { Step10Finalizacao } from "./Step10Finalizacao";
+export { Step3Adocao } from "./Step3Adocao";
+export { Step4Moradia } from "./Step4Moradia";
+export { Step5Historico } from "./Step5Historico";
+export { Step6Responsabilidades } from "./Step6Responsabilidades";
+export { Step7Termos } from "./Step7Termos";
+export { Step8Hipoteticas } from "./Step8Hipoteticas";
+export { Step9Situacoes } from "./Step9Situacoes";

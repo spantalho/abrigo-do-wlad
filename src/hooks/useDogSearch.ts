@@ -7,6 +7,7 @@ const ITEMS_PER_PAGE: number = 6;
 export function useDogSearch() {
   const [dogs, setDogs] = React.useState<Dog[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
+  const [error, setError] = React.useState<boolean>(false);
   const [shuffledIds, setShuffledIds] = React.useState<string[]>([]);
   const [totalItems, setTotalItems] = React.useState<number>(0);
 
@@ -22,6 +23,7 @@ export function useDogSearch() {
   React.useEffect(() => {
     async function loadShuffledIds() {
       setLoading(true);
+      setError(false);
       try {
         const allShuffledIds = await getShuffledDogIds(filters);
         setShuffledIds(allShuffledIds);
@@ -35,6 +37,7 @@ export function useDogSearch() {
         console.error("Erro ao carregar e embaralhar IDs:", error);
         setShuffledIds([]);
         setTotalItems(0);
+        setError(true);
         setLoading(false);
       }
     }
@@ -62,13 +65,19 @@ export function useDogSearch() {
       const end = start + ITEMS_PER_PAGE;
       const idsForPage = shuffledIds.slice(start, end);
 
-      if (idsForPage.length > 0) {
-        const newDogs = await getDogsByIds(idsForPage);
-        newDogs.sort(
-          (a, b) => idsForPage.indexOf(a.id) - idsForPage.indexOf(b.id),
-        );
-        setDogs(newDogs);
-      } else {
+      try {
+        if (idsForPage.length > 0) {
+          const newDogs = await getDogsByIds(idsForPage);
+          newDogs.sort(
+            (a, b) => idsForPage.indexOf(a.id) - idsForPage.indexOf(b.id),
+          );
+          setDogs(newDogs);
+        } else {
+          setDogs([]);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar dados da página:", err);
+        setError(true);
         setDogs([]);
       }
       setLoading(false);
@@ -84,6 +93,7 @@ export function useDogSearch() {
   return {
     dogs,
     loading,
+    error,
     totalItems,
     currentPage,
     totalPages,

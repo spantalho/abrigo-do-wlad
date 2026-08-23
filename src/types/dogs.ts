@@ -29,13 +29,12 @@ export interface Dog {
     | "Apenas Vacinado"
     | "Apenas Castrado"
     | "Em Tratamento"
-    | "Disponível para Adoção"
-    | "Adotado";
+    | "Disponível para Adoção";
   fotos: string[];
   cor: string;
   instaLink?: string;
   descricaoCompleta?: string;
-  createdAt?: any;
+  createdAt?: Date;
 }
 
 type FilterValue<T> = T | "all";

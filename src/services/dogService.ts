@@ -1,6 +1,5 @@
 import {
   collection,
-  getDocs,
   getDoc,
   doc,
   query,
@@ -8,9 +7,11 @@ import {
   startAfter,
   limit,
   where,
+  getDocFromCache,
 } from "firebase/firestore";
 
 import { db } from "./_lib/firebase";
+import { fetchWithCache } from "@/lib/cache";
 
 import type { Dog, DogFilters } from "@/types/dogs";
 import { shuffleArray } from "@/utils/common";
@@ -21,7 +22,7 @@ export async function getDogs(): Promise<Dog[]> {
   const dogsRef = collection(db, DOGS_COLLECTION);
   const q = query(dogsRef);
 
-  const snapshot = await getDocs(q);
+  const snapshot = await fetchWithCache(q, "all_dogs");
 
   return snapshot.docs.map((doc) => ({
     ...doc.data(),
@@ -31,9 +32,16 @@ export async function getDogs(): Promise<Dog[]> {
 
 export async function getDogById(id: string): Promise<Dog | null> {
   const docRef = doc(db, DOGS_COLLECTION, id);
-  const docSnap = await getDoc(docRef);
+  
+  // Utiliza getDoc nativo do Firebase que passará pelo Local Cache caso já exista, 
+  // senão ele resolve via network transparente por conta da configuração persistente.
+  let docSnap = await getDocFromCache(docRef).catch(() => null);
+  
+  if (!docSnap || !docSnap.exists()) {
+    docSnap = await getDoc(docRef);
+  }
 
-  if (docSnap.exists()) {
+  if (docSnap && docSnap.exists()) {
     return { id: docSnap.id, ...docSnap.data() } as Dog;
   } else {
     return null;
@@ -78,7 +86,10 @@ export async function getShuffledDogIds(
     q = query(q, where("tags", "array-contains", filters.tags));
   }
 
-  const snapshot = await getDocs(q);
+  // Generate a cacheKey based on the filters
+  const cacheKey = `shuffled_dogs_${filters.cateIdade}_${filters.cor}_${filters.tags}`;
+  
+  const snapshot = await fetchWithCache(q, cacheKey);
   const dogIds = snapshot.docs.map((doc) => doc.id);
 
   return shuffleArray(dogIds)
@@ -121,7 +132,8 @@ export async function getDogsWithFilters(
   }
   q = query(q, limit(itemsPerPage));
 
-  const snapshot = await getDocs(q);
+  const cacheKey = `dogs_filter_${filters.cateIdade}_${filters.cor}_${filters.tags}_page_${page}_limit_${itemsPerPage}`;
+  const snapshot = await fetchWithCache(q, cacheKey);
 
   const dogs = snapshot.docs.map((doc) => ({
     ...doc.data(),

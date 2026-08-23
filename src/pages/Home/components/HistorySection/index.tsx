@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 
 import styles from "./HistorySection.module.css";
-import dogImage from "@/assets/images/simba.jpg";
+import sectionImage from "@/assets/images/wlad.jpg";
 
 export function HistorySection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -45,11 +45,11 @@ export function HistorySection() {
             isVisible ? styles.visible : ""
           }`}
         >
-          <img src={dogImage} alt="Simba" />
+          <img src={sectionImage} alt="Wlad" />
           <Badge
-            variant="primary"
-            size="sm"
-            leftIcon={<Lucide.Dog size={16} />}
+            variant="secondary"
+            size="md"
+            leftIcon={<Lucide.CircleUserRound />}
             style={{
               position: "absolute",
               bottom: "-0.5rem",
@@ -59,7 +59,7 @@ export function HistorySection() {
               border: "3px solid var(--bg-body)",
             }}
           >
-            Simba
+            Wlad
           </Badge>
         </div>
 

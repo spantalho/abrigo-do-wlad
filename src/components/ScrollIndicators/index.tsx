@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Blend } from "lucide-react";
+import { useIndicatorStorage } from "./useIndicatorStorage";
 import styles from "./ScrollIndicators.module.css";
 
 interface ScrollIndicatorsProps {
@@ -13,6 +15,10 @@ export function ScrollIndicators({
   labels = [],
 }: ScrollIndicatorsProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [activeSubIndex, setActiveSubIndex] = useState(-1);
+  const [subSections, setSubSections] = useState<
+    { node: HTMLElement; label: string }[][]
+  >([]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -20,6 +26,17 @@ export function ScrollIndicators({
     const sections = Array.from(
       containerRef.current.children as HTMLCollection,
     ) as HTMLElement[];
+
+    const parsedSubs = sections.map((section) => {
+      const subs = Array.from(
+        section.querySelectorAll("[data-subsection]"),
+      ) as HTMLElement[];
+      return subs.map((node) => ({
+        node,
+        label: node.getAttribute("data-subsection") || "",
+      }));
+    });
+    setSubSections(parsedSubs);
 
     const handleScroll = () => {
       const scrollY = window.scrollY;
@@ -41,6 +58,32 @@ export function ScrollIndicators({
       });
 
       setActiveIndex(closestIndex);
+
+      const activeSection = sections[closestIndex];
+      if (activeSection) {
+        const subNodes = Array.from(
+          activeSection.querySelectorAll("[data-subsection]"),
+        ) as HTMLElement[];
+
+        if (subNodes.length > 0) {
+          let closestSub = 0;
+          let closestSubDist = Infinity;
+
+          subNodes.forEach((node, i) => {
+            const rect = node.getBoundingClientRect();
+            const center = scrollY + rect.top + rect.height / 2;
+            const d = Math.abs(viewportCenter - center);
+
+            if (d < closestSubDist) {
+              closestSubDist = d;
+              closestSub = i;
+            }
+          });
+          setActiveSubIndex(closestSub);
+        } else {
+          setActiveSubIndex(-1);
+        }
+      }
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -66,29 +109,149 @@ export function ScrollIndicators({
     }
   };
 
+  const handleSubDotClick = (node: HTMLElement) => {
+    const rect = node.getBoundingClientRect();
+    const headerHeight = 120;
+    const targetScroll = window.scrollY + rect.top - headerHeight;
+
+    window.scrollTo({
+      top: targetScroll,
+      behavior: "smooth",
+    });
+  };
+
+  const visibleCount = Math.min(5, sectionCount);
+  const startIndex = Math.max(
+    0,
+    Math.min(
+      activeIndex - Math.floor(visibleCount / 2),
+      sectionCount - visibleCount,
+    ),
+  );
+  const visibleIndices = Array.from({ length: visibleCount }).map(
+    (_, i) => startIndex + i,
+  );
+
+  const hasMoreTop = startIndex > 0;
+  const hasMoreBottom = startIndex + visibleCount < sectionCount;
+
+  const { isVisible, isFadingOut, hideIndicator, showIndicator } =
+    useIndicatorStorage();
+
+  if (!isVisible && !isFadingOut) {
+    return (
+      <div className={styles.hiddenArea}>
+        <button
+          className={styles.showButton}
+          onClick={showIndicator}
+          title="Mostrar navegação"
+          aria-label="Mostrar navegação"
+        >
+          <Blend size={19} strokeWidth={2} />
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <nav className={styles.indicators}>
+    <nav
+      className={`${styles.indicators} ${isFadingOut ? styles.fadeOut : styles.fadeIn}`}
+    >
       <div className={styles.indicatorWrapper}>
         <div className={styles.dotsContainer}>
-          {Array.from({ length: sectionCount }).map((_, index) => (
-            <button
-              key={index}
-              className={`${styles.dot} ${index === activeIndex ? styles.active : ""}`}
-              onClick={() => handleDotClick(index)}
-              aria-label={`Ir para ${labels[index] || `seção ${index + 1}`}`}
-            />
-          ))}
+          <button
+            className={styles.hideButton}
+            onClick={hideIndicator}
+            title="Ocultar navegação"
+            aria-label="Ocultar navegação"
+          >
+            <Blend size={14} strokeWidth={2.5} />
+          </button>
+          {visibleIndices.map((index, i) => {
+            const isEdgeTop = i === 0 && hasMoreTop;
+            const isEdgeBottom =
+              i === visibleIndices.length - 1 && hasMoreBottom;
+            const edgeClass = isEdgeTop || isEdgeBottom ? styles.edgeDot : "";
+            const isParentActive = index === activeIndex;
+            const subs = subSections[index] || [];
+
+            return (
+              <div key={i} className={styles.dotGroup}>
+                <button
+                  className={`${styles.dot} ${isParentActive ? styles.active : ""} ${edgeClass}`}
+                  onClick={() => handleDotClick(index)}
+                  aria-label={`Ir para ${labels[index] || `seção ${index + 1}`}`}
+                  title={labels[index] || `Seção ${index + 1}`}
+                />
+                {subs.length > 0 && (
+                  <div
+                    className={`${styles.accordionWrapper} ${isParentActive ? styles.accordionOpen : ""}`}
+                  >
+                    <div className={styles.accordionInner}>
+                      <div className={styles.subDotsContainer}>
+                        {subs.map((sub, subIdx) => (
+                          <button
+                            key={`sub-${subIdx}`}
+                            className={`${styles.subDot} ${subIdx === activeSubIndex ? styles.activeSubDot : ""}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSubDotClick(sub.node);
+                            }}
+                            aria-label={`Ir para a subseção ${sub.label}`}
+                            title={sub.label}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
         <div className={styles.rowsContainer}>
-          {Array.from({ length: sectionCount }).map((_, index) => (
-            <div key={index} className={styles.indicatorRow}>
-              <span
-                className={`${styles.label} ${index === activeIndex ? styles.activeLabel : ""}`}
-              >
-                {labels[index] || ""}
-              </span>
-            </div>
-          ))}
+          {visibleIndices.map((index, i) => {
+            const isParentActive = index === activeIndex;
+            const subs = subSections[index] || [];
+
+            return (
+              <div key={i} className={styles.rowGroup}>
+                <div className={styles.indicatorRow}>
+                  <span
+                    className={`${styles.label} ${isParentActive ? styles.activeLabel : ""}`}
+                    title={labels[index] || ""}
+                  >
+                    {labels[index] || ""}
+                  </span>
+                </div>
+                {subs.length > 0 && (
+                  <div
+                    className={`${styles.accordionWrapper} ${isParentActive ? styles.accordionOpen : ""}`}
+                  >
+                    <div
+                      className={`${styles.accordionInner} ${styles.subRowInner}`}
+                    >
+                      <div className={styles.subRowsContainer}>
+                        {subs.map((sub, subIdx) => (
+                          <div
+                            key={`sub-row-${subIdx}`}
+                            className={styles.subRow}
+                          >
+                            <span
+                              className={`${styles.subLabel} ${subIdx === activeSubIndex ? styles.activeSubLabel : ""}`}
+                              title={sub.label}
+                            >
+                              {sub.label}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </nav>

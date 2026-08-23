@@ -2,6 +2,7 @@ import * as React from "react"
 import * as Lucide from "lucide-react";
 import styles from "./ActionCards.module.css";
 import { Link } from "react-router";
+import { analytics } from "@/utils/analytics";
 
 import * as Card from "@/components/ui/Card";
 import * as Dialog from "@/components/ui/Dialog";
@@ -37,7 +38,8 @@ export function ActionCards() {
     <section className={styles.cardsContainer} ref={sectionRef}>
       {/* adoption */}
       <Card.Card
-        color="red"
+        tone="danger"
+        interactive
         className={`${styles.card} ${isVisible ? styles.visible : ""}`}
       >
         <Card.CardBody>
@@ -56,7 +58,7 @@ export function ActionCards() {
           </Card.CardContent>
         </Card.CardBody>
         <Card.CardFooter>
-          <Link to="/adotar">
+          <Link to="/caes">
             <Card.CardButton>
               Conheça Nossos Cães <Lucide.ChevronRight size={20} />
             </Card.CardButton>
@@ -66,12 +68,13 @@ export function ActionCards() {
 
       {/* donations & pix modal */}
       <Card.Card
+        interactive
         className={`${styles.card} ${styles.cardDelay1} ${isVisible ? styles.visible : ""}`}
       >
         <Card.CardBody>
           <Card.CardHeader>
             <Card.CardIcon>
-              <Lucide.QrCode size={38} strokeWidth={1.5} />
+              <Lucide.HeartHandshake size={38} strokeWidth={1.5} />
             </Card.CardIcon>
             <Card.CardTitle>Faça uma Doação</Card.CardTitle>
           </Card.CardHeader>
@@ -85,7 +88,7 @@ export function ActionCards() {
         <Card.CardFooter>
           <Dialog.Dialog>
             <Dialog.DialogTrigger asChild>
-              <Card.CardButton>
+              <Card.CardButton onClick={() => analytics.trackConversionIntent("donation")}>
                 Doação via PIX
                 <Lucide.ChevronUp size={20} />
               </Card.CardButton>
@@ -97,7 +100,8 @@ export function ActionCards() {
 
       {/* tampinhas */}
       <Card.Card
-        color="green"
+        tone="success"
+        interactive
         className={`${styles.card} ${styles.cardDelay2} ${isVisible ? styles.visible : ""}`}
       >
         <Card.CardBody>

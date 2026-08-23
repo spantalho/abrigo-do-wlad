@@ -56,9 +56,104 @@
   gap: 0.4rem;
 }
 
+.pointsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.collectionCardItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.collectionCardItem:last-child {
+  margin-bottom: 1.5rem;
+  padding-bottom: 0;
+}
+
+.collectionCardIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.collectionCardLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem !important;
+  letter-spacing: 0.5px;
+}
+
+.collectionCardNeighborhood {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.collectionCardName {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.collectionCardAddress {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.collectionCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.collectionCardHeader p {
+  text-align: left;
+  margin: 0;
+}
+
+.collectionCardHeaderTitle {
+  font-weight: 600;
+}
+
+.collectionCardHeaderSubtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.cardFooter {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
 @media (max-width: 768px) {
   .recycleContainer {
     grid-template-columns: 1fr;
+    align-items: center;
+  }
+
+  .pointsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .collectionCardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .collectionCardItem {
+    flex-direction: column;
     align-items: center;
   }
 }

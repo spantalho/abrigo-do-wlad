@@ -1,6 +1,7 @@
 import { Link, NavLink } from "react-router";
 import * as Lucide from "lucide-react";
 import styles from "./Footer.module.css";
+import { analytics } from "@/utils/analytics";
 
 import logo from "@/assets/images/logo.png";
 import logoDark from "@/assets/images/logo-dark-mode.png";
@@ -38,7 +39,7 @@ export function Footer() {
           </p>
           <div className={styles.footerBadges}>
             <Badge variant="success" leftIcon={<Lucide.MapPin />}>
-              Atuamos em Morumbi, SP
+              São Paulo <span style={{ opacity: 0.5 }}>•</span> Morumbi
             </Badge>
           </div>
         </div>
@@ -49,7 +50,7 @@ export function Footer() {
           <NavLink to="/" className={styles.linkItem}>
             Início
           </NavLink>
-          <NavLink to="/adotar" className={styles.linkItem}>
+          <NavLink to="/caes" className={styles.linkItem}>
             Nossos Cães
           </NavLink>
           <NavLink to="/sobre" className={styles.linkItem}>
@@ -58,7 +59,7 @@ export function Footer() {
           <NavLink to="/tampinhas" className={styles.linkItem}>
             Projeto Tampinhas
           </NavLink>
-          <NavLink to="/formulario" className={styles.linkItem}>
+          <NavLink to="/formulario" className={styles.linkItem} onClick={() => analytics.trackConversionIntent("adopt_form")}>
             Formulário de Interesse
           </NavLink>
         </div>
@@ -82,6 +83,7 @@ export function Footer() {
           <a
             href="mailto:abrigodowlad@gmail.com"
             className={styles.contactItem}
+            onClick={() => analytics.trackConversionIntent("contact", { method: "email" })}
           >
             <div className={styles.iconBox}>
               <Lucide.Mail size={20} />
@@ -98,12 +100,11 @@ export function Footer() {
               &copy; {new Date().getFullYear()} Abrigo do Wlad
             </p>
             {isDesktop && <span style={{ opacity: 0.5 }}>•</span>}
-            <p>Todos os Direitos Reservados</p>
+            <p style={{ opacity: 0.8 }}>Todos os Direitos Reservados</p>
           </div>
         </div>
         <div className={styles.footerBottomGroup}>
-          <Link to="/">Política de Privacidade</Link>
-          <Link to="/">Termos de Responsabilidade</Link>
+          <Link to="/politica-de-privacidade">Política de Privacidade</Link>
           <p className={styles.credits}>
             Por{" "}
             <ExternalLink href="https://alanclimaco.github.io/Portfolio/">

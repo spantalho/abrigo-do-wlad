@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import styles from "./ThemeToggle.module.css";
+import { analytics } from "@/utils/analytics";
+import { STORAGE_KEYS } from "@/lib/storage";
 import {
   TooltipProvider,
   Tooltip,
@@ -10,7 +12,7 @@ import {
 import { motion } from "motion/react";
 
 function getInitialTheme(): boolean {
-  const savedTheme = localStorage.getItem("theme");
+  const savedTheme = localStorage.getItem(STORAGE_KEYS.UI.THEME);
   const systemPrefersDark = window.matchMedia(
     "(prefers-color-scheme: dark)",
   ).matches;
@@ -35,10 +37,12 @@ export function ThemeToggle() {
     // Atualiza a classe no body e salva a preferência
     if (newTheme) {
       document.body.classList.add("dark-mode");
-      localStorage.setItem("theme", "dark");
+      localStorage.setItem(STORAGE_KEYS.UI.THEME, "dark");
+      analytics.trackThemeToggle("dark");
     } else {
       document.body.classList.remove("dark-mode");
-      localStorage.setItem("theme", "light");
+      localStorage.setItem(STORAGE_KEYS.UI.THEME, "light");
+      analytics.trackThemeToggle("light");
     }
   };
 

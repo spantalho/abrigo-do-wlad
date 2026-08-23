@@ -1,4 +1,5 @@
 .ScrollAreaRoot {
+  position: relative;
   overflow: hidden;
   width: 100%;
   height: 100%;
@@ -53,4 +54,29 @@
 
 .ScrollAreaCorner {
   background: var(--scroll-corner);
+}
+
+.ScrollShadow {
+  position: absolute;
+  z-index: 2;
+  left: var(--scroll-shadow-inline-start, 0);
+  right: var(--scroll-shadow-inline-end, 10px);
+  height: 24px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.ScrollShadowTop {
+  top: 0;
+  background: linear-gradient(to bottom, var(--scroll-shadow), transparent);
+}
+
+.ScrollShadowBottom {
+  bottom: 0;
+  background: linear-gradient(to top, var(--scroll-shadow), transparent);
+}
+
+.ScrollShadowVisible {
+  opacity: 1;
 }

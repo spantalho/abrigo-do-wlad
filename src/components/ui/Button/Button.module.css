@@ -1,14 +1,15 @@
 .btn {
   border: 1px solid transparent;
   padding: 0.8rem 1.2rem;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s,
+    transform 0.2s, opacity 0.2s, gap 0.2s;
   font-family: inherit;
   font-size: 0.95rem;
   text-decoration: none;
@@ -32,12 +33,12 @@
 /* Variants */
 .primary {
   background-color: var(--btn-primary);
-  color: var(--primary);
+  color: var(--action);
 }
 
 .primary:hover:not(:disabled) {
   background-color: var(--btn-primary-hover);
-  color: var(--white)
+  color: var(--text-on-action);
 }
 
 .secondary {
@@ -47,7 +48,17 @@
 
 .secondary:hover:not(:disabled) {
   background-color: var(--btn-secondary-hover);
-  color: var(--white);
+  color: var(--text-on-secondary);
+}
+
+.success {
+  background-color: var(--btn-success);
+  color: var(--success);
+}
+
+.success:hover:not(:disabled) {
+  background-color: var(--btn-success-hover);
+  color: var(--text-on-success);
 }
 
 .outline {
@@ -57,7 +68,7 @@
 }
 
 .outline:hover:not(:disabled) {
-  background-color: var(--white);
+  background-color: var(--surface-card);
   color: var(--text-secondary);
 }
 
@@ -65,7 +76,7 @@
   color: var(--text-primary);
 }
 
-.ghost:hover {
+.ghost:hover:not(:disabled) {
   background-color: var(--btn-ghost-bg);
 }
 
@@ -98,13 +109,25 @@
 .lg {
   padding: 1rem 1.8rem;
   font-size: 1.1rem;
-  border-radius: 48px;
+  border-radius: var(--radius-xl);
 }
 
 .icon {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.btn.icon-sm {
+  padding: 0.4rem;
+  border-radius: var(--radius-lg);
+}
+
+.icon-sm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
 }
 
 .blur {

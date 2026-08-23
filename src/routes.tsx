@@ -5,9 +5,10 @@ import { VLibrasWidget } from "./components/common/VLibrasWidget";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Recycle from "./pages/Recycle";
-import Adopt from "./pages/Adopt";
-import Form from "./pages/Form";
+import Dogs from "./pages/Dogs";
+import PrivacyPolicy from "./pages/Legal";
 import ScrollToTop from "./components/common/ScrollToTop";
+import BetaForm from "./pages/BetaForm";
 
 export function AppRoutes() {
   return (
@@ -21,8 +22,19 @@ export function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/sobre" element={<About />} />
         <Route path="/tampinhas" element={<Recycle />} />
-        <Route path="/adotar" element={<Adopt />} />
-        <Route path="/formulario" element={<Form />} />
+        <Route path="/caes" element={<Dogs />} />
+
+        <Route
+          path="/formulario"
+          element={<Navigate to="/beta/formulario" />}
+        />
+        <Route
+          path="/beta/formulario"
+          element={<Navigate to="/beta/formulario/step/1" replace />}
+        />
+        <Route path="/beta/formulario/step/:step" element={<BetaForm />} />
+
+        <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
 

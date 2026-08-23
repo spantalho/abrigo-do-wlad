@@ -2,7 +2,7 @@
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "ES2023",
-    "lib": ["ES2023"],
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "types": ["node"],
     "skipLibCheck": true,
@@ -22,5 +22,12 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "worker-configuration.d.ts",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "vitest.worker.config.ts",
+    "playwright.config.ts",
+    "workers/**/*.ts"
+  ]
 }

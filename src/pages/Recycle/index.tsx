@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/Accordion";
 
 import { getThirdPartyImage } from "@/utils/common";
+import { analytics } from "@/utils/analytics";
 import * as Lucide from "lucide-react";
 
 // Adicionamos as importações do Firebase e do Tipo
@@ -26,6 +27,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/Tooltip";
+import { PageFeedback } from "@/components/PageFeedback";
 
 interface GroupedPoints {
   zone: string;
@@ -51,7 +53,7 @@ export default function Recycle() {
     location: null,
   });
 
-  // Busca os dados do Firebase quando a página carrega
+  // Busca na base de dados quando a página carrega
   useEffect(() => {
     async function fetchPoints() {
       try {
@@ -88,6 +90,13 @@ export default function Recycle() {
 
     fetchPoints();
   }, []);
+
+  // Track when no results are found
+  useEffect(() => {
+    if (!loading && collectionPoints.length === 0) {
+      analytics.trackNoResults("recycle_page");
+    }
+  }, [loading, collectionPoints.length]);
 
   return (
     <>
@@ -166,7 +175,7 @@ export default function Recycle() {
                 <p>Carregando pontos de coleta...</p>
               </div>
             ) : collectionPoints.length === 0 ? (
-              <CardComponent.Card color="primary">
+              <CardComponent.Card>
                 <CardComponent.CardBody>
                   <CardComponent.CardContent>
                     <p
@@ -185,22 +194,13 @@ export default function Recycle() {
                 {collectionPoints.map((zone) => (
                   <AccordionItem key={zone.zone} value={zone.zone}>
                     <AccordionTrigger>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.75rem",
-                        }}
-                      >
+                      <div className={styles.collectionCardHeader}>
                         <Lucide.MapPin size={20} />
-                        <div style={{ textAlign: "left" }}>
-                          <p style={{ fontWeight: "600" }}>{zone.zone}</p>
-                          <p
-                            style={{
-                              fontSize: "0.875rem",
-                              color: "var(--text-muted)",
-                            }}
-                          >
+                        <div>
+                          <p className={styles.collectionCardHeaderTitle}>
+                            {zone.zone}
+                          </p>
+                          <p className={styles.collectionCardHeaderSubtitle}>
                             {zone.locations.length} ponto
                             {zone.locations.length !== 1 ? "s" : ""} de coleta
                           </p>
@@ -208,62 +208,31 @@ export default function Recycle() {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div
-                        className={styles.pointsGrid}
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns:
-                            "repeat(auto-fill, minmax(280px, 1fr))",
-                          gap: "1rem",
-                          marginTop: "1rem",
-                        }}
-                      >
+                      <div className={styles.pointsGrid}>
                         {zone.locations.map((location) => (
                           <CardComponent.Card
                             key={location.id}
-                            variant="default"
-                            color="secondary"
+                            tone="info"
                             size="sm"
                           >
                             <CardComponent.CardBody>
                               <CardComponent.CardContent>
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "flex-start",
-                                    gap: "0.5rem",
-                                    marginBottom: "1.25rem",
-                                    paddingBottom: "1rem",
-                                  }}
-                                >
+                                <div className={styles.collectionCardItem}>
                                   <Lucide.MapPin
                                     size={18}
+                                    className={styles.collectionCardIcon}
                                     style={{
                                       color: "var(--primary-color)",
-                                      flexShrink: 0,
-                                      marginTop: "2px",
                                     }}
                                   />
                                   <div>
-                                    <p
-                                      style={{
-                                        fontSize: "0.75rem",
-                                        fontWeight: "600",
-                                        textTransform: "uppercase",
-                                        color: "var(--text-muted)",
-                                        marginBottom: "0.25rem",
-                                        letterSpacing: "0.5px",
-                                      }}
-                                    >
+                                    <p className={styles.collectionCardLabel}>
                                       Bairro
                                     </p>
                                     <h4
-                                      style={{
-                                        fontWeight: "700",
-                                        fontSize: "1.1rem",
-                                        color: "var(--text-primary)",
-                                        margin: 0,
-                                      }}
+                                      className={
+                                        styles.collectionCardNeighborhood
+                                      }
                                     >
                                       {location.neighborhood}
                                     </h4>
@@ -271,100 +240,48 @@ export default function Recycle() {
                                 </div>
 
                                 {location.name && (
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "flex-start",
-                                      gap: "0.5rem",
-                                      marginBottom: "1.25rem",
-                                    }}
-                                  >
+                                  <div className={styles.collectionCardItem}>
                                     <Lucide.Building2
                                       size={18}
+                                      className={styles.collectionCardIcon}
                                       style={{
                                         color: "var(--text-secondary)",
-                                        flexShrink: 0,
-                                        marginTop: "2px",
                                       }}
                                     />
                                     <div>
-                                      <p
-                                        style={{
-                                          fontSize: "0.75rem",
-                                          fontWeight: "600",
-                                          textTransform: "uppercase",
-                                          color: "var(--text-muted)",
-                                          marginBottom: "0.25rem",
-                                          letterSpacing: "0.5px",
-                                        }}
-                                      >
+                                      <p className={styles.collectionCardLabel}>
                                         Local
                                       </p>
-                                      <p
-                                        style={{
-                                          fontWeight: "500",
-                                          fontSize: "0.95rem",
-                                          color: "var(--text-primary)",
-                                          margin: 0,
-                                        }}
-                                      >
+                                      <p className={styles.collectionCardName}>
                                         {location.name}
                                       </p>
                                     </div>
                                   </div>
                                 )}
 
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "flex-start",
-                                    gap: "0.5rem",
-                                    marginBottom: "1.5rem",
-                                  }}
-                                >
+                                <div className={styles.collectionCardItem}>
                                   <Lucide.Navigation
                                     size={18}
+                                    className={styles.collectionCardIcon}
                                     style={{
                                       color: "var(--text-secondary)",
-                                      flexShrink: 0,
-                                      marginTop: "2px",
                                     }}
                                   />
                                   <div>
-                                    <p
-                                      style={{
-                                        fontSize: "0.75rem",
-                                        fontWeight: "600",
-                                        textTransform: "uppercase",
-                                        color: "var(--text-muted)",
-                                        marginBottom: "0.25rem",
-                                        letterSpacing: "0.5px",
-                                      }}
-                                    >
+                                    <p className={styles.collectionCardLabel}>
                                       Endereço
                                     </p>
-                                    <p
-                                      style={{
-                                        fontSize: "0.9rem",
-                                        color: "var(--text-secondary)",
-                                        lineHeight: "1.5",
-                                        margin: 0,
-                                      }}
-                                    >
+                                    <p className={styles.collectionCardAddress}>
                                       {location.address}
                                     </p>
                                   </div>
                                 </div>
                               </CardComponent.CardContent>
                             </CardComponent.CardBody>
-                            <CardComponent.CardFooter
-                              style={{
-                                display: "flex",
-                                gap: "0.5rem",
-                                justifyContent: "flex-end",
-                              }}
-                            >
-                              {location.latitude && location.longitude && (
+                            {location.latitude && location.longitude && (
+                              <CardComponent.CardFooter
+                                className={styles.cardFooter}
+                              >
                                 <Button
                                   size="sm"
                                   variant="secondary"
@@ -372,10 +289,10 @@ export default function Recycle() {
                                     setMapModal({ isOpen: true, location })
                                   }
                                 >
-                                  <Lucide.MapPlus size={16} /> Mapa
+                                  <Lucide.Map size={16} /> Mapa
                                 </Button>
-                              )}
-                            </CardComponent.CardFooter>
+                              </CardComponent.CardFooter>
+                            )}
                           </CardComponent.Card>
                         ))}
                       </div>
@@ -384,19 +301,24 @@ export default function Recycle() {
                 ))}
               </Accordion>
             )}
-
-            <div style={{ marginTop: "2rem" }}>
-              <Button size="md" rightIcon={<Lucide.ArrowUpRight />}>
-                <span>Combinar Entrega Grande</span>
-              </Button>
-            </div>
           </div>
+          <PageFeedback pageId="tampinhas" />
         </section>
       </div>
 
       <Dialog.Dialog
-        open={mapModal.isOpen && !!(mapModal.location?.latitude && mapModal.location?.longitude)}
-        onOpenChange={(isOpen) => setMapModal((prev) => ({ ...prev, isOpen: isOpen && !!(mapModal.location?.latitude && mapModal.location?.longitude) }))}
+        open={
+          mapModal.isOpen &&
+          !!(mapModal.location?.latitude && mapModal.location?.longitude)
+        }
+        onOpenChange={(isOpen) =>
+          setMapModal((prev) => ({
+            ...prev,
+            isOpen:
+              isOpen &&
+              !!(mapModal.location?.latitude && mapModal.location?.longitude),
+          }))
+        }
       >
         <Dialog.DialogContent
           style={{ width: "90vw", maxWidth: "600px", padding: "1.5rem" }}
@@ -440,17 +362,19 @@ export default function Recycle() {
               overflow: "hidden",
             }}
           >
-            {mapModal.isOpen && mapModal.location?.latitude && mapModal.location?.longitude && (
-              <iframe
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                loading="lazy"
-                title="Google Maps"
-                allowFullScreen
-                src={`https://www.google.com/maps?q=${mapModal.location.latitude},${mapModal.location.longitude}&output=embed`}
-              />
-            )}
+            {mapModal.isOpen &&
+              mapModal.location?.latitude &&
+              mapModal.location?.longitude && (
+                <iframe
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  title="Google Maps"
+                  allowFullScreen
+                  src={`https://www.google.com/maps?q=${mapModal.location.latitude},${mapModal.location.longitude}&output=embed`}
+                />
+              )}
           </div>
           <Dialog.DialogFooter style={{ marginTop: "1rem" }}>
             <div

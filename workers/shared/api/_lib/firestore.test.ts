@@ -1,0 +1,318 @@
+import assert from "node:assert/strict";
+import { generateKeyPairSync } from "node:crypto";
+import { test } from "vitest";
+
+import {
+  createFirestoreDocumentId,
+  FirestoreRestClient,
+  FirestoreRestError,
+} from "./firestore.ts";
+
+function mockFetch(
+  handler: (url: string, init?: RequestInit) => Response | Promise<Response>,
+): typeof fetch {
+  return (async (input: RequestInfo | URL, init?: RequestInit) =>
+    handler(String(input), init)) as typeof fetch;
+}
+
+test("FirestoreRestClient authenticates with a service account JWT", async () => {
+  const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
+  const privateKeyPem = privateKey
+    .export({ format: "pem", type: "pkcs8" })
+    .toString();
+  const requests: Array<{ url: string; init?: RequestInit }> = [];
+  const fetcher = mockFetch((url, init) => {
+    requests.push({ url, init });
+
+    if (url === "https://oauth2.googleapis.com/token") {
+      return Response.json({ access_token: "oauth-token", expires_in: 3600 });
+    }
+
+    return Response.json({
+      name: "projects/test-auth/databases/(default)/documents/system/keys",
+      fields: {},
+    });
+  });
+  const client = new FirestoreRestClient(
+    "test-auth",
+    { fetcher },
+    {
+      FIREBASE_PROJECT_ID: "test-auth",
+      FIREBASE_CLIENT_EMAIL: "worker@test-auth.iam.gserviceaccount.com",
+      FIREBASE_PRIVATE_KEY: privateKeyPem,
+    },
+  );
+
+  await client.getDocument("system/keys");
+
+  assert.equal(requests.length, 2);
+  assert.equal(requests[0]?.url, "https://oauth2.googleapis.com/token");
+  const tokenBody = requests[0]?.init?.body as URLSearchParams;
+  assert.equal(
+    tokenBody.get("grant_type"),
+    "urn:ietf:params:oauth:grant-type:jwt-bearer",
+  );
+  assert.equal(tokenBody.get("assertion")?.split(".").length, 3);
+  assert.equal(
+    new Headers(requests[1]?.init?.headers).get("Authorization"),
+    "Bearer oauth-token",
+  );
+});
+
+test("FirestoreRestClient does not rebind the fetch receiver", async () => {
+  let calls = 0;
+  const fetcher = async function (this: unknown): Promise<Response> {
+    if (this !== undefined) {
+      throw new TypeError("fetch was called with an incorrect this reference");
+    }
+
+    calls += 1;
+    return Response.json({
+      name: "projects/test-project/databases/(default)/documents/system/keys",
+      fields: {},
+    });
+  } as typeof fetch;
+  const client = new FirestoreRestClient("test-project", {
+    fetcher,
+    tokenProvider: async () => "test-token",
+  });
+
+  await client.getDocument("system/keys");
+
+  assert.equal(calls, 1);
+});
+
+test("getDocument decodes Firestore REST values", async () => {
+  const fetcher = mockFetch((url, init) => {
+    assert.equal(
+      url,
+      "https://firestore.googleapis.com/v1/projects/test-project/databases/(default)/documents/system/keys",
+    );
+    assert.equal(
+      new Headers(init?.headers).get("Authorization"),
+      "Bearer test-token",
+    );
+
+    return Response.json({
+      name: "projects/test-project/databases/(default)/documents/system/keys",
+      fields: {
+        active: { booleanValue: true },
+        count: { integerValue: "2" },
+        createdAt: { timestampValue: "2026-08-19T12:00:00Z" },
+        tags: {
+          arrayValue: {
+            values: [{ stringValue: "active" }, { stringValue: "v2" }],
+          },
+        },
+        nested: {
+          mapValue: {
+            fields: { key: { stringValue: "encrypted" } },
+          },
+        },
+      },
+    });
+  });
+  const client = new FirestoreRestClient("test-project", {
+    fetcher,
+    tokenProvider: async () => "test-token",
+  });
+
+  const document = await client.getDocument("system/keys");
+
+  assert.deepEqual(document, {
+    id: "keys",
+    name: "projects/test-project/databases/(default)/documents/system/keys",
+    data: {
+      active: true,
+      count: 2,
+      createdAt: "2026-08-19T12:00:00Z",
+      tags: ["active", "v2"],
+      nested: { key: "encrypted" },
+    },
+    createTime: undefined,
+    updateTime: undefined,
+  });
+});
+
+test("findFirstDocument creates a document ID cursor query", async () => {
+  let requestBody: Record<string, unknown> | undefined;
+  const fetcher = mockFetch((_url, init) => {
+    requestBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+
+    return Response.json([
+      {
+        document: {
+          name: "projects/test-project/databases/(default)/documents/dogs/dog-2",
+          fields: { nome: { stringValue: "Wlad" } },
+        },
+      },
+    ]);
+  });
+  const client = new FirestoreRestClient("test-project", {
+    fetcher,
+    tokenProvider: async () => "test-token",
+  });
+
+  const document = await client.findFirstDocument<{ nome: string }>(
+    "dogs",
+    "dog-1",
+  );
+
+  assert.equal(document?.id, "dog-2");
+  assert.equal(document?.data.nome, "Wlad");
+  assert.deepEqual(requestBody, {
+    structuredQuery: {
+      from: [{ collectionId: "dogs" }],
+      orderBy: [
+        {
+          field: { fieldPath: "__name__" },
+          direction: "ASCENDING",
+        },
+      ],
+      limit: 1,
+      where: {
+        fieldFilter: {
+          field: { fieldPath: "__name__" },
+          op: "GREATER_THAN_OR_EQUAL",
+          value: {
+            referenceValue:
+              "projects/test-project/databases/(default)/documents/dogs/dog-1",
+          },
+        },
+      },
+    },
+  });
+});
+
+test("createDocument encodes data and applies a server timestamp", async () => {
+  let requestUrl = "";
+  let requestBody: Record<string, unknown> | undefined;
+  const fetcher = mockFetch((url, init) => {
+    requestUrl = url;
+    requestBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    return Response.json({ commitTime: "2026-08-19T12:00:00Z" });
+  });
+  const client = new FirestoreRestClient("test-project", {
+    fetcher,
+    tokenProvider: async () => "test-token",
+    documentIdGenerator: () => "application-1",
+  });
+  const expiresAt = new Date("2026-09-18T12:00:00Z");
+
+  const result = await client.createDocument(
+    "adoption_application",
+    {
+      status: "pending",
+      attempts: 1,
+      expiresAt,
+      metadata: { accepted: true },
+    },
+    { serverTimestampFields: ["submittedAt"] },
+  );
+
+  assert.equal(
+    requestUrl,
+    "https://firestore.googleapis.com/v1/projects/test-project/databases/(default)/documents:commit",
+  );
+  assert.deepEqual(result, {
+    id: "application-1",
+    commitTime: "2026-08-19T12:00:00Z",
+  });
+  assert.deepEqual(requestBody, {
+    writes: [
+      {
+        update: {
+          name: "projects/test-project/databases/(default)/documents/adoption_application/application-1",
+          fields: {
+            status: { stringValue: "pending" },
+            attempts: { integerValue: "1" },
+            expiresAt: { timestampValue: "2026-09-18T12:00:00.000Z" },
+            metadata: {
+              mapValue: {
+                fields: { accepted: { booleanValue: true } },
+              },
+            },
+          },
+        },
+        currentDocument: { exists: false },
+        updateTransforms: [
+          { fieldPath: "submittedAt", setToServerValue: "REQUEST_TIME" },
+        ],
+      },
+    ],
+  });
+});
+
+test("createDocument uses an explicit idempotency document ID", async () => {
+  let requestBody: Record<string, unknown> | undefined;
+  const client = new FirestoreRestClient("test-project", {
+    fetcher: mockFetch((_url, init) => {
+      requestBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      return Response.json({ commitTime: "2026-08-20T12:00:00Z" });
+    }),
+    tokenProvider: async () => "test-token",
+    documentIdGenerator: () => "must-not-be-used",
+  });
+  const documentId = "123e4567-e89b-42d3-a456-426614174000";
+
+  const result = await client.createDocument(
+    "adoption_application",
+    { status: "pending" },
+    { documentId },
+  );
+
+  assert.equal(result.id, documentId);
+  assert.deepEqual(requestBody, {
+    writes: [
+      {
+        update: {
+          name: `projects/test-project/databases/(default)/documents/adoption_application/${documentId}`,
+          fields: { status: { stringValue: "pending" } },
+        },
+        currentDocument: { exists: false },
+      },
+    ],
+  });
+});
+
+test("getDocument maps a not found response to null", async () => {
+  const client = new FirestoreRestClient("test-project", {
+    fetcher: mockFetch(() =>
+      Response.json(
+        { error: { message: "Document not found" } },
+        { status: 404 },
+      ),
+    ),
+    tokenProvider: async () => "test-token",
+  });
+
+  assert.equal(await client.getDocument("system/missing"), null);
+});
+
+test("Firestore API errors retain their status and message", async () => {
+  const client = new FirestoreRestClient("test-project", {
+    fetcher: mockFetch(() =>
+      Response.json(
+        { error: { message: "Permission denied" } },
+        { status: 403 },
+      ),
+    ),
+    tokenProvider: async () => "test-token",
+  });
+
+  await assert.rejects(
+    () => client.findFirstDocument("dogs"),
+    (error: unknown) => {
+      assert.ok(error instanceof FirestoreRestError);
+      assert.equal(error.status, 403);
+      assert.match(error.message, /Permission denied/);
+      return true;
+    },
+  );
+});
+
+test("generated Firestore document IDs use the expected format", () => {
+  const id = createFirestoreDocumentId();
+
+  assert.match(id, /^[A-Za-z0-9]{20}$/);
+});
