@@ -8,7 +8,7 @@ import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
-} from "@abrigo/ui/Tooltip";
+} from "@jaci/ui/Tooltip";
 import { motion } from "motion/react";
 
 function getInitialTheme(): boolean {

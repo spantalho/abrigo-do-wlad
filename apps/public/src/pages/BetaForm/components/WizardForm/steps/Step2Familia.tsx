@@ -2,8 +2,8 @@ import { FieldWrapper } from "../FieldWrapper";
 import type { FormData } from "../schema";
 import type { FieldError } from "../useWizardForm";
 import styles from "../WizardForm.module.css";
-import * as RadioComponent from "@abrigo/ui/RadioGroup";
-import { Label } from "@abrigo/ui/Label";
+import * as RadioComponent from "@jaci/ui/RadioGroup";
+import { Label } from "@jaci/ui/Label";
 import { FieldRadioGroup } from "../FieldControls";
 
 interface StepProps {

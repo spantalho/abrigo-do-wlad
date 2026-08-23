@@ -1,5 +1,5 @@
 {
-  "name": "@abrigo/ui",
+  "name": "@jaci/ui",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,6 +7,8 @@
     "**/*.css"
   ],
   "exports": {
+    "./styles.css": "./src/styles/index.css",
+    "./theme.css": "./src/styles/theme.css",
     "./*": "./src/*/index.tsx"
   },
   "peerDependencies": {

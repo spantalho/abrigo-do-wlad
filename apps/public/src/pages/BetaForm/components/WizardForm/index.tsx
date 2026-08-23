@@ -5,11 +5,11 @@ import * as Step from "./steps";
 import { STEP_TITLES, useWizardForm } from "./useWizardForm";
 import type { FormData } from "./schema";
 
-import { Button } from "@abrigo/ui/Button";
-import { Badge } from "@abrigo/ui/Badge";
-import * as CardComponent from "@abrigo/ui/Card";
-import * as TooltipComponent from "@abrigo/ui/Tooltip";
-import * as DialogComponent from "@abrigo/ui/Dialog";
+import { Button } from "@jaci/ui/Button";
+import { Badge } from "@jaci/ui/Badge";
+import * as CardComponent from "@jaci/ui/Card";
+import * as TooltipComponent from "@jaci/ui/Tooltip";
+import * as DialogComponent from "@jaci/ui/Dialog";
 import * as Lucide from "lucide-react";
 
 import { ExternalLink } from "@/components/common/ExternalLink";

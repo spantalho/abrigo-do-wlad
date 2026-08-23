@@ -5,10 +5,10 @@ import { AdminNav } from "../AdminNav";
 
 export function AdminLayout() {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", backgroundColor: "#f9fafb" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", backgroundColor: "var(--bg-body)" }}>
       <Header />
       <AdminNav />
-      
+
       <div style={{ flex: 1 }}>
         <Outlet />
       </div>

@@ -8,7 +8,7 @@ export default function NewRecycle() {
   };
 
   return (
-    <RecycleForm 
+    <RecycleForm
       title="Adicionar Novo Ponto"
       buttonLabel="Cadastrar Ponto"
       onSubmit={handleCreate}

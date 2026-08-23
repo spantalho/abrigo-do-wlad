@@ -2,9 +2,9 @@ import { FieldWrapper } from "../FieldWrapper";
 import type { FormData } from "../schema";
 import type { FieldError } from "../useWizardForm";
 import styles from "../WizardForm.module.css";
-import * as SelectComponent from "@abrigo/ui/Select";
-import * as RadioComponent from "@abrigo/ui/RadioGroup";
-import { Label } from "@abrigo/ui/Label";
+import * as SelectComponent from "@jaci/ui/Select";
+import * as RadioComponent from "@jaci/ui/RadioGroup";
+import { Label } from "@jaci/ui/Label";
 import { FieldRadioGroup, FieldSelectTrigger } from "../FieldControls";
 
 interface StepProps {

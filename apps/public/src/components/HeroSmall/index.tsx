@@ -1,4 +1,4 @@
-import { Badge } from "@abrigo/ui/Badge";
+import { Badge } from "@jaci/ui/Badge";
 import styles from "./HeroSmall.module.css";
 
 type HeroSmallProps = {

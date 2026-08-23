@@ -5,8 +5,8 @@ import * as Lucide from "lucide-react";
 import logo from "@/assets/images/logo.png";
 import logoDark from "@/assets/images/logo-dark-mode.png";
 
-import { Button } from "@abrigo/ui/Button";
-import * as Dialog from "@abrigo/ui/Dialog";
+import { Button } from "@jaci/ui/Button";
+import * as Dialog from "@jaci/ui/Dialog";
 import { ThemeToggle } from "../ThemeToggle";
 import { analytics } from "@/utils/analytics";
 
@@ -110,9 +110,9 @@ export function Header() {
         {/* Botão de Doação */}
         <Dialog.Dialog>
           <Dialog.DialogTrigger asChild>
-            <Button 
-              className={styles.mainBtn} 
-              size="md" 
+            <Button
+              className={styles.mainBtn}
+              size="md"
               variant="secondary"
               onClick={() => analytics.trackButtonClick("header_donate")}
             >

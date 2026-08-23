@@ -1,7 +1,7 @@
 import * as React from "react";
 
-import * as RadioComponent from "@abrigo/ui/RadioGroup";
-import * as SelectComponent from "@abrigo/ui/Select";
+import * as RadioComponent from "@jaci/ui/RadioGroup";
+import * as SelectComponent from "@jaci/ui/Select";
 
 import { useFieldContext } from "./FieldContext";
 

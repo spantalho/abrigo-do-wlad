@@ -4,14 +4,14 @@ import styles from "./PageFeedback.module.css";
 import { analytics } from "../../utils/analytics";
 import type { PageVote } from "../../utils/analytics";
 import { useLocation } from "react-router";
-import { Button } from "@abrigo/ui/Button";
+import { Button } from "@jaci/ui/Button";
 import { STORAGE_KEYS } from "../../lib/storage";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@abrigo/ui/Tooltip";
+} from "@jaci/ui/Tooltip";
 
 interface PageFeedbackProps {
   pageId?: string;

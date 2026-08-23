@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
+import { Button } from "@jaci/ui/Button";
+import { Input, NativeSelect } from "@jaci/ui/Field";
 import { SuccessModal } from "../SuccessModal";
 import { ErrorModal } from "../ErrorModal";
 import type { RecyclePoint } from "../../types/recycle";
@@ -61,13 +63,13 @@ export function RecycleForm({ initialData, onSubmit, title, buttonLabel }: Recyc
 
   const handleCloseSuccess = () => {
     setShowSuccess(false);
-    navigate("/admin/recycle"); 
+    navigate("/admin/recycle");
   };
 
   return (
     <div className={styles.container}>
-      
-      <SuccessModal 
+
+      <SuccessModal
         isOpen={showSuccess}
         onClose={handleCloseSuccess}
         title="Tudo certo!"
@@ -81,22 +83,22 @@ export function RecycleForm({ initialData, onSubmit, title, buttonLabel }: Recyc
       />
 
       <div className={styles.headerArea}>
-        <button onClick={() => navigate("/admin/recycle")} className={styles.backButton}>
+        <Button type="button" variant="text" onClick={() => navigate("/admin/recycle")} className={styles.backButton}>
           <ArrowLeft size={20} /> Voltar
-        </button>
+        </Button>
         <h1 className={styles.title}>{title}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className={styles.formGrid}>
-        
+
         <div className={styles.section}>
           <h2>Informações do Local</h2>
-          
+
           <div className={styles.row}>
             <div className={styles.inputGroup}>
               <label>Zona da Cidade</label>
-              <select 
-                value={formData.zone} 
+              <NativeSelect
+                value={formData.zone}
                 onChange={e => setFormData({...formData, zone: e.target.value})}
                 required
               >
@@ -105,68 +107,68 @@ export function RecycleForm({ initialData, onSubmit, title, buttonLabel }: Recyc
                 <option value="ZONA LESTE">ZONA LESTE</option>
                 <option value="ZONA NORTE">ZONA NORTE</option>
                 <option value="CENTRO">CENTRO</option>
-              </select>
+              </NativeSelect>
             </div>
-            
+
             <div className={styles.inputGroup}>
               <label>Bairro</label>
-              <select 
-                required 
-                value={formData.neighborhood} 
+              <NativeSelect
+                required
+                value={formData.neighborhood}
                 onChange={e => setFormData({...formData, neighborhood: e.target.value})}
               >
                 <option value="" disabled>Selecione o bairro...</option>
                 {SP_NEIGHBORHOODS.map(bairro => (
                   <option key={bairro} value={bairro}>{bairro}</option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
           </div>
 
           <div className={styles.inputGroup}>
             <label>Nome do Local (Opcional)</label>
-            <input 
+            <Input
               placeholder="Ex: PetShop Latmia"
-              value={formData.name} 
-              onChange={e => setFormData({...formData, name: e.target.value})} 
+              value={formData.name}
+              onChange={e => setFormData({...formData, name: e.target.value})}
             />
           </div>
 
           <div className={styles.inputGroup}>
             <label>Endereço Completo e Horário</label>
-            <input 
-              required 
+            <Input
+              required
               placeholder="Ex: Rua Antônio de Macedo Soares, 1350 (Seg a Sex das 8h às 20h)"
-              value={formData.address} 
-              onChange={e => setFormData({...formData, address: e.target.value})} 
+              value={formData.address}
+              onChange={e => setFormData({...formData, address: e.target.value})}
             />
           </div>
 
           <div className={styles.row}>
             <div className={styles.inputGroup}>
               <label>Latitude (Opcional)</label>
-              <input 
+              <Input
                 placeholder="Ex: -23.5505"
-                value={formData.latitude || ""} 
-                onChange={e => setFormData({...formData, latitude: e.target.value})} 
+                value={formData.latitude || ""}
+                onChange={e => setFormData({...formData, latitude: e.target.value})}
               />
             </div>
-            
+
             <div className={styles.inputGroup}>
               <label>Longitude (Opcional)</label>
-              <input 
+              <Input
                 placeholder="Ex: -46.6333"
-                value={formData.longitude || ""} 
-                onChange={e => setFormData({...formData, longitude: e.target.value})} 
+                value={formData.longitude || ""}
+                onChange={e => setFormData({...formData, longitude: e.target.value})}
               />
             </div>
           </div>
 
         </div>
 
-        <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
+        <Button type="submit" size="lg" className={styles.submitButton} disabled={isSubmitting}>
           {isSubmitting ? <span>Salvando...</span> : <><Save size={20} /> {buttonLabel}</>}
-        </button>
+        </Button>
       </form>
     </div>
   );

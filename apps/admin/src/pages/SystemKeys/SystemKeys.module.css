@@ -17,7 +17,7 @@
   align-items: center;
   gap: 0.4rem;
   margin-bottom: 0.6rem;
-  color: #92400e;
+  color: var(--warning-text);
   font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -26,7 +26,7 @@
 
 .title {
   margin: 0;
-  color: #111827;
+  color: var(--text-primary);
   font-size: 2rem;
   line-height: 1.1;
 }
@@ -34,7 +34,7 @@
 .subtitle {
   max-width: 650px;
   margin: 0.5rem 0 0;
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 1rem;
   line-height: 1.6;
 }
@@ -52,15 +52,15 @@
 }
 
 .error {
-  border: 1px solid #fecaca;
-  background: #fef2f2;
-  color: #b91c1c;
+  border: 1px solid var(--error);
+  background: var(--accent-red);
+  color: var(--error);
 }
 
 .notice {
-  border: 1px solid #a7f3d0;
-  background: #ecfdf5;
-  color: #047857;
+  border: 1px solid var(--success);
+  background: var(--accent-green);
+  color: var(--success);
 }
 
 .summary {
@@ -74,8 +74,8 @@
   height: 56px;
   flex: 0 0 auto;
   place-items: center;
-  border-radius: 14px;
-  background: #fffbeb;
+  border-radius: var(--radius);
+  background: var(--surface-earth);
   color: var(--primary-hover);
 }
 
@@ -86,13 +86,13 @@
 }
 
 .summaryContent strong {
-  color: #111827;
+  color: var(--text-primary);
   font-size: 1.6rem;
 }
 
 .summaryLabel,
 .summaryDetail {
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 .summaryLabel {
@@ -108,7 +108,7 @@
 
 .listSection h2 {
   margin: 0 0 1rem;
-  color: #1f2937;
+  color: var(--text-primary);
   font-size: 1.25rem;
 }
 
@@ -118,7 +118,7 @@
 }
 
 .keyCard {
-  border-left: 4px solid #d1d5db;
+  border-left: 4px solid var(--border);
 }
 
 .activeKey {
@@ -145,7 +145,7 @@
 
 .keyDetails dt {
   margin-bottom: 0.25rem;
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -155,16 +155,16 @@
 .keyDetails dd {
   margin: 0;
   overflow-wrap: anywhere;
-  color: #374151;
+  color: var(--text-secondary);
   font-size: 0.92rem;
 }
 
 .empty {
   padding: 2rem;
-  border: 2px dashed #d1d5db;
+  border: 2px dashed var(--border);
   border-radius: var(--radius);
   background: var(--white);
-  color: #6b7280;
+  color: var(--text-muted);
   text-align: center;
 }
 

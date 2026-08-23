@@ -31,7 +31,7 @@ export default function EditDog() {
   if (!dogData) return <div className="container" style={{padding:'2rem'}}>Carregando...</div>;
 
   return (
-    <DogForm 
+    <DogForm
       title={`Editar: ${dogData.nome}`}
       buttonLabel="Salvar Alterações"
       initialData={dogData}

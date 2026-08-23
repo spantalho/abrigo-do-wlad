@@ -12,12 +12,12 @@ import { preloadDogImages } from "@/utils/common";
 import { analytics } from "@/utils/analytics";
 
 import HeroSmall from "@/components/HeroSmall";
-import { Badge } from "@abrigo/ui/Badge";
-import { Skeleton } from "@abrigo/ui/Skeleton";
-import { Button } from "@abrigo/ui/Button";
+import { Badge } from "@jaci/ui/Badge";
+import { Skeleton } from "@jaci/ui/Skeleton";
+import { Button } from "@jaci/ui/Button";
 
-import * as TooltipComponent from "@abrigo/ui/Tooltip";
-import * as SelectComponent from "@abrigo/ui/Select";
+import * as TooltipComponent from "@jaci/ui/Tooltip";
+import * as SelectComponent from "@jaci/ui/Select";
 
 import styles from "./Dogs.module.css";
 
@@ -224,7 +224,7 @@ export default function Dogs() {
   React.useEffect(() => {
     if (!loading && dogs.length === 0) {
       const filterKey = `${filters.tags}|${filters.cateIdade}|${filters.cor}`;
-      
+
       if (trackedFiltersRef.current !== filterKey) {
         analytics.trackNoResults("dogs_page", {
           filters_tags: filters.tags || "all",

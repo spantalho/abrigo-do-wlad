@@ -1,5 +1,14 @@
-import { X, AlertTriangle, CheckCircle } from "lucide-react";
-import styles from "./ConfirmModal.module.css"; 
+import { AlertTriangle, CheckCircle } from "lucide-react";
+import { Button } from "@jaci/ui/Button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@jaci/ui/Dialog";
+import styles from "./ConfirmModal.module.css";
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -11,39 +20,30 @@ interface ConfirmModalProps {
   isDestructive?: boolean;
 }
 
-export function ConfirmModal({ 
-  isOpen, onClose, onConfirm, title, message, confirmText = "Confirmar", isDestructive = false 
+export function ConfirmModal({
+  isOpen, onClose, onConfirm, title, message, confirmText = "Confirmar", isDestructive = false
 }: ConfirmModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <button className={styles.closeBtn} onClick={onClose}>
-          <X size={20} />
-        </button>
-
-        <div className={styles.content}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className={styles.modal}>
+        <DialogHeader className={styles.header}>
           <div className={`${styles.iconArea} ${isDestructive ? styles.iconDestructive : styles.iconConfirm}`}>
-            {isDestructive ? <AlertTriangle size={32} /> : <CheckCircle size={32} />}
+            {isDestructive ? <AlertTriangle size={30} /> : <CheckCircle size={30} />}
           </div>
-          
-          <h3>{title}</h3>
-          <p>{message}</p>
-
-          <div className={styles.actions}>
-            <button className={styles.cancelBtn} onClick={onClose}>
-              Cancelar
-            </button>
-            <button 
-              className={`${isDestructive ? styles.btnDestructive : styles.btnConfirm}`} 
-              onClick={onConfirm}
-            >
-              {confirmText}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <DialogDescription className={styles.description}>{message}</DialogDescription>
+        <DialogFooter className={styles.actions}>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button
+            variant={isDestructive ? "danger" : "success"}
+            className={isDestructive ? styles.btnDestructive : styles.btnConfirm}
+            onClick={onConfirm}
+          >
+            {confirmText}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

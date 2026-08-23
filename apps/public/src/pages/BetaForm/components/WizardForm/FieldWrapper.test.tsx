@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import * as SelectComponent from "@abrigo/ui/Select";
+import * as SelectComponent from "@jaci/ui/Select";
 
 import { FieldRadioGroup, FieldSelectTrigger } from "./FieldControls";
 import { FieldWrapper } from "./FieldWrapper";

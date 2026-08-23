@@ -17,7 +17,7 @@ function clearExpiredCacheKeys(ttlThreshold: number = DEFAULT_TTL_MS) {
       if (key?.startsWith(prefix)) {
         const timestampStr = localStorage.getItem(key);
         const timestamp = timestampStr ? parseInt(timestampStr, 10) : 0;
-        
+
         if (now - timestamp > ttlThreshold) {
           keysToRemove.push(key);
         }

@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { Card, CardBody, CardContent, CardHeader, CardTitle } from "@jaci/ui/Card";
 import { AdminLayout } from "./components/AdminLayout";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import AdoptionsDashboard from "./pages/AdoptionsDashboard";
@@ -10,21 +11,32 @@ import NewDog from "./pages/NewDog";
 import NewRecycle from "./pages/NewRecycle";
 import RecycleDashboard from "./pages/RecycleDashboard";
 import SystemKeys from "./pages/SystemKeys";
+import styles from "./routes.module.css";
+
+function RouteState({ title, message, tone = "neutral" }: {
+  title: string;
+  message: string;
+  tone?: "neutral" | "danger";
+}) {
+  return (
+    <main className={styles.routeState}>
+      <Card variant="callout" tone={tone} size="sm" className={styles.routeCard}>
+        <CardBody>
+          <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
+          <CardContent><p>{message}</p></CardContent>
+        </CardBody>
+      </Card>
+    </main>
+  );
+}
 
 function ProtectedLayout() {
   const { user, loading, error } = useAuth();
   if (loading) {
-    return <div style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>Validando sessão...</div>;
+    return <RouteState title="Validando sessão" message="Aguarde enquanto confirmamos seu acesso ao painel." />;
   }
   if (!user) {
-    return (
-      <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: "2rem" }}>
-        <div>
-          <h1>Acesso não autorizado</h1>
-          <p>{error ?? "Esta identidade não possui acesso ao painel."}</p>
-        </div>
-      </main>
-    );
+    return <RouteState title="Acesso não autorizado" message={error ?? "Esta identidade não possui acesso ao painel."} tone="danger" />;
   }
   return <Outlet />;
 }

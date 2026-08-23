@@ -2,9 +2,9 @@ import * as React from "react";
 import * as Lucide from "lucide-react";
 import { useCopyToClipboard } from "@uidotdev/usehooks";
 
-import * as Dialog from "@abrigo/ui/Dialog";
-import { Button } from "@abrigo/ui/Button";
-import { ScrollArea } from "@abrigo/ui/ScrollArea";
+import * as Dialog from "@jaci/ui/Dialog";
+import { Button } from "@jaci/ui/Button";
+import { ScrollArea } from "@jaci/ui/ScrollArea";
 import { analytics } from "@/utils/analytics";
 
 import qrCodePix from "@/assets/images/pix-qr-code.png";

@@ -2,7 +2,7 @@ import { FieldWrapper } from "../FieldWrapper";
 import type { FormData } from "../schema";
 import type { FieldError } from "../useWizardForm";
 import styles from "../WizardForm.module.css";
-import * as SelectComponent from "@abrigo/ui/Select";
+import * as SelectComponent from "@jaci/ui/Select";
 import { FieldSelectTrigger } from "../FieldControls";
 
 interface StepProps {

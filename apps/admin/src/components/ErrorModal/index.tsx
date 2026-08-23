@@ -1,4 +1,12 @@
-import { X, AlertOctagon } from "lucide-react";
+import { AlertOctagon } from "lucide-react";
+import { Button } from "@jaci/ui/Button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@jaci/ui/Dialog";
 import styles from "./ErrorModal.module.css";
 
 interface ErrorModalProps {
@@ -8,34 +16,24 @@ interface ErrorModalProps {
   message?: string;
 }
 
-export function ErrorModal({ 
-  isOpen, 
-  onClose, 
-  title = "Ops! Algo deu errado", 
-  message = "Ocorreu um erro inesperado. Tente novamente." 
+export function ErrorModal({
+  isOpen,
+  onClose,
+  title = "Ops! Algo deu errado",
+  message = "Ocorreu um erro inesperado. Tente novamente."
 }: ErrorModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <button className={styles.closeBtn} onClick={onClose}>
-          <X size={20} />
-        </button>
-
-        <div className={styles.content}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className={styles.modal}>
+        <DialogHeader className={styles.header}>
           <div className={styles.iconArea}>
-            <AlertOctagon size={32} />
+            <AlertOctagon size={30} />
           </div>
-          
-          <h3>{title}</h3>
-          <p>{message}</p>
-
-          <button className={styles.confirmBtn} onClick={onClose}>
-            Tentar Novamente
-          </button>
-        </div>
-      </div>
-    </div>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <DialogDescription className={styles.description}>{message}</DialogDescription>
+        <Button variant="danger" className={styles.confirmBtn} onClick={onClose}>Tentar novamente</Button>
+      </DialogContent>
+    </Dialog>
   );
 }

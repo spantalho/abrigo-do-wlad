@@ -34,11 +34,11 @@ export async function getDogs(): Promise<Dog[]> {
 
 export async function getDogById(id: string): Promise<Dog | null> {
   const docRef = doc(db, DOGS_COLLECTION, id);
-  
-  // Utiliza getDoc nativo do Firebase que passará pelo Local Cache caso já exista, 
+
+  // Utiliza getDoc nativo do Firebase que passará pelo Local Cache caso já exista,
   // senão ele resolve via network transparente por conta da configuração persistente.
   let docSnap = await getDocFromCache(docRef).catch(() => null);
-  
+
   if (!docSnap || !docSnap.exists()) {
     docSnap = await getDoc(docRef);
   }
@@ -90,7 +90,7 @@ export async function getShuffledDogIds(
 
   // Generate a cacheKey based on the filters
   const cacheKey = `shuffled_dogs_${filters.cateIdade}_${filters.cor}_${filters.tags}`;
-  
+
   const snapshot = await fetchWithCache(q, cacheKey);
   const dogIds = snapshot.docs.map((doc) => doc.id);
 

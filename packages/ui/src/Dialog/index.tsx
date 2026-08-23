@@ -50,7 +50,7 @@ const DialogHeader = ({
     <div className={styles.headerContent}>
       <div>{children}</div>
     </div>
-    <DialogPrimitive.Close className={styles.closeButton}>
+    <DialogPrimitive.Close className={styles.closeButton} aria-label="Fechar diálogo">
       <X size={20} />
     </DialogPrimitive.Close>
   </div>

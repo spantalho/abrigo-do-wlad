@@ -1,37 +1,25 @@
 .card {
-  background: #ffffff;
-  border-radius: 16px;
+  padding: 0;
   overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
-  transition: transform 0.2s, box-shadow 0.2s;
-  display: flex;
-  flex-direction: column;
-  max-width: 320px; 
-  margin: 0 auto; 
+  max-width: 320px;
+  margin: 0 auto;
   width: 100%;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border-color: var(--primary);
 }
 
 /* --- IMAGEM --- */
 .cardImage {
   width: 100%;
-  height: 350px; 
+  height: 350px;
   position: relative;
-  background-color: #f3f4f6;
-  border-bottom: 1px solid #f3f4f6;
+  background-color: var(--surface-water);
+  border-bottom: 1px solid var(--surface-water);
 }
 
 .cardImage img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center center; 
+  object-position: center center;
 }
 
 .noImage {
@@ -40,7 +28,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #d1d5db;
+  color: var(--border);
 }
 
 /* --- Badge de Status --- */
@@ -48,22 +36,12 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(4px);
-  color: white;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 0.7rem;
-  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-sm);
   z-index: 2;
 }
-
-.statusBadge[data-status="Adotado"] { background-color: #10b981; }
-.statusBadge[data-status="Em tratamento"] { background-color: #ef4444; }
-.statusBadge[data-status="Vacinado e Castrado"] { background-color: var(--primary); }
 
 /* --- Conteúdo --- */
 .cardContent {
@@ -82,36 +60,22 @@
 
 .cardHeader h3 {
   font-size: 1.1rem;
-  color: #1f2937;
+  color: var(--text-primary);
   font-weight: 700;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 65%; 
+  max-width: 65%;
 }
 
 .sexoTag {
-  font-size: 0.7rem;
-  padding: 3px 8px;
-  border-radius: 20px;
-  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.sexoTag[data-sexo="Macho"] {
-  background-color: #dbeafe;
-  color: #1e40af;
-}
-
-.sexoTag[data-sexo="Fêmea"] {
-  background-color: #fce7f3;
-  color: #9d174d;
-}
-
 .cardInfo {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 0.9rem;
   margin-bottom: 1.2rem;
   display: flex;
@@ -124,7 +88,7 @@
 }
 
 .separator {
-  color: #d1d5db;
+  color: var(--border);
 }
 
 /* --- Botões --- */
@@ -136,41 +100,28 @@
 
 .actionBtn {
   flex: 1;
-  padding: 0.6rem;
-  border-radius: 8px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  color: #374151;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   gap: 0.4rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .actionBtn:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
+  background: var(--bg-body);
+  border-color: var(--border);
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .deleteBtn {
   flex: 0 0 auto;
   width: 42px;
-  color: #ef4444;
-  border-color: #fee2e2;
-  background: #fff0f0;
+  color: var(--error);
+  border-color: var(--accent-red);
+  background: var(--accent-red);
 }
 
 .deleteBtn:hover {
-  background: #ef4444;
-  border-color: #ef4444;
-  color: white;
+  background: var(--error);
+  border-color: var(--error);
+  color: var(--surface-elevated);
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+  box-shadow: var(--shadow-sm);
 }

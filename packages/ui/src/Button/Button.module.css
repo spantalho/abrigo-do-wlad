@@ -61,6 +61,16 @@
   color: var(--text-on-success);
 }
 
+.danger {
+  background-color: var(--accent-red);
+  color: var(--error);
+}
+
+.danger:hover:not(:disabled) {
+  background-color: var(--error);
+  color: var(--text-on-action);
+}
+
 .outline {
   color: var(--text-primary);
   border-color: var(--border);

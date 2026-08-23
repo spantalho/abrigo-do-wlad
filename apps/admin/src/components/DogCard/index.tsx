@@ -1,6 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { Pencil, HeartHandshake, Dog } from "lucide-react";
-import type { DogProps } from "../../types/dogs"; 
+import { Badge } from "@jaci/ui/Badge";
+import { Button } from "@jaci/ui/Button";
+import { Card } from "@jaci/ui/Card";
+import type { DogProps } from "../../types/dogs";
 import styles from "./DogCard.module.css";
 
 interface DogCardProps {
@@ -10,10 +13,15 @@ interface DogCardProps {
 
 export function DogCard({ dog, onDelete }: DogCardProps) {
   const navigate = useNavigate();
+  const statusVariant = dog.status === "Em tratamento"
+    ? "danger"
+    : dog.status === "Adotado"
+      ? "success"
+      : "secondary";
 
   return (
-    <div className={styles.card}>
-      
+    <Card className={styles.card} interactive>
+
       {/* Imagem */}
       <div className={styles.cardImage}>
         {dog.fotos && dog.fotos.length > 0 ? (
@@ -23,20 +31,20 @@ export function DogCard({ dog, onDelete }: DogCardProps) {
             <Dog size={40} />
           </div>
         )}
-        
-        <span className={styles.statusBadge} data-status={dog.status}>
+
+        <Badge className={styles.statusBadge} variant={statusVariant} size="sm">
           {dog.status}
-        </span>
+        </Badge>
       </div>
 
       <div className={styles.cardContent}>
         <div className={styles.cardHeader}>
           <h3>{dog.nome}</h3>
-          <span className={styles.sexoTag} data-sexo={dog.sexo}>
+          <Badge className={styles.sexoTag} variant={dog.sexo === "Macho" ? "secondary" : "danger"} size="sm">
             {dog.sexo}
-          </span>
+          </Badge>
         </div>
-        
+
         <div className={styles.cardInfo}>
           <span className={styles.category}>{dog.cateIdade}</span>
           <span className={styles.separator}>•</span>
@@ -44,23 +52,28 @@ export function DogCard({ dog, onDelete }: DogCardProps) {
         </div>
 
         <div className={styles.cardActions}>
-          <button 
-            onClick={() => navigate(`/admin/dog/edit/${dog.id}`)} 
-            className={styles.actionBtn} 
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(`/admin/dog/edit/${dog.id}`)}
+            className={styles.actionBtn}
             title="Editar"
           >
             <Pencil size={18} /> Editar
-          </button>
+          </Button>
 
-          <button 
+          <Button
+            variant="danger"
+            size="icon-sm"
+            aria-label={`Finalizar jornada de ${dog.nome}`}
             onClick={() => onDelete(dog.id, dog.nome)}
-            className={`${styles.actionBtn} ${styles.deleteBtn}`} 
+            className={`${styles.actionBtn} ${styles.deleteBtn}`}
             title="Excluir"
           >
             <HeartHandshake size={18} />
-          </button>
+          </Button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

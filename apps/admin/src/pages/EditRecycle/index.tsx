@@ -30,7 +30,7 @@ export default function EditRecycle() {
   if (!pointData) return <div className="container" style={{padding:'2rem'}}>Carregando...</div>;
 
   return (
-    <RecycleForm 
+    <RecycleForm
       title={`Editar: ${pointData.neighborhood}`}
       buttonLabel="Salvar Alterações"
       initialData={pointData}

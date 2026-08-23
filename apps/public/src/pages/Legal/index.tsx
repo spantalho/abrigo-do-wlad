@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import * as Lucide from "lucide-react";
-import * as CardComponent from "@abrigo/ui/Card";
+import * as CardComponent from "@jaci/ui/Card";
 import HeroSmall from "../../components/HeroSmall";
 import { ScrollIndicators } from "@/components/ScrollIndicators";
 

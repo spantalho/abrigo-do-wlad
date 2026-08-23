@@ -1,110 +1,128 @@
 .header {
-  background-color: #ffffff;
-  border-bottom: 3px solid rgb(255, 205, 152); 
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 0;
   z-index: 50;
-  height: 105px;
   display: flex;
   align-items: center;
+  min-height: 92px;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--header-bg-scrolled);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: var(--blur);
 }
 
 .headerContent {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
+  gap: 1.5rem;
 }
 
-/* --- LADO ESQUERDO --- */
 .brandArea {
   display: flex;
   align-items: center;
   gap: 1rem;
+  min-width: 0;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: var(--transition);
 }
 
 .brandArea:hover {
-  opacity: 0.8;
+  opacity: 0.82;
 }
 
 .logo {
-  height: 75px;
   width: auto;
+  height: 64px;
   object-fit: contain;
 }
 
 .divider {
   width: 1px;
-  height: 30px;
-  background-color: #e5e7eb;
+  height: 32px;
+  background-color: var(--border);
 }
 
 .adminTag {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: #f97316;
+  border-color: var(--border) !important;
+  background-color: var(--surface-water) !important;
+  color: var(--secondary) !important;
   font-weight: 700;
-  font-size: 0.95rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  background-color: rgba(255, 205, 152, 0.2);
-  padding: 0.4rem 0.8rem;
-  border-radius: 20px;
 }
 
-/* --- LADO DIREITO --- */
 .userArea {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
+  min-width: 0;
 }
 
 .userInfo {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  line-height: 1.2;
+  min-width: 0;
+  line-height: 1.25;
 }
 
 .welcomeLabel {
+  color: var(--text-muted);
   font-size: 0.75rem;
-  color: #6b7280;
 }
 
 .userName {
+  max-width: 260px;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.9rem;
   font-weight: 600;
-  color: #374151;
-  font-size: 1rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .logoutBtn {
-  background-color: #fee2e2;
-  color: #ef4444;
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  border-color: var(--accent-red) !important;
+  border-radius: var(--radius-lg) !important;
+  background-color: var(--accent-red) !important;
+  color: var(--error) !important;
 }
 
 .logoutBtn:hover {
-  background-color: #ef4444;
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+  border-color: var(--error) !important;
+  background-color: var(--error) !important;
+  color: var(--text-on-action) !important;
 }
 
-/* Responsividade simples */
 @media (max-width: 600px) {
-  .welcomeLabel { display: none; }
-  .adminTag > span:last-child { display: none; }
-  .logo { height: 60px; }
+  .header {
+    min-height: 76px;
+  }
+
+  .headerContent {
+    gap: 0.75rem;
+  }
+
+  .logo {
+    height: 52px;
+  }
+
+  .divider,
+  .welcomeLabel {
+    display: none;
+  }
+
+  .userName {
+    max-width: 120px;
+    font-size: 0.78rem;
+  }
+
+  .adminTag {
+    padding-inline: 0.5rem !important;
+  }
 }

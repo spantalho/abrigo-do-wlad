@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { Dog, Calendar, Phone, Eye, Inbox, Printer, X, Check, XCircle, MessageCircle } from "lucide-react";
+import { Dog, Calendar, Phone, Eye, Inbox, Printer, Check, XCircle, MessageCircle } from "lucide-react";
+import { Button } from "@jaci/ui/Button";
+import { Badge } from "@jaci/ui/Badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@jaci/ui/Dialog";
 import { getAdoptionApplications, updateAdoptionStatus } from "../../services/adoptions";
 import { ConfirmModal } from "../../components/ConfirmModal";
 import { SuccessModal } from "../../components/SuccessModal";
@@ -40,7 +43,7 @@ export default function AdoptionsDashboard() {
   const [actionModal, setActionModal] = useState<{ isOpen: boolean, type: 'approved' | 'rejected', req: AdoptionRequest | null }>({
     isOpen: false, type: 'approved', req: null
   });
-  
+
   const [successInfo, setSuccessInfo] = useState<{ isOpen: boolean, title: string, message: string }>({
     isOpen: false, title: "", message: ""
   });
@@ -51,7 +54,7 @@ export default function AdoptionsDashboard() {
       const sortedData = data.sort((a, b) => {
         if (a.status === 'pending' && b.status !== 'pending') return -1;
         if (a.status !== 'pending' && b.status === 'pending') return 1;
-        
+
         const timeA = a.submittedAt ? Date.parse(a.submittedAt) : 0;
         const timeB = b.submittedAt ? Date.parse(b.submittedAt) : 0;
         return timeB - timeA;
@@ -69,15 +72,15 @@ export default function AdoptionsDashboard() {
 
     try {
       await updateAdoptionStatus(id, type);
-      
+
       setRequests(prev => prev.map(r => r.id === id ? { ...r, status: type } : r));
       setActionModal({ isOpen: false, type: 'approved', req: null });
-      
+
       setSuccessInfo({
         isOpen: true,
         title: type === 'approved' ? "Adoção Aprovada!" : "Solicitação Reprovada",
-        message: type === 'approved' 
-          ? `O status de ${nome_adotante} foi alterado para Aprovado.` 
+        message: type === 'approved'
+          ? `O status de ${nome_adotante} foi alterado para Aprovado.`
           : `O status de ${nome_adotante} foi alterado para Reprovado.`
       });
 
@@ -88,9 +91,9 @@ export default function AdoptionsDashboard() {
   };
 
   const getStatusBadge = (status?: string) => {
-    if (status === 'approved') return <span className={`${styles.statusBadge} ${styles.badgeApproved}`}>Aprovado</span>;
-    if (status === 'rejected') return <span className={`${styles.statusBadge} ${styles.badgeRejected}`}>Reprovado</span>;
-    return <span className={`${styles.statusBadge} ${styles.badgePending}`}>Pendente</span>;
+    if (status === 'approved') return <Badge variant="success" size="sm">Aprovado</Badge>;
+    if (status === 'rejected') return <Badge variant="danger" size="sm">Reprovado</Badge>;
+    return <Badge variant="outline" size="sm">Pendente</Badge>;
   };
 
   const formatDate = (timestamp?: string) => {
@@ -106,13 +109,13 @@ export default function AdoptionsDashboard() {
 
   const getWhatsAppLink = (phone?: string, name?: string) => {
     if (!phone) return "";
-    const cleanPhone = phone.replace(/\D/g, ''); 
-    
+    const cleanPhone = phone.replace(/\D/g, '');
+
     let finalPhone = cleanPhone;
     if (cleanPhone.length === 10 || cleanPhone.length === 11) {
       finalPhone = `55${cleanPhone}`;
     }
-    
+
     const message = encodeURIComponent(`Olá ${name || 'Candidato'}, sou do Abrigo do Wlad e estou entrando em contato sobre a sua solicitação de adoção.`);
     return `https://wa.me/${finalPhone}?text=${message}`;
   };
@@ -127,7 +130,7 @@ export default function AdoptionsDashboard() {
       </div>
 
       {loading ? (
-        <p style={{ color: "#6b7280" }}>Buscando solicitações...</p>
+        <p style={{ color: "var(--text-muted)" }}>Buscando solicitações...</p>
       ) : requests.length === 0 ? (
         <div className={styles.emptyState}>
           <Inbox size={48} style={{ margin: "0 auto 1rem", opacity: 0.5 }} />
@@ -147,10 +150,10 @@ export default function AdoptionsDashboard() {
                     <Dog size={16} />
                     <span>{req.animal_especifico || "Qualquer cãozinho"}</span>
                   </div>
-                  
+
                   {/* Link para o whatsapp no telefone */}
                   {req.telefone ? (
-                    <a 
+                    <a
                       href={getWhatsAppLink(req.telefone, req.nome_adotante)}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -177,43 +180,46 @@ export default function AdoptionsDashboard() {
               <div className={styles.cardActions}>
                 {req.status === 'pending' && (
                   <>
-                    <button 
-                      className={`${styles.actionBtn} ${styles.approveBtn}`} 
+                    <Button
+                      size="sm"
+                      variant="success"
+                      className={`${styles.actionBtn} ${styles.approveBtn}`}
                       onClick={() => setActionModal({ isOpen: true, type: 'approved', req })}
                     >
                       <Check size={16} style={{ display: 'inline', marginBottom: '-3px' }}/> Aprovar
-                    </button>
-                    <button 
-                      className={`${styles.actionBtn} ${styles.rejectBtn}`} 
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      className={`${styles.actionBtn} ${styles.rejectBtn}`}
                       onClick={() => setActionModal({ isOpen: true, type: 'rejected', req })}
                     >
                       <XCircle size={16} style={{ display: 'inline', marginBottom: '-3px' }}/> Reprovar
-                    </button>
+                    </Button>
                   </>
                 )}
-                
-                <button className={styles.viewButton} onClick={() => setSelectedReq(req)}>
+
+                <Button variant="secondary" size="sm" className={styles.viewButton} onClick={() => setSelectedReq(req)}>
                   <Eye size={18} /> Ver Ficha
-                </button>
+                </Button>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {selectedReq && (
-        <div className={styles.modalOverlay} onClick={() => setSelectedReq(null)}>
-          <div className={`${styles.modalContainer} ${styles.printArea}`} onClick={e => e.stopPropagation()}>
-            
+      <Dialog open={Boolean(selectedReq)} onOpenChange={(open) => !open && setSelectedReq(null)}>
+        {selectedReq && (
+          <DialogContent className={`${styles.modalContainer} ${styles.printArea}`}>
+
             <div className={`${styles.modalHeader} ${styles.noPrint}`}>
-              <h2>Ficha de Adoção</h2>
+              <DialogHeader>
+                <DialogTitle>Ficha de Adoção</DialogTitle>
+              </DialogHeader>
               <div className={styles.modalActions}>
-                <button className={styles.printBtn} onClick={() => window.print()}>
+                <Button className={styles.printBtn} onClick={() => window.print()}>
                   <Printer size={18} /> Imprimir Ficha
-                </button>
-                <button className={styles.closeBtn} onClick={() => setSelectedReq(null)}>
-                  <X size={24} />
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -323,11 +329,11 @@ export default function AdoptionsDashboard() {
                 <DataItem label="Observações Livres" value={selectedReq.obs} />
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </DialogContent>
+        )}
+      </Dialog>
 
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={actionModal.isOpen}
         onClose={() => setActionModal({ isOpen: false, type: 'approved', req: null })}
         onConfirm={handleConfirmAction}
@@ -336,13 +342,13 @@ export default function AdoptionsDashboard() {
         isDestructive={actionModal.type === 'rejected'}
         message={
           <>
-            Tem certeza que deseja <strong>{actionModal.type === 'approved' ? 'APROVAR' : 'REPROVAR'}</strong> a 
+            Tem certeza que deseja <strong>{actionModal.type === 'approved' ? 'APROVAR' : 'REPROVAR'}</strong> a
             solicitação de <strong>{actionModal.req?.nome_adotante}</strong>?
           </>
         }
       />
 
-      <SuccessModal 
+      <SuccessModal
         isOpen={successInfo.isOpen}
         onClose={() => setSuccessInfo({ isOpen: false, title: "", message: "" })}
         title={successInfo.title}

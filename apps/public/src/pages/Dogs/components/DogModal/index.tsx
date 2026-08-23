@@ -3,18 +3,18 @@ import * as Lucide from "lucide-react";
 import { Link } from "react-router";
 import { type Dog, CORES_MAP } from "@/types/dogs";
 import styles from "./DogModal.module.css";
-import { Button } from "@abrigo/ui/Button";
+import { Button } from "@jaci/ui/Button";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   DialogDescription,
-} from "@abrigo/ui/Dialog";
-import { Badge } from "@abrigo/ui/Badge";
+} from "@jaci/ui/Dialog";
+import { Badge } from "@jaci/ui/Badge";
 import { ExternalLink } from "@/components/common/ExternalLink";
-import * as CardComponent from "@abrigo/ui/Card";
-import { Carousel, type CarouselAPI } from "@abrigo/ui/Carousel";
-import { ScrollArea } from "@abrigo/ui/ScrollArea";
+import * as CardComponent from "@jaci/ui/Card";
+import { Carousel, type CarouselAPI } from "@jaci/ui/Carousel";
+import { ScrollArea } from "@jaci/ui/ScrollArea";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { analytics } from "@/utils/analytics";
 

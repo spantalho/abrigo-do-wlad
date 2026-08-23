@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { LogOut, ShieldCheck } from "lucide-react";
-import { Badge } from "@abrigo/ui/Badge";
-import { Button } from "@abrigo/ui/Button";
+import { Badge } from "@jaci/ui/Badge";
+import { Button } from "@jaci/ui/Button";
 import { useAuth } from "../../contexts/AuthContext";
 import styles from "./Header.module.css";
-import logoImg from "../../assets/logo.png";
+import logoImg from "../../assets/logo1.png";
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -13,7 +13,7 @@ export function Header() {
   return (
     <header className={styles.header}>
       <div className={`container ${styles.headerContent}`}>
-        
+
         {/* Lado Esquerdo: Logo e Título */}
         <div className={styles.brandArea} onClick={() => navigate("/admin")}>
           <img src={logoImg} alt="Logo Abrigo" className={styles.logo} />
@@ -21,6 +21,7 @@ export function Header() {
           <Badge
             className={styles.adminTag}
             leftIcon={<ShieldCheck size={18} />}
+            variant="outline"
             size="sm"
           >
             Painel Admin
@@ -37,8 +38,9 @@ export function Header() {
           </div>
 
           <Button
-            onClick={logout} 
-            className={styles.logoutBtn} 
+            onClick={logout}
+            className={styles.logoutBtn}
+            variant="outline"
             size="icon"
             title="Sair do sistema"
             aria-label="Sair do sistema"

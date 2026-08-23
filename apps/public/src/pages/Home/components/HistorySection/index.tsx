@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import * as Lucide from "lucide-react";
 
-import { Button } from "@abrigo/ui/Button";
-import { Badge } from "@abrigo/ui/Badge";
+import { Button } from "@jaci/ui/Button";
+import { Badge } from "@jaci/ui/Badge";
 
 import styles from "./HistorySection.module.css";
 import sectionImage from "@/assets/images/wlad.jpg";

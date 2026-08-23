@@ -3,8 +3,8 @@ import { useNavigate } from "react-router";
 import * as Lucide from "lucide-react";
 
 import HeroSmall from "@/components/HeroSmall";
-import { Badge } from "@abrigo/ui/Badge";
-import { Button } from "@abrigo/ui/Button";
+import { Badge } from "@jaci/ui/Badge";
+import { Button } from "@jaci/ui/Button";
 import {
   Dialog,
   DialogContent,
@@ -12,12 +12,12 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@abrigo/ui/Dialog";
+} from "@jaci/ui/Dialog";
 import { getThirdPartyImage } from "@/utils/common";
 import { WizardForm } from "./components/WizardForm";
 import { ExternalLink } from "@/components/common/ExternalLink";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
-import { Skeleton } from "@abrigo/ui/Skeleton";
+import { Skeleton } from "@jaci/ui/Skeleton";
 
 import styles from "./Form.module.css";
 
@@ -125,7 +125,7 @@ export default function BetaForm() {
             <h2>Solicitações Temporariamente Pausadas</h2>
             <p>
               No momento não estamos recebendo novas solicitações de adoção.
-              Por favor, acompanhe nossas redes sociais para saber quando 
+              Por favor, acompanhe nossas redes sociais para saber quando
               voltaremos a receber candidaturas!
             </p>
             <div style={{ marginTop: "1rem" }}>
@@ -156,12 +156,12 @@ export default function BetaForm() {
           Em caso de falha, utilize{" "}
           <ExternalLink href={FALLBACK_FORM}>este formulário</ExternalLink>
         </p>
-        
+
         {import.meta.env.DEV && (
           <div style={{ marginTop: "1rem" }}>
-            <Button 
-              size="sm" 
-              variant="success" 
+            <Button
+              size="sm"
+              variant="success"
               leftIcon={<Lucide.TestTube size={18}/>}
               onClick={async () => {
                 try {

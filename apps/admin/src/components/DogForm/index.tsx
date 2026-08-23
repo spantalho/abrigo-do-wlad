@@ -2,6 +2,8 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDropzone } from "react-dropzone";
 import { ArrowLeft, X, Save, UploadCloud } from "lucide-react";
+import { Button } from "@jaci/ui/Button";
+import { Input, NativeSelect, Textarea } from "@jaci/ui/Field";
 import { CORES_MAP, type DogProps } from "../../types/dogs";
 import { uploadImageToCloudinary } from "../../services/cloudinary";
 import { SuccessModal } from "../SuccessModal";
@@ -21,7 +23,7 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
-  
+
   // ESTADOS PARA OS MODAIS
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorInfo, setErrorInfo] = useState({ show: false, message: "" });
@@ -59,7 +61,7 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
   const removeLocalFile = (indexToRemove: number) => {
     setLocalFiles(prev => prev.filter((_, index) => index !== indexToRemove));
     setPreviews(prev => {
-      URL.revokeObjectURL(prev[indexToRemove]); 
+      URL.revokeObjectURL(prev[indexToRemove]);
       return prev.filter((_, index) => index !== indexToRemove);
     });
   };
@@ -75,7 +77,7 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
   const toggleTag = (tag: string) => {
     setFormData(prev => {
       const tags = prev.tags || [];
-      return tags.includes(tag) 
+      return tags.includes(tag)
         ? { ...prev, tags: tags.filter(t => t !== tag) }
         : { ...prev, tags: [...tags, tag] };
     });
@@ -97,7 +99,7 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
       }
 
       const finalPhotos = [...(formData.fotos || []), ...newUploadedUrls];
-      
+
       const finalData = {
         ...formData,
         fotos: finalPhotos
@@ -124,9 +126,9 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
 
   return (
     <div className={styles.container}>
-      
+
       {/* Modal de Sucesso */}
-      <SuccessModal 
+      <SuccessModal
         isOpen={showSuccess}
         onClose={handleCloseSuccess}
         title="Tudo certo!"
@@ -141,44 +143,44 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
       />
 
       <div className={styles.headerArea}>
-        <button onClick={() => navigate("/admin")} className={styles.backButton}>
+        <Button type="button" variant="text" onClick={() => navigate("/admin/dog")} className={styles.backButton}>
           <ArrowLeft size={20} /> Voltar
-        </button>
+        </Button>
         <h1 className={styles.title}>{title}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className={styles.formGrid}>
-        
+
         <div className={styles.section}>
           <h2>Dados Principais</h2>
           <div className={styles.row}>
             <div className={styles.inputGroup}>
               <label>Nome</label>
-              <input required value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})} />
+              <Input required value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})} />
             </div>
             <div className={styles.inputGroup}>
               <label>Idade (ex: "2 anos")</label>
-              <input required value={formData.idade} onChange={e => setFormData({...formData, idade: e.target.value})} />
+              <Input required value={formData.idade} onChange={e => setFormData({...formData, idade: e.target.value})} />
             </div>
           </div>
           <div className={styles.row}>
             <div className={styles.inputGroup}>
               <label>Categoria</label>
-              <select value={formData.cateIdade} onChange={e => setFormData({...formData, cateIdade: e.target.value as DogProps["cateIdade"]})}>
+              <NativeSelect value={formData.cateIdade} onChange={e => setFormData({...formData, cateIdade: e.target.value as DogProps["cateIdade"]})}>
                 <option value="filhote">Filhote</option>
                 <option value="adulto">Adulto</option>
                 <option value="idoso">Idoso</option>
-              </select>
+              </NativeSelect>
             </div>
             <div className={styles.inputGroup}>
               <label>Sexo</label>
-              <select 
-                value={formData.sexo} 
+              <NativeSelect
+                value={formData.sexo}
                 onChange={e => setFormData({...formData, sexo: e.target.value as DogProps["sexo"]})}
               >
                 <option value="Macho">Macho</option>
                 <option value="Fêmea">Fêmea</option>
-              </select>
+              </NativeSelect>
             </div>
           </div>
         </div>
@@ -187,27 +189,27 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
           <h2>Fotos</h2>
           {formData.fotos && formData.fotos.length > 0 && (
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{display:'block', marginBottom:'0.5rem', fontWeight:600, color:'#4b5563'}}>
+              <label style={{display:'block', marginBottom:'0.5rem', fontWeight:600, color:'var(--text-secondary)'}}>
                 Fotos Salvas (Clique no X para excluir)
               </label>
               <div className={styles.previewGrid}>
                 {formData.fotos.map((url, index) => (
                   <div key={url} className={styles.previewCard}>
                     <img src={url} alt="Foto salva" />
-                    <button type="button" className={styles.removePhotoBtn} onClick={() => removeExistingPhoto(url)}>
+                    <Button type="button" variant="outline" size="icon-sm" aria-label={`Remover foto ${index + 1}`} className={styles.removePhotoBtn} onClick={() => removeExistingPhoto(url)}>
                       <X size={14} />
-                    </button>
+                    </Button>
                     {index === 0 && <span className={styles.mainBadge}>Capa Atual</span>}
                   </div>
                 ))}
               </div>
             </div>
           )}
-          
+
           <div {...getRootProps()} className={`${styles.dropzone} ${isDragActive ? styles.dragActive : ''}`}>
             <input {...getInputProps()} />
             <div className={styles.dropContent}>
-              <UploadCloud size={40} color={isDragActive ? "#f59e0b" : "#9ca3af"} />
+              <UploadCloud size={40} color={isDragActive ? "var(--primary)" : "var(--text-muted)"} />
               {isDragActive ? <p>Solte aqui...</p> : <p>Arraste novas fotos aqui</p>}
               <span>(Clique para selecionar)</span>
             </div>
@@ -216,12 +218,12 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
           {previews.length > 0 && (
             <div className={styles.previewGrid}>
               {previews.map((url, index) => (
-                <div key={index} className={styles.previewCard} style={{ borderColor: '#f59e0b' }}>
+                <div key={index} className={styles.previewCard} style={{ borderColor: 'var(--primary)' }}>
                   <img src={url} alt="Nova foto" />
-                  <button type="button" className={styles.removePhotoBtn} onClick={() => removeLocalFile(index)}>
+                  <Button type="button" variant="outline" size="icon-sm" aria-label={`Remover nova foto ${index + 1}`} className={styles.removePhotoBtn} onClick={() => removeLocalFile(index)}>
                     <X size={14} />
-                  </button>
-                  <span className={styles.mainBadge} style={{background:'#f59e0b'}}>Nova</span>
+                  </Button>
+                  <span className={styles.mainBadge} style={{background:'var(--primary)'}}>Nova</span>
                 </div>
               ))}
             </div>
@@ -233,15 +235,15 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
           <div className={styles.row}>
              <div className={styles.inputGroup}>
               <label>Cor</label>
-              <select value={formData.cor} onChange={e => setFormData({...formData, cor: e.target.value})}>
+              <NativeSelect value={formData.cor} onChange={e => setFormData({...formData, cor: e.target.value})}>
                 {Object.entries(CORES_MAP).map(([key, label]) => (
                   <option key={key} value={key}>{label}</option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <div className={styles.inputGroup}>
               <label>Temperamento</label>
-              <input value={formData.temperamento} onChange={e => setFormData({...formData, temperamento: e.target.value})} />
+              <Input value={formData.temperamento} onChange={e => setFormData({...formData, temperamento: e.target.value})} />
             </div>
           </div>
 
@@ -249,44 +251,46 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
             <label>Tags</label>
             <div className={styles.tagsContainer}>
               {COMMON_TAGS.map(tag => (
-                <button
+                <Button
                   type="button"
+                  size="sm"
+                  variant={formData.tags?.includes(tag) ? "primary" : "outline"}
                   key={tag}
                   className={`${styles.tagButton} ${formData.tags?.includes(tag) ? styles.active : ''}`}
                   onClick={() => toggleTag(tag)}
                 >
                   {tag}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
 
           <div className={styles.inputGroup}>
             <label>Link Instagram</label>
-            <input value={formData.instaLink} onChange={e => setFormData({...formData, instaLink: e.target.value})} />
+            <Input value={formData.instaLink} onChange={e => setFormData({...formData, instaLink: e.target.value})} />
           </div>
 
           <div className={styles.inputGroup}>
             <label>Descrição</label>
-            <textarea rows={5} value={formData.descricaoCompleta} onChange={e => setFormData({...formData, descricaoCompleta: e.target.value})} />
+            <Textarea rows={5} value={formData.descricaoCompleta} onChange={e => setFormData({...formData, descricaoCompleta: e.target.value})} />
           </div>
 
           <div className={styles.inputGroup}>
             <label>Status</label>
-            <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
+            <NativeSelect value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
                <option value="Vacinado e Castrado">Vacinado e Castrado</option>
               <option value="Disponível para adoção">Disponível para adoção</option>
               <option value="Vacinado">Apenas Vacinado</option>
               <option value="Castrado">Apenas Castrado</option>
               <option value="Em tratamento">Em tratamento</option>
               <option value="Adotado">Adotado</option>
-            </select>
+            </NativeSelect>
           </div>
         </div>
 
-        <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
+        <Button type="submit" size="lg" className={styles.submitButton} disabled={isSubmitting}>
           {isSubmitting ? <span>{uploadProgress}</span> : <><Save size={20} /> {buttonLabel}</>}
-        </button>
+        </Button>
       </form>
     </div>
   );

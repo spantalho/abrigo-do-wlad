@@ -1,17 +1,17 @@
 import { Link } from "react-router";
 import { useRef } from "react";
 import * as Lucide from "lucide-react";
-import * as CardComponent from "@abrigo/ui/Card";
+import * as CardComponent from "@jaci/ui/Card";
 import HeroSmall from "../../components/HeroSmall";
-import { Skeleton } from "@abrigo/ui/Skeleton";
+import { Skeleton } from "@jaci/ui/Skeleton";
 import { ScrollIndicators } from "../../components/ScrollIndicators";
 
 import { getOptimizedImageUrl } from "../../utils/cdn";
 import { useDailyDog } from "../../hooks/useDailyDog";
 
 import styles from "./About.module.css";
-import * as TooltipComponent from "@abrigo/ui/Tooltip";
-import { Badge } from "@abrigo/ui/Badge";
+import * as TooltipComponent from "@jaci/ui/Tooltip";
+import { Badge } from "@jaci/ui/Badge";
 
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { PageFeedback } from "@/components/PageFeedback";

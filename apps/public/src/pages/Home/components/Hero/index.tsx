@@ -1,9 +1,9 @@
 import { Link } from "react-router";
 import * as Lucide from "lucide-react";
 
-import { Button } from "@abrigo/ui/Button";
-import { Badge } from "@abrigo/ui/Badge";
-import { Skeleton } from "@abrigo/ui/Skeleton";
+import { Button } from "@jaci/ui/Button";
+import { Badge } from "@jaci/ui/Badge";
+import { Skeleton } from "@jaci/ui/Skeleton";
 import { analytics } from "@/utils/analytics";
 
 import type { Dog } from "@/types/dogs";

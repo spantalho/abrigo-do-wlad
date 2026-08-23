@@ -1,0 +1,204 @@
+:root {
+  /* Typography */
+  --font-sans: "Poppins", sans-serif;
+  --text-primary: #1e2926;
+  --text-secondary: #405658;
+  --text-muted: #5f6f70;
+  --text-on-primary: #ffffff;
+  --text-on-secondary: #ffffff;
+  --text-on-action: #ffffff;
+  --text-on-success: #ffffff;
+  --text-on-image: #ffffff;
+
+  /* Water, sky, earth and vegetation */
+  --brand-navy: #02264b;
+  --brand-water: #057685;
+  --brand-coral: #f95c33;
+  --brand-earth: #8a5a36;
+  --brand-leaf: #55733f;
+
+  /* Semantic colors */
+  --primary: #056b78;
+  --primary-hover: #034f59;
+  --secondary: var(--brand-navy);
+  --secondary-hover: #011b36;
+  --action: #b23d20;
+  --action-hover: #8f2f19;
+  --focus-ring: rgba(5, 107, 120, 0.24);
+
+  /* Surfaces */
+  --bg-body: #f2f8f8;
+  --surface-card: #fffdf9;
+  --surface-elevated: #ffffff;
+  --surface-water: #dceff0;
+  --surface-earth: #f1e2d2;
+  --surface-leaf: #e3ead8;
+  --surface-coral: #fde6df;
+  --border: #bdcdcd;
+  --border-light: #d7e2e1;
+  --skeleton: #dce7e6;
+
+  /* Contextual surfaces */
+  --footer-bg: var(--surface-water);
+  --contact-bg: #c2e1e4;
+  --contact-text: var(--secondary);
+  --contact-hover-bg: var(--btn-secondary-hover);
+  --contact-hover-text: var(--text-on-secondary);
+  --feedback-bg: #e4f1f2;
+  --feedback-hover-bg: #c6e3e5;
+
+  /* Accent colors */
+  --accent-neutral: var(--surface-water);
+  --accent-primary: var(--surface-water);
+  --accent-secondary: var(--surface-earth);
+  --accent-green: var(--surface-leaf);
+  --accent-red: #f9ded8;
+  --accent-instagram: #ce579a;
+
+  /* Button colors */
+  --btn-primary: var(--surface-coral);
+  --btn-primary-hover: var(--action);
+  --btn-secondary: var(--surface-water);
+  --btn-secondary-hover: var(--secondary);
+  --btn-success: var(--surface-leaf);
+  --btn-success-hover: var(--brand-leaf);
+  --btn-ghost-bg: rgba(5, 107, 120, 0.11);
+  --btn-outline-bg: rgba(255, 253, 249, 0.78);
+  --btn-hover-gray: var(--surface-water);
+
+  /* Badge colors */
+  --badge-primary: var(--action);
+  --badge-secondary: var(--secondary);
+  --badge-danger: #b42318;
+  --badge-success: var(--brand-leaf);
+
+  /* Shadow and radius */
+  --shadow-sm: 0 2px 5px rgba(25, 67, 72, 0.08);
+  --shadow-md: 0 6px 16px rgba(25, 67, 72, 0.11);
+  --shadow-lg: 0 14px 32px rgba(25, 67, 72, 0.14);
+  --radius: 16px;
+  --radius-sm: 8px;
+  --radius-lg: 24px;
+  --radius-xl: 999px;
+
+  /* Effects */
+  --transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    gap 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --blur: blur(6px);
+
+  /* Feedback and status */
+  --success: #41612f;
+  --error: #b42318;
+  --warning-bg: #fef3c7;
+  --warning-text: #92400e;
+  --warning-border: #fde68a;
+
+  /* Overlays and transparency */
+  --overlay-dark: rgba(0, 0, 0, 0.6);
+  --carousel-bg: rgba(0, 0, 0, 0.4);
+  --glass: rgba(215, 236, 234, 0.3);
+  --glass-secondary: rgba(2, 38, 75, 0.12);
+  --header-bg-scrolled: rgba(242, 248, 248, 0.9);
+
+  /* Hero gradient */
+  --hero-gradient-start: rgba(2, 38, 75, 0.62);
+  --hero-gradient-end: rgba(0, 0, 0, 0.6);
+
+  /* UI elements */
+  --dot-inactive: #a9a9a9;
+  --dot-hover: rgba(255, 255, 255, 0.85);
+
+  /* Scrollbar */
+  --scroll-track: #e8f1f1;
+  --scroll-thumb: #91aaab;
+  --scroll-corner: #d7e2e1;
+  --scroll-shadow: rgba(2, 38, 75, 0.2);
+
+  /* Card gradients */
+  --card-image-gradient: rgba(5, 118, 133, 0.16);
+  --card-image-gradient-hover: rgba(5, 118, 133, 0.1);
+
+  /* Constant colors */
+  --always-white: #ffffff;
+}
+
+body.dark-mode {
+  --bg-body: #1b100b;
+  --surface-card: #2a1912;
+  --surface-elevated: #352118;
+  --surface-water: #30231c;
+  --surface-earth: #40271b;
+  --surface-leaf: #30351f;
+  --surface-coral: #492218;
+  --text-primary: #fff1e8;
+  --text-secondary: #dfc5b5;
+  --text-muted: #b99e8e;
+  --text-on-primary: #21100b;
+  --text-on-secondary: #21140b;
+  --text-on-action: #21100b;
+  --text-on-success: #10180d;
+  --border: #5a3a2b;
+  --border-light: #5a3a2b;
+  --skeleton: #3b281f;
+  --footer-bg: #24140e;
+  --contact-bg: #422117;
+  --contact-text: #ff9875;
+  --contact-hover-bg: #ff7950;
+  --contact-hover-text: #21100b;
+  --feedback-bg: #3b241a;
+  --feedback-hover-bg: #563023;
+  --primary: #ff7950;
+  --primary-hover: #ff9875;
+  --secondary: #efa057;
+  --secondary-hover: #ffc07a;
+  --action: #ff7950;
+  --action-hover: #ff9875;
+  --focus-ring: rgba(255, 121, 80, 0.3);
+  --accent-neutral: var(--surface-water);
+  --accent-primary: var(--surface-earth);
+  --accent-secondary: var(--surface-earth);
+  --accent-green: var(--surface-leaf);
+  --accent-red: #4e241d;
+  --accent-instagram: #d76697;
+  --btn-primary: var(--surface-coral);
+  --btn-primary-hover: var(--action);
+  --btn-secondary: #3a261a;
+  --btn-secondary-hover: var(--secondary);
+  --btn-success: var(--surface-leaf);
+  --btn-success-hover: #a8c77d;
+  --badge-primary: var(--action);
+  --badge-secondary: var(--secondary);
+  --badge-danger: #ff8a78;
+  --badge-success: #a8c77d;
+  --success: #b5d48b;
+  --error: #ff9a89;
+  --warning-bg: #4a2c10;
+  --warning-text: #ffd18a;
+  --warning-border: #70451c;
+  --header-bg-scrolled: rgba(27, 16, 11, 0.94);
+  --glass: rgba(64, 39, 27, 0.58);
+  --glass-secondary: rgba(20, 10, 6, 0.8);
+  --overlay-dark: rgba(0, 0, 0, 0.75);
+  --carousel-bg: rgba(0, 0, 0, 0.6);
+  --btn-ghost-bg: rgba(255, 121, 80, 0.12);
+  --btn-outline-bg: rgba(42, 25, 18, 0.84);
+  --btn-hover-gray: var(--surface-earth);
+  --dot-inactive: #876653;
+  --dot-hover: rgba(255, 152, 117, 0.9);
+  --scroll-track: var(--bg-body);
+  --scroll-thumb: #76503d;
+  --scroll-corner: var(--surface-card);
+  --scroll-shadow: rgba(7, 3, 2, 0.55);
+  --card-image-gradient: rgba(255, 121, 80, 0.16);
+  --card-image-gradient-hover: rgba(255, 121, 80, 0.09);
+  --hero-gradient-start: rgba(65, 29, 17, 0.76);
+  --hero-gradient-end: rgba(0, 0, 0, 0.7);
+  --shadow-sm: 0 4px 8px -2px rgba(7, 3, 2, 0.45);
+  --shadow-md: 0 10px 20px -5px rgba(7, 3, 2, 0.56);
+  --shadow-lg: 0 20px 34px -8px rgba(7, 3, 2, 0.68);
+}

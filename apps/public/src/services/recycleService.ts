@@ -1,6 +1,6 @@
 import { db } from "./_lib/firebase";
 import { fetchWithCache } from "@/lib/cache";
-import { 
+import {
   collection,
   query
 } from "firebase/firestore";
@@ -12,7 +12,7 @@ export async function getRecyclePoints(): Promise<RecyclePoint[]> {
   try {
     const q = query(collection(db, RECYCLE_COLLECTION));
     const querySnapshot = await fetchWithCache(q, "all_recycle_points");
-    
+
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()

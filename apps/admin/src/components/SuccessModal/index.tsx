@@ -1,5 +1,13 @@
-import { Check, X } from "lucide-react";
-import styles from "./SuccessModal.module.css"; 
+import { Check } from "lucide-react";
+import { Button } from "@jaci/ui/Button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@jaci/ui/Dialog";
+import styles from "./SuccessModal.module.css";
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -8,34 +16,24 @@ interface SuccessModalProps {
   message?: string;
 }
 
-export function SuccessModal({ 
-  isOpen, 
-  onClose, 
-  title = "Sucesso!", 
-  message = "Operação realizada com sucesso." 
+export function SuccessModal({
+  isOpen,
+  onClose,
+  title = "Sucesso!",
+  message = "Operação realizada com sucesso."
 }: SuccessModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <button className={styles.closeBtn} onClick={onClose}>
-          <X size={20} />
-        </button>
-
-        <div className={styles.content}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className={styles.modal}>
+        <DialogHeader className={styles.header}>
           <div className={styles.iconArea}>
-            <Check size={32} />
+            <Check size={30} />
           </div>
-          
-          <h3>{title}</h3>
-          <p>{message}</p>
-
-          <button className={styles.confirmBtn} onClick={onClose}>
-            Continuar
-          </button>
-        </div>
-      </div>
-    </div>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <DialogDescription className={styles.description}>{message}</DialogDescription>
+        <Button variant="success" onClick={onClose}>Continuar</Button>
+      </DialogContent>
+    </Dialog>
   );
 }

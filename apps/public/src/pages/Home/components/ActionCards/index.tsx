@@ -4,8 +4,8 @@ import styles from "./ActionCards.module.css";
 import { Link } from "react-router";
 import { analytics } from "@/utils/analytics";
 
-import * as Card from "@abrigo/ui/Card";
-import * as Dialog from "@abrigo/ui/Dialog";
+import * as Card from "@jaci/ui/Card";
+import * as Dialog from "@jaci/ui/Dialog";
 import PixModal from "@/components/PixModal";
 
 

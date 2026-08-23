@@ -5,7 +5,7 @@
   justify-content: center;
   gap: 0.5rem;
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--text-muted);
   padding-bottom: 2rem;
 }
 
@@ -13,22 +13,22 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  color: #4b5563;
+  color: var(--text-secondary);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
 }
 
 .link:hover, .devLink:hover {
-  color: #f59e0b; 
+  color: var(--primary);
   text-decoration: underline;
 }
 
 .divider {
-  color: #d1d5db;
+  color: var(--border);
   margin: 0 0.5rem;
 }
 
 .text {
-  color: #9ca3af;
+  color: var(--text-muted);
 }

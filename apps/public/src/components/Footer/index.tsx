@@ -7,7 +7,7 @@ import logo from "@/assets/images/logo.png";
 import logoDark from "@/assets/images/logo-dark-mode.png";
 
 import { ExternalLink } from "@/components/common/ExternalLink";
-import { Badge } from "@abrigo/ui/Badge";
+import { Badge } from "@jaci/ui/Badge";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 
 export function Footer() {

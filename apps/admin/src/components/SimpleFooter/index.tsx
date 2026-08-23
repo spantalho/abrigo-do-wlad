@@ -5,9 +5,9 @@ import styles from "./SimpleFooter.module.css";
 export function SimpleFooter() {
   return (
     <div className={styles.wrapper}>
-      <a 
+      <a
         href={PUBLIC_APP_URL}
-        target="_blank" 
+        target="_blank"
         rel="noopener noreferrer"
         className={styles.link}
       >
@@ -17,13 +17,13 @@ export function SimpleFooter() {
       <span className={styles.divider}>|</span>
 
       <span className={styles.text}>Desenvolvido por</span>
-      
+
       <a href="https://github.com/AlanClimaco" target="_blank" rel="noopener noreferrer" className={styles.devLink}>
         Alan
       </a>
-      
+
       <span className={styles.text}>&</span>
-      
+
       <a href="https://github.com/spantalho" target="_blank" rel="noopener noreferrer" className={styles.devLink}>
         Luis
       </a>

@@ -1,6 +1,6 @@
-import { Badge } from "@abrigo/ui/Badge";
-import { Button } from "@abrigo/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@abrigo/ui/Card";
+import { Badge } from "@jaci/ui/Badge";
+import { Button } from "@jaci/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@jaci/ui/Card";
 import { KeyRound, RefreshCw, ShieldCheck } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 

@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef } from "react";
-import * as CardComponent from "@abrigo/ui/Card";
+import * as CardComponent from "@jaci/ui/Card";
 import HeroSmall from "@/components/HeroSmall";
-import { Button } from "@abrigo/ui/Button";
-import * as Dialog from "@abrigo/ui/Dialog";
+import { Button } from "@jaci/ui/Button";
+import * as Dialog from "@jaci/ui/Dialog";
 import { ScrollIndicators } from "@/components/ScrollIndicators";
 import {
   Accordion,
   AccordionItem,
   AccordionTrigger,
   AccordionContent,
-} from "@abrigo/ui/Accordion";
+} from "@jaci/ui/Accordion";
 
 import { getThirdPartyImage } from "@/utils/common";
 import { analytics } from "@/utils/analytics";
@@ -20,13 +20,13 @@ import { getRecyclePoints } from "../../services/recycleService";
 import type { RecyclePoint } from "../../types/recycle";
 
 import styles from "./Recycle.module.css";
-import { Badge } from "@abrigo/ui/Badge";
+import { Badge } from "@jaci/ui/Badge";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@abrigo/ui/Tooltip";
+} from "@jaci/ui/Tooltip";
 import { PageFeedback } from "@/components/PageFeedback";
 
 interface GroupedPoints {

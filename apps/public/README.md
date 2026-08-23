@@ -37,7 +37,7 @@ workers/
 ```
 
 Componentes genéricos compartilhados com o painel administrativo ficam no
-workspace `@abrigo/ui`, em [`packages/ui`](../../packages/ui).
+workspace `@jaci/ui`, em [`packages/ui`](../../packages/ui).
 
 ## Desenvolvimento local
 

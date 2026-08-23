@@ -25,10 +25,10 @@ export default function Dashboard() {
   const [metrics, setMetrics] = useState({
     dogs: 0,
     recycles: 0,
-    adoptions: 0, 
+    adoptions: 0,
     adoptionsViaSite: 0,
   });
-  
+
   const [expiringAdoptions, setExpiringAdoptions] = useState<ExpiringAlert[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -55,7 +55,7 @@ export default function Dashboard() {
       <p className={styles.subtitle}>Acompanhe os números do Abrigo do Wlad em tempo real.</p>
 
       {loading ? (
-        <p style={{ color: "#6b7280" }}>Carregando dados...</p>
+        <p style={{ color: "var(--text-muted)" }}>Carregando dados...</p>
       ) : (
         <div className={styles.metricsGrid}>
           {/* Card Cachorros */}
@@ -93,7 +93,7 @@ export default function Dashboard() {
 
           {/* Card Adotados pelo Site */}
           <div className={styles.metricCard}>
-            <div className={styles.iconWrapper} style={{ backgroundColor: '#fce7f3', color: '#ec4899' }}>
+            <div className={styles.iconWrapper} style={{ backgroundColor: 'var(--accent-red)', color: 'var(--action)' }}>
               <HeartHandshake size={32} />
             </div>
             <div className={styles.metricInfo}>
@@ -109,7 +109,7 @@ export default function Dashboard() {
         <div className={styles.recentHeader}>
           <h3>Avisos e Pendências</h3>
         </div>
-        
+
         {expiringAdoptions.length > 0 ? (
           <div className={styles.alertList}>
             {expiringAdoptions.map(alert => (

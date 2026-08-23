@@ -6,12 +6,12 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@abrigo/ui/Accordion";
+} from "@jaci/ui/Accordion";
 
 import styles from "./FaqSection.module.css";
-import { Button } from "@abrigo/ui/Button";
-import { Badge } from "@abrigo/ui/Badge";
-import * as CardComponent from "@abrigo/ui/Card";
+import { Button } from "@jaci/ui/Button";
+import { Badge } from "@jaci/ui/Badge";
+import * as CardComponent from "@jaci/ui/Card";
 
 import { ExternalLink } from "@/components/common/ExternalLink";
 

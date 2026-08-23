@@ -49,7 +49,7 @@ apps/admin/
 └── wrangler.jsonc
 ```
 
-Componentes visuais reutilizáveis são consumidos do workspace `@abrigo/ui`, em
+Componentes visuais reutilizáveis são consumidos do workspace `@jaci/ui`, em
 [`packages/ui`](../../packages/ui).
 
 ## Desenvolvimento local

@@ -4,7 +4,7 @@
   align-items: center;
   margin-bottom: 2rem;
   gap: 1rem;
-  flex-wrap: wrap; 
+  flex-wrap: wrap;
 }
 
 .searchWrapper {
@@ -18,23 +18,23 @@
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 
 .searchInput {
   width: 100%;
   padding: 0.85rem 1rem 0.85rem 3rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
   font-size: 0.95rem;
-  background-color: white;
+  background-color: var(--surface-elevated);
   transition: all 0.2s;
 }
 
 .searchInput:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .actionsRight {
@@ -43,35 +43,8 @@
   gap: 1rem;
 }
 
-.countBadge {
-  background: #f3f4f6;
-  color: #6b7280;
-  padding: 0.4rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
 .addButton {
-  background-color: var(--primary);
-  color: white;
-  padding: 0.75rem 1.25rem;
-  border-radius: 10px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3);
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
   white-space: nowrap;
-}
-
-.addButton:hover {
-  background-color: #ea580c;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 8px -1px rgba(245, 158, 11, 0.4);
 }
 
 /* Lista de Pontos */
@@ -82,21 +55,21 @@
 }
 
 .pointCard {
-  background: #ffffff;
-  border-radius: 12px;
+  background: var(--surface-elevated);
+  border-radius: var(--radius-sm);
   padding: 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 
 .pointCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  border-color: #d1d5db;
+  box-shadow: var(--shadow-md);
+  border-color: var(--border);
 }
 
 .pointInfo {
@@ -113,30 +86,30 @@
 }
 
 .zoneBadge {
-  background-color: #fef3c7;
-  color: #b45309;
+  background-color: var(--warning-bg);
+  color: var(--warning-text);
   font-size: 0.75rem;
   font-weight: 700;
   padding: 0.25rem 0.6rem;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   text-transform: uppercase;
 }
 
 .pointNeighborhood {
   font-size: 1.1rem;
-  color: #1f2937;
+  color: var(--text-primary);
   margin: 0;
   font-weight: 700;
 }
 
 .pointName {
-  color: #4b5563;
+  color: var(--text-secondary);
   margin: 0;
   font-size: 0.95rem;
 }
 
 .pointAddress {
-  color: #6b7280;
+  color: var(--text-muted);
   margin: 0;
   font-size: 0.9rem;
 }
@@ -145,26 +118,26 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background-color: #eff6ff;
-  color: #2563eb;
-  border: 1px solid #bfdbfe;
+  background-color: var(--surface-water);
+  color: var(--primary);
+  border: 1px solid var(--border);
   padding: 0.4rem 0.8rem;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   text-decoration: none;
   font-weight: 600;
   font-size: 0.85rem;
   margin-top: 0.5rem;
   transition: all 0.2s ease;
   width: fit-content;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .mapLink:hover {
-  background-color: #dbeafe;
-  border-color: #93c5fd;
-  color: #1d4ed8;
+  background-color: var(--surface-water);
+  border-color: var(--border);
+  color: var(--primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Ações do Card */
@@ -175,69 +148,47 @@
 
 .actionBtn {
   flex: 1;
-  padding: 0.6rem;
-  border-radius: 8px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  color: #374151;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   gap: 0.4rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .actionBtn:hover {
-  background: #f3f4f6;
-  color: #1f2937;
-  border-color: #d1d5db;
+  background: var(--surface-water);
+  color: var(--text-primary);
+  border-color: var(--border);
 }
 
 .deleteBtn {
   flex: 0 0 auto;
   width: 42px;
-  color: #ef4444;
-  border-color: #fee2e2;
-  background: #fff0f0;
+  color: var(--error);
+  border-color: var(--accent-red);
+  background: var(--accent-red);
 }
 
 .deleteBtn:hover {
-  background: #fef2f2;
-  border-color: #fecaca;
-  color: #dc2626;
+  background: var(--accent-red);
+  border-color: var(--error);
+  color: var(--error);
 }
 
 /* States */
 .loadingState {
   text-align: center;
   padding: 4rem;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 .emptyState {
-  background: white;
+  background: var(--surface-elevated);
   padding: 4rem;
   text-align: center;
-  border-radius: 16px;
-  color: #9ca3af;
-  border: 2px dashed #e5e7eb;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  border: 2px dashed var(--border-light);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-}
-
-.emptyState button {
-  color: var(--primary);
-  background: none;
-  font-weight: bold;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
 }
 
 @media (max-width: 600px) {
@@ -245,7 +196,7 @@
     flex-direction: column-reverse;
     align-items: stretch;
   }
-  
+
   .searchWrapper {
     max-width: 100%;
   }
@@ -253,17 +204,17 @@
   .actionsRight {
     justify-content: space-between;
   }
-  
+
   .pointCard {
     flex-direction: column;
     align-items: flex-start;
     gap: 1.5rem;
   }
-  
+
   .pointActions {
     width: 100%;
     justify-content: flex-end;
-    border-top: 1px solid #f3f4f6;
+    border-top: 1px solid var(--surface-water);
     padding-top: 1rem;
   }
 }

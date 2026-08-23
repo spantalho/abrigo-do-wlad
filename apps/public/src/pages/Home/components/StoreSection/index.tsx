@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import * as Lucide from "lucide-react";
 
-import { Button } from "@abrigo/ui/Button";
-import { Badge } from "@abrigo/ui/Badge";
+import { Button } from "@jaci/ui/Button";
+import { Badge } from "@jaci/ui/Badge";
 
 import styles from "./StoreSection.module.css";
 import storeImage from "@/assets/images/bazar.jpg";

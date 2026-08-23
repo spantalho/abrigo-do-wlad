@@ -7,8 +7,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@abrigo/ui/Card";
-import { Badge } from "@abrigo/ui/Badge";
+} from "@jaci/ui/Card";
+import { Badge } from "@jaci/ui/Badge";
 import { getOptimizedImageUrl } from "@/utils/cdn";
 import { analytics } from "@/utils/analytics";
 import { type Dog } from "@/types/dogs";

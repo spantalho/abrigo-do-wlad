@@ -1,5 +1,13 @@
-import { X, Heart, LogOut } from "lucide-react";
-import styles from "./AdoptionModal.module.css"; 
+import { Heart, LogOut } from "lucide-react";
+import { Button } from "@jaci/ui/Button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@jaci/ui/Dialog";
+import styles from "./AdoptionModal.module.css";
 
 interface AdoptionModalProps {
   isOpen: boolean;
@@ -9,34 +17,25 @@ interface AdoptionModalProps {
 }
 
 export function AdoptionModal({ isOpen, onClose, onConfirm, dogName }: AdoptionModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <button className={styles.closeBtn} onClick={onClose}>
-          <X size={20} />
-        </button>
-
-        <div className={styles.content}>
-          <div className={styles.iconArea}>
-            <Heart size={32} />
-          </div>
-          
-          <h3>O destino de {dogName}</h3>
-          <p>Ficamos felizes em ver um animal saindo do abrigo! Nos conte o que aconteceu para mantermos nossas métricas atualizadas:</p>
-
-          <div className={styles.actionButtons}>
-            <button onClick={() => onConfirm(true)} className={styles.btnSite}>
-              <Heart size={20} /> Adotado pelo Site!
-            </button>
-
-            <button onClick={() => onConfirm(false)} className={styles.btnOutside}>
-              <LogOut size={20} /> Adotado por fora / Outro motivo
-            </button>
-          </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className={styles.modal}>
+        <DialogHeader className={styles.header}>
+          <div className={styles.iconArea}><Heart size={30} /></div>
+          <DialogTitle>O destino de {dogName}</DialogTitle>
+        </DialogHeader>
+        <DialogDescription className={styles.description}>
+          Ficamos felizes em ver um animal saindo do abrigo. Informe o que aconteceu para manter as métricas atualizadas.
+        </DialogDescription>
+        <div className={styles.actionButtons}>
+          <Button variant="success" onClick={() => onConfirm(true)}>
+            <Heart size={20} /> Adotado pelo site
+          </Button>
+          <Button variant="outline" onClick={() => onConfirm(false)}>
+            <LogOut size={20} /> Adotado por fora ou outro motivo
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
