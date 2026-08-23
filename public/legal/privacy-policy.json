@@ -2,7 +2,7 @@
   "title": "Política de Privacidade",
   "badge": "Transparência",
   "description": "Como protegemos seus dados e informações pessoais.",
-  "lastUpdate": "4 de maio de 2026",
+  "lastUpdate": "23 de agosto de 2026",
   "sections": [
     {
       "id": "base-legal",
@@ -78,7 +78,7 @@
     {
       "id": "transparencia",
       "title": "Código Fonte Aberto",
-      "content": "Acreditamos em transparência total. O código-fonte do site está aberto para leitura, estudo e contribuições da comunidade. Você pode acessar o repositório em: https://github.com/AlanClimaco/abrigo-do-wlad-website"
+      "content": "Acreditamos em transparência total. O código-fonte do site está aberto para leitura, estudo e contribuições da comunidade. Você pode acessar o repositório em: https://github.com/spantalho/abrigo-do-wlad"
     },
     {
       "id": "sobre",
