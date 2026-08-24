@@ -26,6 +26,12 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": ["/api/*"]
   },
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "8b61d3ad6ba44973a54a94eb5590da5f"
+    }
+  ],
   "observability": {
     "enabled": true,
     "logs": {
@@ -47,6 +53,12 @@
         "DATA_MODE": "disabled",
         "MEDIA_MODE": "disabled"
       },
+      "kv_namespaces": [
+        {
+          "binding": "KV",
+          "id": "8b61d3ad6ba44973a54a94eb5590da5f"
+        }
+      ],
       "secrets": {
         "required": []
       }

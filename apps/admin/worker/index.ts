@@ -29,7 +29,11 @@ export function secureAssetResponse(response: Response): Response {
   return secured;
 }
 
-export async function handleAdminApi(request: Request, env: Env): Promise<Response> {
+export async function handleAdminApi(
+  request: Request,
+  env: Env,
+  executionContext?: Pick<ExecutionContext, "waitUntil">,
+): Promise<Response> {
   const url = new URL(request.url);
 
   if (url.pathname === "/api/session" && request.method !== "GET") {
@@ -51,7 +55,13 @@ export async function handleAdminApi(request: Request, env: Env): Promise<Respon
         role: identity.role,
       });
     }
-    return handleAuthenticatedAdminApi(request, env, identity);
+    return handleAuthenticatedAdminApi(
+      request,
+      env,
+      identity,
+      undefined,
+      executionContext,
+    );
   } catch (error) {
     const message =
       error instanceof AccessAuthenticationError
@@ -65,11 +75,11 @@ export async function handleAdminApi(request: Request, env: Env): Promise<Respon
 }
 
 export default {
-  async fetch(request, env): Promise<Response> {
+  async fetch(request, env, ctx): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname.startsWith("/api/")) {
-      return handleAdminApi(request, env);
+      return handleAdminApi(request, env, ctx);
     }
 
     return secureAssetResponse(await env.ASSETS.fetch(request));

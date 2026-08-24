@@ -13,7 +13,11 @@ type KvStore = {
 
 type KvCacheStore = {
   get: <T>(key: string) => Promise<T | null>;
-  set: (key: string, value: KvValue) => Promise<"OK">;
+  set: (
+    key: string,
+    value: KvValue,
+    options?: { expirationTtl?: number },
+  ) => Promise<"OK">;
   incr: (key: string) => Promise<number>;
   expire: (key: string, seconds: number) => Promise<number>;
 };
@@ -99,7 +103,11 @@ export function getKvStore(env?: CloudflareEnv): KvCacheStore {
       const value = mockStore.get(key);
       return fromKvPayload<T>(value ?? null);
     },
-    set: async (key: string, value: KvValue): Promise<"OK"> => {
+    set: async (
+      key: string,
+      value: KvValue,
+      options?: { expirationTtl?: number },
+    ): Promise<"OK"> => {
       mockExpirations.delete(key);
       console.log(
         `[KV MOCK] SET "${key}" =`,
@@ -108,6 +116,9 @@ export function getKvStore(env?: CloudflareEnv): KvCacheStore {
           : value,
       );
       mockStore.set(key, toKvPayload(value));
+      if (options?.expirationTtl) {
+        mockExpirations.set(key, Date.now() + options.expirationTtl * 1000);
+      }
       return "OK";
     },
     incr: async (key: string): Promise<number> => {
@@ -141,12 +152,16 @@ export function getKvStore(env?: CloudflareEnv): KvCacheStore {
       const value = await kv.get(key);
       return fromKvPayload<T>(value);
     },
-    set: async (key: string, value: KvValue): Promise<"OK"> => {
+    set: async (
+      key: string,
+      value: KvValue,
+      options?: { expirationTtl?: number },
+    ): Promise<"OK"> => {
       if (!kv) {
         throw new Error("Cloudflare KV binding is not configured.");
       }
 
-      await kv.put(key, toKvPayload(value));
+      await kv.put(key, toKvPayload(value), options);
       return "OK";
     },
     incr: async (key: string): Promise<number> => {

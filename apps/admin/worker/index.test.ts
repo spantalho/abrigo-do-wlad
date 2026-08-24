@@ -4,6 +4,7 @@ import { test, vi } from "vitest";
 import { handleAdminApi, secureAssetResponse } from "./index";
 
 const env = {
+  KV: {} as KVNamespace,
   ASSETS: {
     async fetch() {
       return new Response("asset");

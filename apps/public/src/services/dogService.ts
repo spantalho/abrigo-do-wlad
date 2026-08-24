@@ -1,147 +1,72 @@
-import {
-  collection,
-  getDoc,
-  doc,
-  query,
-  getCountFromServer,
-  startAfter,
-  limit,
-  where,
-  getDocFromCache,
-  type DocumentData,
-  type QueryDocumentSnapshot,
-} from "firebase/firestore";
-
-import { db } from "./_lib/firebase";
-import { fetchWithCache } from "@/lib/cache";
-
 import type { Dog, DogFilters } from "@/types/dogs";
-import { shuffleArray } from "@/utils/common";
 
-const DOGS_COLLECTION = "dogs";
-
-export async function getDogs(): Promise<Dog[]> {
-  const dogsRef = collection(db, DOGS_COLLECTION);
-  const q = query(dogsRef);
-
-  const snapshot = await fetchWithCache(q, "all_dogs");
-
-  return snapshot.docs.map((doc) => ({
-    ...doc.data(),
-    id: doc.id,
-  })) as Dog[];
+export interface DogFeedPage {
+  dogs: Dog[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+  itemsPerPage: number;
+  version: string;
 }
 
-export async function getDogById(id: string): Promise<Dog | null> {
-  const docRef = doc(db, DOGS_COLLECTION, id);
-
-  // Utiliza getDoc nativo do Firebase que passará pelo Local Cache caso já exista,
-  // senão ele resolve via network transparente por conta da configuração persistente.
-  let docSnap = await getDocFromCache(docRef).catch(() => null);
-
-  if (!docSnap || !docSnap.exists()) {
-    docSnap = await getDoc(docRef);
-  }
-
-  if (docSnap && docSnap.exists()) {
-    return { id: docSnap.id, ...docSnap.data() } as Dog;
-  } else {
-    return null;
+export class DogFeedVersionError extends Error {
+  constructor() {
+    super("A versão da lista de cães expirou.");
+    this.name = "DogFeedVersionError";
   }
 }
 
-/**
- * Fetches multiple dogs from Firestore based on a list of their IDs.
- * @param {string[]} ids - An array of dog document IDs to fetch.
- * @returns {Promise<Dog[]>} A promise that resolves to an array of dog objects.
- */
-export async function getDogsByIds(ids: string[]): Promise<Dog[]> {
-  if (!ids || ids.length === 0) {
-    return [];
-  }
-
-  const dogPromises = ids.map((id) => getDogById(id));
-  const dogs = await Promise.all(dogPromises);
-
-  return dogs.filter((dog): dog is Dog => dog !== null);
+function isDogFeedPage(value: unknown): value is DogFeedPage {
+  if (!value || typeof value !== "object") return false;
+  const page = value as Record<string, unknown>;
+  return (
+    Array.isArray(page.dogs) &&
+    typeof page.totalItems === "number" &&
+    typeof page.currentPage === "number" &&
+    typeof page.totalPages === "number" &&
+    typeof page.itemsPerPage === "number" &&
+    typeof page.version === "string"
+  );
 }
 
-/**
- * Fetches all dog IDs based on filters, shuffles them, and returns the shuffled list.
- * @param {DogFilters} filters - An object containing the filter criteria.
- * @returns {Promise<string[]>} A promise that resolves to an array of shuffled dog IDs.
- */
-export async function getShuffledDogIds(
-  filters: DogFilters,
-): Promise<string[]> {
-  const docRef = collection(db, DOGS_COLLECTION);
-  let q = query(docRef);
-
-  // apply filters
-  if (filters.cateIdade && filters.cateIdade !== "all") {
-    q = query(q, where("cateIdade", "==", filters.cateIdade));
-  }
-  if (filters.cor && filters.cor !== "all") {
-    q = query(q, where("cor", "==", filters.cor));
-  }
-  if (filters.tags && filters.tags !== "all") {
-    q = query(q, where("tags", "array-contains", filters.tags));
-  }
-
-  // Generate a cacheKey based on the filters
-  const cacheKey = `shuffled_dogs_${filters.cateIdade}_${filters.cor}_${filters.tags}`;
-
-  const snapshot = await fetchWithCache(q, cacheKey);
-  const dogIds = snapshot.docs.map((doc) => doc.id);
-
-  return shuffleArray(dogIds)
-}
-
-/**
- * Fetches a paginated and filtered list of dogs from Firestore.
- * @param {DogFilters} filters - An object containing the filter criteria. Filters are applied if their value is not 'all'.
- * @param {number} page - The current page number, used to determine if pagination logic should be applied.
- * @param {number} itemsPerPage - The maximum number of dogs to return per page.
- * @param {QueryDocumentSnapshot<DocumentData>} [lastVisibleDoc] - Cursor from the previous page.
- */
-export async function getDogsWithFilters(
+export async function getDogFeedPage(
   filters: DogFilters,
   page: number,
   itemsPerPage: number,
-  lastVisibleDoc?: QueryDocumentSnapshot<DocumentData>,
-) {
-  const docRef = collection(db, DOGS_COLLECTION);
-  let q = query(docRef);
-
-  // apply filters
+  version?: string,
+  signal?: AbortSignal,
+): Promise<DogFeedPage> {
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(itemsPerPage),
+  });
   if (filters.cateIdade && filters.cateIdade !== "all") {
-    q = query(q, where("cateIdade", "==", filters.cateIdade));
+    params.set("cateIdade", filters.cateIdade);
   }
   if (filters.cor && filters.cor !== "all") {
-    q = query(q, where("cor", "==", filters.cor));
+    params.set("cor", filters.cor);
   }
   if (filters.tags && filters.tags !== "all") {
-    q = query(q, where("tags", "array-contains", filters.tags));
+    params.set("tag", filters.tags);
+  }
+  if (version) {
+    params.set("version", version);
   }
 
-  const countQuery = q;
-  const snapshotCount = await getCountFromServer(countQuery);
-  const totalItems = snapshotCount.data().count;
-
-  if (page > 1 && lastVisibleDoc) {
-    q = query(q, startAfter(lastVisibleDoc));
+  const response = await fetch(`/api/dogs?${params.toString()}`, {
+    headers: { Accept: "application/json" },
+    signal,
+  });
+  if (response.status === 409 && version) {
+    throw new DogFeedVersionError();
   }
-  q = query(q, limit(itemsPerPage));
+  if (!response.ok) {
+    throw new Error(`Falha ao carregar cães (HTTP ${response.status}).`);
+  }
 
-  const cacheKey = `dogs_filter_${filters.cateIdade}_${filters.cor}_${filters.tags}_page_${page}_limit_${itemsPerPage}`;
-  const snapshot = await fetchWithCache(q, cacheKey);
-
-  const dogs = snapshot.docs.map((doc) => ({
-    ...doc.data(),
-    id: doc.id,
-  })) as Dog[];
-
-  const newLastVisibleDoc = snapshot.docs[snapshot.docs.length - 1];
-
-  return { dogs, totalItems, lastVisibleDoc: newLastVisibleDoc };
+  const payload: unknown = await response.json();
+  if (!isDogFeedPage(payload)) {
+    throw new Error("A API retornou uma lista de cães inválida.");
+  }
+  return payload;
 }

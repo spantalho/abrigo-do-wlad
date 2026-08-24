@@ -118,6 +118,11 @@ As mutações exigem mesma origem, validação de payload e identidade autorizad
 O Worker restringe uploads a uma pasta fixa e valida a conta e o caminho antes
 da exclusão de imagens.
 
+Cadastros, edições e remoções de cães agendam em segundo plano a reconstrução
+do catálogo público rotativo no mesmo namespace KV usado pelo Worker público.
+Como o KV é eventualmente consistente, uma versão anterior pode permanecer
+visível por um breve período em algumas regiões.
+
 ### Notificação do painel
 
 O endpoint `/api/admin/notifications` administra um único documento em

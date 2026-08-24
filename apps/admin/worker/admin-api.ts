@@ -6,6 +6,7 @@ import {
   FirestoreRestError,
   type FirestoreDocument,
 } from "../../../workers/shared/api/_lib/firestore";
+import { updateDogFeed } from "../../../workers/shared/api/dogs/feed";
 import type { AccessIdentity } from "./access";
 import { createSignedUpload, deleteCloudinaryImage } from "./cloudinary";
 import {
@@ -197,7 +198,27 @@ function serializeDocuments<T extends Record<string, unknown>>(
   return documents.map((document) => ({ documentId: document.id, ...document.data }));
 }
 
-async function handleDogs(request: Request, env: Env, pathId?: string): Promise<Response> {
+function scheduleDogFeedUpdate(
+  env: Env,
+  executionContext?: Pick<ExecutionContext, "waitUntil">,
+): void {
+  if (!executionContext) return;
+  executionContext.waitUntil(
+    updateDogFeed(env).catch((error: unknown) => {
+      console.error(JSON.stringify({
+        event: "admin.dogs-feed.refresh.failed",
+        message: error instanceof Error ? error.message : "Unknown failure",
+      }));
+    }),
+  );
+}
+
+async function handleDogs(
+  request: Request,
+  env: Env,
+  pathId?: string,
+  executionContext?: Pick<ExecutionContext, "waitUntil">,
+): Promise<Response> {
   const firestore = createFirestoreClient(env);
   if (!pathId) {
     if (request.method === "GET") {
@@ -207,6 +228,7 @@ async function handleDogs(request: Request, env: Env, pathId?: string): Promise<
       const dog = dogSchema.parse(await parseJson(request));
       const id = Date.now();
       await firestore.createDocument("dogs", { ...dog, id });
+      scheduleDogFeedUpdate(env, executionContext);
       return jsonResponse(201, { id });
     }
     return methodNotAllowed(["GET", "POST"]);
@@ -220,6 +242,7 @@ async function handleDogs(request: Request, env: Env, pathId?: string): Promise<
   if (request.method === "PATCH") {
     const update = dogUpdateSchema.parse(await parseJson(request));
     await firestore.updateDocument(document.name, update);
+    scheduleDogFeedUpdate(env, executionContext);
     if (update.fotos) {
       const previousPhotos = Array.isArray(document.data.fotos)
         ? document.data.fotos.filter((photo): photo is string => typeof photo === "string")
@@ -249,6 +272,7 @@ async function handleDogs(request: Request, env: Env, pathId?: string): Promise<
     if (adoptedViaSite) {
       await firestore.incrementDocumentField("system/statistics", "adoptionsCount", 1);
     }
+    scheduleDogFeedUpdate(env, executionContext);
     return new Response(null, { status: 204 });
   }
   return methodNotAllowed(["GET", "PATCH", "DELETE"]);
@@ -331,6 +355,7 @@ export async function handleAdminApi(
   env: Env,
   identity: AccessIdentity,
   dependencies: AdminApiDependencies = productionDependencies,
+  executionContext?: Pick<ExecutionContext, "waitUntil">,
 ): Promise<Response> {
   try {
     assertSameOrigin(request);
@@ -385,7 +410,7 @@ export async function handleAdminApi(
       return jsonResponse(200, { ok: true });
     }
     if (segments[2] === "dogs" && segments.length <= 4) {
-      return handleDogs(request, env, segments[3]);
+      return handleDogs(request, env, segments[3], executionContext);
     }
     if (segments[2] === "recycle-points" && segments.length <= 4) {
       return handleRecycle(request, env, segments[3]);

@@ -1,5 +1,6 @@
 import { onRequest as createAdoptionApplication } from "../shared/api/adoption/create";
 import { getEnvValue, jsonResponse, type CloudflareEnv } from "../shared/api/_lib/env";
+import { getDogFeedResponse } from "../shared/api/dogs/feed";
 import { onRequest as getHeroDog } from "../shared/api/hero-dog/get";
 import { onRequest as sendDebugEmail } from "../shared/api/tests/email";
 
@@ -21,6 +22,10 @@ async function handleApiRequest(request: Request, env: AppEnv): Promise<Response
 
   if (pathname === "/api/hero-dog") {
     return getHeroDog({ request, env });
+  }
+
+  if (pathname === "/api/dogs") {
+    return getDogFeedResponse(request, env);
   }
 
   if (pathname === "/api/adoption/create") {

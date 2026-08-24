@@ -94,6 +94,7 @@ os Static Assets da SPA e processa as rotas `/api/*`.
 | Método | Rota | Função |
 | --- | --- | --- |
 | `GET` | `/api/hero-dog` | Retorna o animal em destaque. |
+| `GET` | `/api/dogs` | Retorna uma página filtrada do catálogo rotativo armazenado no KV. |
 | `POST` | `/api/adoption/create` | Valida e registra uma candidatura de adoção. |
 | `GET` | `/api/tests/email` | Testa o envio de e-mail apenas em desenvolvimento. |
 
@@ -108,11 +109,16 @@ account mantidas no runtime.
 ## Worker agendado
 
 O Worker [`workers/cron/index.ts`](../../workers/cron/index.ts) executa
-diariamente duas tarefas:
+diariamente três tarefas:
 
 - atualização do animal em destaque armazenado no KV;
+- reconstrução determinística do catálogo rotativo de cães armazenado no KV;
 - identificação e remoção de candidaturas vencidas conforme a política de
   retenção.
+
+O endpoint `/api/dogs` aceita `page`, `limit`, `cateIdade`, `cor`, `tag` e uma
+`version` opcional. A versão mantém a ordem estável entre páginas; versões
+anteriores permanecem disponíveis temporariamente para sessões em andamento.
 
 O comportamento da limpeza é definido por `ADOPTION_CLEANUP_MODE`:
 

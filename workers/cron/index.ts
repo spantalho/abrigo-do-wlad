@@ -1,14 +1,17 @@
 import type { CloudflareEnv } from "../shared/api/_lib/env";
 import { cleanupExpiredAdoptionApplications } from "../shared/api/adoption/cleanup";
+import { updateDogFeed } from "../shared/api/dogs/feed";
 import { updateHeroDog } from "../shared/api/hero-dog/update";
 
 export interface CronDependencies {
   cleanupExpiredAdoptionApplications: typeof cleanupExpiredAdoptionApplications;
+  updateDogFeed: typeof updateDogFeed;
   updateHeroDog: typeof updateHeroDog;
 }
 
 const productionDependencies: CronDependencies = {
   cleanupExpiredAdoptionApplications,
+  updateDogFeed,
   updateHeroDog,
 };
 
@@ -44,9 +47,10 @@ export async function runCronJobs(
       });
   const results = await Promise.allSettled([
     dependencies.updateHeroDog(env),
+    dependencies.updateDogFeed(env, { now: scheduledAt }),
     cleanupPromise,
   ]);
-  const [heroResult, cleanupResult] = results;
+  const [heroResult, dogFeedResult, cleanupResult] = results;
   const errors: string[] = [];
 
   if (heroResult.status === "rejected") {
@@ -59,6 +63,18 @@ export async function runCronJobs(
     );
   } else {
     console.log(JSON.stringify({ event: "cron.hero-dog.completed" }));
+  }
+
+  if (dogFeedResult.status === "rejected") {
+    errors.push(
+      `dogs-feed: ${dogFeedResult.reason instanceof Error ? dogFeedResult.reason.message : String(dogFeedResult.reason)}`,
+    );
+  } else {
+    console.log(JSON.stringify({
+      event: "cron.dogs-feed.completed",
+      version: dogFeedResult.value.version,
+      total: dogFeedResult.value.dogs.length,
+    }));
   }
 
   if (cleanupResult.status === "rejected") {
