@@ -5,9 +5,12 @@ import { Button } from "@jaci/ui/Button";
 import { Badge } from "@jaci/ui/Badge";
 import { Skeleton } from "@jaci/ui/Skeleton";
 import { analytics } from "@/utils/analytics";
+import {
+  getOptimizedImageUrl,
+  getThumbnailUrl,
+} from "@abrigo/media/cloudinary";
 
 import type { Dog } from "@/types/dogs";
-import { getOptimizedImageUrl, getThumbnaillUrl } from "@/utils/cdn";
 
 import styles from "./Hero.module.css";
 
@@ -29,7 +32,7 @@ export function Hero({ dog }: HeroProps) {
     : "";
 
   const thumbnailImageUrl = secondaryImage
-    ? getThumbnaillUrl(secondaryImage, 128, 200)
+    ? getThumbnailUrl(secondaryImage, 128)
     : "";
 
   return (

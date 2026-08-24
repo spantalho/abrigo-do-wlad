@@ -3,16 +3,44 @@ import { Pencil, HeartHandshake, Dog } from "lucide-react";
 import { Badge } from "@jaci/ui/Badge";
 import { Button } from "@jaci/ui/Button";
 import { Card } from "@jaci/ui/Card";
+import {
+  getOptimizedImageUrl,
+  getResponsiveImageSrcSet,
+} from "@abrigo/media/cloudinary";
 import type { DogProps } from "../../types/dogs";
 import styles from "./DogCard.module.css";
 
 interface DogCardProps {
   dog: DogProps;
   onDelete: (id: number, nome: string) => void;
+  priority?: boolean;
 }
 
-export function DogCard({ dog, onDelete }: DogCardProps) {
+const CARD_IMAGE_WIDTH = 320;
+const CARD_IMAGE_HEIGHT = 350;
+const CARD_IMAGE_WIDTHS = [320, 480, 640] as const;
+
+export function DogCard({ dog, onDelete, priority = false }: DogCardProps) {
   const navigate = useNavigate();
+  const originalImageUrl = dog.fotos?.[0];
+  const imageUrl = getOptimizedImageUrl(originalImageUrl, {
+    width: 480,
+    height: 525,
+    quality: "auto",
+    crop: "fill",
+    gravity: "auto",
+  });
+  const imageSrcSet = getResponsiveImageSrcSet(
+    originalImageUrl,
+    CARD_IMAGE_WIDTHS,
+    {
+      width: CARD_IMAGE_WIDTH,
+      height: CARD_IMAGE_HEIGHT,
+      quality: "auto",
+      crop: "fill",
+      gravity: "auto",
+    },
+  );
   const statusVariant = dog.status === "Em tratamento"
     ? "danger"
     : dog.status === "Adotado"
@@ -24,8 +52,18 @@ export function DogCard({ dog, onDelete }: DogCardProps) {
 
       {/* Imagem */}
       <div className={styles.cardImage}>
-        {dog.fotos && dog.fotos.length > 0 ? (
-          <img src={dog.fotos[0]} alt={dog.nome} />
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            srcSet={imageSrcSet || undefined}
+            sizes="(max-width: 480px) calc(100vw - 2rem), 320px"
+            width={CARD_IMAGE_WIDTH}
+            height={CARD_IMAGE_HEIGHT}
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
+            decoding="async"
+            alt={`Foto de ${dog.nome}`}
+          />
         ) : (
           <div className={styles.noImage}>
             <Dog size={40} />

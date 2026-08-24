@@ -7,7 +7,7 @@ import { DogCard } from "./components/DogCard";
 import { CORES_MAP, TAGS_MAP, type Dog, type DogFilters } from "@/types/dogs";
 import { useDogSearch } from "@/hooks/useDogSearch";
 import { useDailyDog } from "@/hooks/useDailyDog";
-import { getOptimizedImageUrl } from "@/utils/cdn";
+import { getOptimizedImageUrl } from "@abrigo/media/cloudinary";
 import { preloadDogImages } from "@/utils/common";
 import { analytics } from "@/utils/analytics";
 

@@ -20,6 +20,7 @@ export default defineConfig({
             "apps/public/src/**/*.test.ts",
             "apps/admin/src/**/*.test.ts",
             "apps/admin/worker/**/*.test.ts",
+            "packages/**/*.test.ts",
             "workers/**/*.test.ts",
           ],
           exclude: ["**/*.worker.test.ts"],

@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@jaci/ui/Card";
 import { Badge } from "@jaci/ui/Badge";
-import { getOptimizedImageUrl } from "@/utils/cdn";
+import { getOptimizedImageUrl } from "@abrigo/media/cloudinary";
 import { analytics } from "@/utils/analytics";
 import { type Dog } from "@/types/dogs";
 import styles from "./DogCard.module.css";

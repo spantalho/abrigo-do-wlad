@@ -145,11 +145,12 @@ export default function DogDashboard() {
       {!loading && currentDogs.length > 0 && (
         <>
           <div className={styles.grid}>
-            {currentDogs.map((dog) => (
+            {currentDogs.map((dog, index) => (
               <DogCard
                 key={dog.id}
                 dog={dog}
                 onDelete={openAdoptionModal}
+                priority={index < 3}
               />
             ))}
           </div>

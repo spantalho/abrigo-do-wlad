@@ -1,0 +1,9 @@
+{
+  "name": "@abrigo/media",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./cloudinary": "./src/cloudinary.ts"
+  }
+}

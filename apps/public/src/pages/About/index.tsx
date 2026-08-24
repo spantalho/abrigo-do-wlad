@@ -6,7 +6,7 @@ import HeroSmall from "../../components/HeroSmall";
 import { Skeleton } from "@jaci/ui/Skeleton";
 import { ScrollIndicators } from "../../components/ScrollIndicators";
 
-import { getOptimizedImageUrl } from "../../utils/cdn";
+import { getOptimizedImageUrl } from "@abrigo/media/cloudinary";
 import { useDailyDog } from "../../hooks/useDailyDog";
 
 import styles from "./About.module.css";
