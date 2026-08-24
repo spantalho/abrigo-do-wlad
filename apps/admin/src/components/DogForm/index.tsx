@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { useDropzone } from "react-dropzone";
 import { ArrowLeft, X, Save, UploadCloud } from "lucide-react";
@@ -11,6 +11,11 @@ import { ErrorModal } from "../ErrorModal"; // <-- Importação do ErrorModal
 import styles from "./DogForm.module.css";
 
 const COMMON_TAGS = ["Dócil", "Ativo", "Tranquilo", "Sociável", "Resiliente", "Carinhoso", "Amável"];
+const MAX_DOG_PHOTOS = 6;
+
+type DogPhoto =
+  | { id: string; kind: "existing"; url: string }
+  | { id: string; kind: "local"; file: File; previewUrl: string };
 
 interface DogFormProps {
   initialData?: Partial<DogProps>;
@@ -28,8 +33,14 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorInfo, setErrorInfo] = useState({ show: false, message: "" });
 
-  const [localFiles, setLocalFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
+  const localPreviewUrls = useRef(new Set<string>());
+  const [photos, setPhotos] = useState<DogPhoto[]>(() =>
+    (initialData?.fotos || []).map((url, index) => ({
+      id: `existing-${index}-${url}`,
+      kind: "existing",
+      url,
+    })),
+  );
 
   const [formData, setFormData] = useState<Partial<DogProps>>({
     nome: "",
@@ -46,32 +57,51 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
     ...initialData
   });
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    setLocalFiles(prev => [...prev, ...acceptedFiles]);
-    const newPreviews = acceptedFiles.map(file => URL.createObjectURL(file));
-    setPreviews(prev => [...prev, ...newPreviews]);
+  const photoLimitReached = photos.length >= MAX_DOG_PHOTOS;
+  const remainingPhotoSlots = Math.max(0, MAX_DOG_PHOTOS - photos.length);
+
+  useEffect(() => () => {
+    localPreviewUrls.current.forEach(url => URL.revokeObjectURL(url));
+    localPreviewUrls.current.clear();
   }, []);
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const newPhotos = acceptedFiles.slice(0, remainingPhotoSlots).map((file) => {
+      const previewUrl = URL.createObjectURL(file);
+      localPreviewUrls.current.add(previewUrl);
+      return { id: previewUrl, kind: "local" as const, file, previewUrl };
+    });
+
+    if (newPhotos.length > 0) {
+      setPhotos(prev => [...prev, ...newPhotos].slice(0, MAX_DOG_PHOTOS));
+    }
+  }, [remainingPhotoSlots]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { 'image/*': [] },
-    multiple: true
+    multiple: true,
+    disabled: photoLimitReached,
   });
 
-  const removeLocalFile = (indexToRemove: number) => {
-    setLocalFiles(prev => prev.filter((_, index) => index !== indexToRemove));
-    setPreviews(prev => {
-      URL.revokeObjectURL(prev[indexToRemove]);
-      return prev.filter((_, index) => index !== indexToRemove);
-    });
+  const removePhoto = (photoToRemove: DogPhoto) => {
+    if (photoToRemove.kind === "existing" && !window.confirm("Remover esta foto do cadastro?")) {
+      return;
+    }
+    if (photoToRemove.kind === "local") {
+      URL.revokeObjectURL(photoToRemove.previewUrl);
+      localPreviewUrls.current.delete(photoToRemove.previewUrl);
+    }
+    setPhotos(prev => prev.filter(photo => photo.id !== photoToRemove.id));
   };
 
-  const removeExistingPhoto = (urlToRemove: string) => {
-    if(!window.confirm("Remover esta foto do cadastro?")) return;
-    setFormData(prev => ({
-      ...prev,
-      fotos: prev.fotos?.filter(url => url !== urlToRemove) || []
-    }));
+  const setCoverPhoto = (photoId: string) => {
+    setPhotos(prev => {
+      const selectedIndex = prev.findIndex(photo => photo.id === photoId);
+      if (selectedIndex <= 0) return prev;
+      const selectedPhoto = prev[selectedIndex];
+      return [selectedPhoto, ...prev.filter((_, index) => index !== selectedIndex)];
+    });
   };
 
   const toggleTag = (tag: string) => {
@@ -89,16 +119,23 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
     setUploadProgress("Processando...");
 
     try {
-      const newUploadedUrls: string[] = [];
-      if (localFiles.length > 0) {
+      const localPhotoCount = photos.filter(photo => photo.kind === "local").length;
+      const finalPhotos: string[] = [];
+      let uploadedPhotoCount = 0;
+
+      if (localPhotoCount > 0) {
         setUploadProgress("Enviando novas fotos...");
-        for (let i = 0; i < localFiles.length; i++) {
-          const url = await uploadImageToCloudinary(localFiles[i]);
-          newUploadedUrls.push(url);
-        }
       }
 
-      const finalPhotos = [...(formData.fotos || []), ...newUploadedUrls];
+      for (const photo of photos) {
+        if (photo.kind === "existing") {
+          finalPhotos.push(photo.url);
+        } else {
+          uploadedPhotoCount += 1;
+          setUploadProgress(`Enviando foto ${uploadedPhotoCount} de ${localPhotoCount}...`);
+          finalPhotos.push(await uploadImageToCloudinary(photo.file));
+        }
+      }
 
       const finalData = {
         ...formData,
@@ -190,48 +227,59 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
         </div>
 
         <div className={styles.section}>
-          <h2>Fotos</h2>
-          {formData.fotos && formData.fotos.length > 0 && (
+          <h2>Fotos ({photos.length}/{MAX_DOG_PHOTOS})</h2>
+          {photos.length > 0 && (
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{display:'block', marginBottom:'0.5rem', fontWeight:600, color:'var(--text-secondary)'}}>
-                Fotos Salvas (Clique no X para excluir)
+                Clique em uma foto para defini-la como capa
               </label>
               <div className={styles.previewGrid}>
-                {formData.fotos.map((url, index) => (
-                  <div key={url} className={styles.previewCard}>
-                    <img src={url} alt="Foto salva" />
-                    <Button type="button" variant="outline" size="icon-sm" aria-label={`Remover foto ${index + 1}`} className={styles.removePhotoBtn} onClick={() => removeExistingPhoto(url)}>
+                {photos.map((photo, index) => {
+                  const imageUrl = photo.kind === "existing" ? photo.url : photo.previewUrl;
+                  return (
+                  <div key={photo.id} className={styles.previewCard}>
+                    <button
+                      type="button"
+                      className={styles.photoButton}
+                      aria-label={index === 0 ? "Foto de capa atual" : `Definir foto ${index + 1} como capa`}
+                      disabled={index === 0}
+                      onClick={() => setCoverPhoto(photo.id)}
+                    >
+                      <img src={imageUrl} alt={`Foto ${index + 1} de ${formData.nome || "cachorro"}`} />
+                    </button>
+                    <Button type="button" variant="outline" size="icon-sm" aria-label={`Remover foto ${index + 1}`} className={styles.removePhotoBtn} onClick={() => removePhoto(photo)}>
                       <X size={14} />
                     </Button>
+                    {photo.kind === "local" && <span className={styles.newBadge}>Nova</span>}
                     {index === 0 && <span className={styles.mainBadge}>Capa Atual</span>}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
 
-          <div {...getRootProps()} className={`${styles.dropzone} ${isDragActive ? styles.dragActive : ''}`}>
+          <div
+            {...getRootProps()}
+            aria-disabled={photoLimitReached}
+            className={`${styles.dropzone} ${isDragActive ? styles.dragActive : ''} ${photoLimitReached ? styles.dropzoneDisabled : ''}`}
+          >
             <input {...getInputProps()} />
             <div className={styles.dropContent}>
               <UploadCloud size={40} color={isDragActive ? "var(--primary)" : "var(--text-muted)"} />
-              {isDragActive ? <p>Solte aqui...</p> : <p>Arraste novas fotos aqui</p>}
-              <span>(Clique para selecionar)</span>
+              {photoLimitReached ? (
+                <>
+                  <p>Limite de {MAX_DOG_PHOTOS} fotos atingido</p>
+                  <span>Remova uma foto para adicionar outra</span>
+                </>
+              ) : (
+                <>
+                  {isDragActive ? <p>Solte aqui...</p> : <p>Arraste novas fotos aqui</p>}
+                  <span>(Clique para selecionar — restam {remainingPhotoSlots})</span>
+                </>
+              )}
             </div>
           </div>
-
-          {previews.length > 0 && (
-            <div className={styles.previewGrid}>
-              {previews.map((url, index) => (
-                <div key={index} className={styles.previewCard} style={{ borderColor: 'var(--primary)' }}>
-                  <img src={url} alt="Nova foto" />
-                  <Button type="button" variant="outline" size="icon-sm" aria-label={`Remover nova foto ${index + 1}`} className={styles.removePhotoBtn} onClick={() => removeLocalFile(index)}>
-                    <X size={14} />
-                  </Button>
-                  <span className={styles.mainBadge} style={{background:'var(--primary)'}}>Nova</span>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
 
         <div className={styles.section}>

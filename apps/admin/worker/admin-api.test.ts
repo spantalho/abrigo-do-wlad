@@ -14,6 +14,7 @@ const env = {
   CLOUDINARY_API_KEY: "test-key",
   CLOUDINARY_API_SECRET: "test-secret",
   CLOUDINARY_CLOUD_NAME: "test-cloud",
+  FIREBASE_PROJECT_ID: "test-project",
 } as Env;
 
 const developerIdentity: AccessIdentity = {
@@ -78,6 +79,32 @@ test("admin API signs uploads only after same-origin validation", async () => {
   assert.equal(response.status, 200);
   assert.equal(payload.folder, "abrigo-do-wlad/dogs");
   assert.equal("apiSecret" in payload, false);
+});
+
+test("dog updates reject more than six photos before accessing Firestore", async () => {
+  const response = await handleAdminApi(
+    new Request("https://admin.example.test/api/admin/dogs/123", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Origin: "https://admin.example.test",
+      },
+      body: JSON.stringify({
+        fotos: Array.from(
+          { length: 7 },
+          (_, index) => `https://images.example.test/dog-${index}.jpg`,
+        ),
+      }),
+    }),
+    env,
+    identity,
+  );
+
+  assert.equal(response.status, 400);
+  assert.equal(
+    (await response.json() as { error: string }).error,
+    "Um cachorro pode ter no máximo 6 fotos.",
+  );
 });
 
 test("administrator identities cannot list system keys", async () => {

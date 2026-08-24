@@ -25,6 +25,7 @@ import {
 } from "./notifications";
 
 const MAX_BODY_BYTES = 256 * 1024;
+const MAX_DOG_PHOTOS = 6;
 const MANAGED_COLLECTIONS = {
   adoptions: "adoption_application",
   dogs: "dogs",
@@ -40,7 +41,7 @@ const dogSchema = z.object({
   temperamento: z.string().trim().min(1).max(240),
   tags: z.array(z.string().trim().min(1).max(60)).max(30),
   status: z.string().trim().min(1).max(80),
-  fotos: z.array(httpsUrl).max(20),
+  fotos: z.array(httpsUrl).max(MAX_DOG_PHOTOS, "Um cachorro pode ter no máximo 6 fotos."),
   cor: z.string().trim().min(1).max(80),
   instaLink: httpsUrl.optional().or(z.literal("")),
   descricaoCompleta: z.string().trim().max(5_000).optional(),
@@ -235,12 +236,16 @@ async function handleDogs(
   }
 
   const id = numericDogId(pathId);
+  const parsedUpdate = request.method === "PATCH"
+    ? dogUpdateSchema.parse(await parseJson(request))
+    : null;
   const document = await firestore.findFirstDocumentByField<{ fotos?: unknown }>("dogs", "id", id);
   if (!document) throw new ApiError(404, "Dog not found.");
 
   if (request.method === "GET") return jsonResponse(200, { id, ...document.data });
   if (request.method === "PATCH") {
-    const update = dogUpdateSchema.parse(await parseJson(request));
+    if (!parsedUpdate) throw new ApiError(400, "Invalid request");
+    const update = parsedUpdate;
     await firestore.updateDocument(document.name, update);
     scheduleDogFeedUpdate(env, executionContext);
     if (update.fotos) {
@@ -410,7 +415,7 @@ export async function handleAdminApi(
       return jsonResponse(200, { ok: true });
     }
     if (segments[2] === "dogs" && segments.length <= 4) {
-      return handleDogs(request, env, segments[3], executionContext);
+      return await handleDogs(request, env, segments[3], executionContext);
     }
     if (segments[2] === "recycle-points" && segments.length <= 4) {
       return handleRecycle(request, env, segments[3]);
@@ -428,7 +433,13 @@ export async function handleAdminApi(
     return jsonResponse(404, { error: "Not found" });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return jsonResponse(400, { error: "Invalid request", issues: error.issues });
+      const photoLimitIssue = error.issues.find(
+        (issue) => issue.path[0] === "fotos" && issue.code === "too_big",
+      );
+      return jsonResponse(400, {
+        error: photoLimitIssue?.message ?? "Invalid request",
+        issues: error.issues,
+      });
     }
     if (error instanceof ApiError) return jsonResponse(error.status, { error: error.message });
     if (error instanceof FirestoreRestError && error.status === 404) {
