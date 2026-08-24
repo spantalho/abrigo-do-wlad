@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 import { RecycleForm } from "../../components/RecycleForm";
 import { getRecyclePointById, updateRecyclePoint } from "../../services/recycle";
 import type { RecyclePoint } from "../../types/recycle";

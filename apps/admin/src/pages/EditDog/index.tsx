@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 import { DogForm } from "../../components/DogForm";
 import { getDogById, updateDog } from "../../services/dogs";
 import type { DogProps } from "../../types/dogs";

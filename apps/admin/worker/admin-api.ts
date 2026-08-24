@@ -14,6 +14,14 @@ import {
   type RotatedSystemKey,
   type SystemKeyMetadata,
 } from "./system-keys";
+import {
+  deleteAdminNotification,
+  getAdminNotification,
+  notificationInputSchema,
+  saveAdminNotification,
+  type AdminNotification,
+  type NotificationInput,
+} from "./notifications";
 
 const MAX_BODY_BYTES = 256 * 1024;
 const MANAGED_COLLECTIONS = {
@@ -119,11 +127,21 @@ function requireDeveloper(identity: AccessIdentity): void {
 export interface AdminApiDependencies {
   listSystemKeys(env: Env): Promise<SystemKeyMetadata[]>;
   rotateSystemKey(env: Env, identity: AccessIdentity): Promise<RotatedSystemKey>;
+  getAdminNotification(env: Env): Promise<AdminNotification | null>;
+  saveAdminNotification(
+    env: Env,
+    input: NotificationInput,
+    identity: AccessIdentity,
+  ): Promise<AdminNotification>;
+  deleteAdminNotification(env: Env, identity: AccessIdentity): Promise<void>;
 }
 
 const productionDependencies: AdminApiDependencies = {
   listSystemKeys,
   rotateSystemKey,
+  getAdminNotification,
+  saveAdminNotification,
+  deleteAdminNotification,
 };
 
 function numericDogId(value: string): number {
@@ -266,13 +284,17 @@ async function handleRecycle(request: Request, env: Env, pathId?: string): Promi
   return methodNotAllowed(["GET", "PATCH", "DELETE"]);
 }
 
-async function handleDashboard(env: Env): Promise<Response> {
+async function handleDashboard(
+  env: Env,
+  dependencies: AdminApiDependencies,
+): Promise<Response> {
   const firestore = createFirestoreClient(env);
-  const [dogs, recycles, adoptions, statistics] = await Promise.all([
+  const [dogs, recycles, adoptions, statistics, notification] = await Promise.all([
     firestore.listDocuments("dogs"),
     firestore.listDocuments("recycle_points"),
     listAdoptions(env),
     firestore.getDocument<{ adoptionsCount?: unknown }>("system/statistics"),
+    dependencies.getAdminNotification(env),
   ]);
   const now = Date.now();
   const expiringAdoptions = adoptions.flatMap((adoption) => {
@@ -300,6 +322,7 @@ async function handleDashboard(env: Env): Promise<Response> {
           : 0,
     },
     expiringAdoptions,
+    notification,
   });
 }
 
@@ -315,7 +338,7 @@ export async function handleAdminApi(
     const segments = url.pathname.split("/").filter(Boolean);
 
     if (url.pathname === "/api/admin/dashboard" && request.method === "GET") {
-      return handleDashboard(env);
+      return handleDashboard(env, dependencies);
     }
     if (url.pathname === "/api/admin/adoptions" && request.method === "GET") {
       return jsonResponse(200, await listAdoptions(env));
@@ -329,6 +352,28 @@ export async function handleAdminApi(
       requireDeveloper(identity);
       if (request.method !== "POST") return methodNotAllowed(["POST"]);
       return jsonResponse(201, await dependencies.rotateSystemKey(env, identity));
+    }
+    if (url.pathname === "/api/admin/notifications") {
+      if (request.method === "GET") {
+        return jsonResponse(200, await dependencies.getAdminNotification(env));
+      }
+      if (request.method === "PUT") {
+        requireDeveloper(identity);
+        const input = notificationInputSchema.parse(await parseJson(request));
+        return jsonResponse(
+          200,
+          await dependencies.saveAdminNotification(env, input, identity),
+        );
+      }
+      if (request.method === "DELETE") {
+        requireDeveloper(identity);
+        await dependencies.deleteAdminNotification(env, identity);
+        return new Response(null, {
+          status: 204,
+          headers: { "Cache-Control": "no-store" },
+        });
+      }
+      return methodNotAllowed(["GET", "PUT", "DELETE"]);
     }
     if (segments[2] === "adoptions" && segments[4] === "status" && segments.length === 5) {
       if (request.method !== "PATCH") return methodNotAllowed(["PATCH"]);

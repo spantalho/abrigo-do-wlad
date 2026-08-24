@@ -13,6 +13,10 @@
   border-top: 1px solid var(--border);
 }
 
+.optionSection + .optionSection {
+  margin-top: 2.5rem;
+}
+
 .optionHeader {
   display: flex;
   align-items: flex-end;
@@ -89,6 +93,73 @@
 
 .summary {
   margin-bottom: 2rem;
+}
+
+.notificationEditor {
+  height: auto;
+  margin-bottom: 0.5rem;
+}
+
+.notificationForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
+  gap: 1.25rem;
+}
+
+.notificationMessageField,
+.notificationTypeField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.notificationMessageField textarea {
+  min-height: 6rem;
+}
+
+.characterCount {
+  align-self: flex-end;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.expirationField {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.expirationField legend {
+  margin-bottom: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.expirationOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+}
+
+.expirationOption {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.expirationOption label {
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.notificationActions {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 .summaryBody {
@@ -201,5 +272,13 @@
 
   .keyDetails dl {
     grid-template-columns: 1fr;
+  }
+
+  .notificationForm {
+    grid-template-columns: 1fr;
+  }
+
+  .notificationActions button {
+    width: 100%;
   }
 }

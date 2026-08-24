@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router";
 import { Card, CardBody, CardContent, CardHeader, CardTitle } from "@jaci/ui/Card";
 import { AdminLayout } from "./components/AdminLayout";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";

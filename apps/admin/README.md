@@ -11,6 +11,7 @@ site público e acompanhamento das candidaturas de adoção.
 - Consulta de candidaturas e atualização de status.
 - Upload e exclusão controlada de imagens.
 - Aviso de candidaturas próximas do prazo de retenção.
+- Publicação de uma notificação temporária na visão geral do painel.
 
 ## Segurança e autenticação
 
@@ -44,7 +45,8 @@ apps/admin/
 │   ├── index.ts         # Validação do Access e entrega da aplicação
 │   ├── admin-api.ts     # Operações administrativas
 │   ├── access.ts        # Validação de identidade e papéis
-│   └── cloudinary.ts    # Assinatura e remoção de mídia
+│   ├── cloudinary.ts    # Assinatura e remoção de mídia
+│   └── notifications.ts # Persistência e expiração das notificações
 ├── package.json
 └── wrangler.jsonc
 ```
@@ -58,14 +60,19 @@ Na raiz do monorepo:
 
 ```bash
 npm install
-cp .env.example .env
-cp apps/admin/.dev.vars.example apps/admin/.dev.vars
 npm run dev:admin
 ```
 
-O comando inicia a interface Vite. As rotas protegidas dependem de uma sessão
-válida do Cloudflare Access e do Worker administrativo configurado com seus
-bindings e secrets.
+O comando seleciona obrigatoriamente o ambiente `local` e inicia a interface
+Vite junto do Worker administrativo, na mesma origem. Nesta fase, o ambiente
+local não carrega secrets e ainda não possui identidade simulada: a rota
+`/api/session` passa pelo Worker e responde `401` sem uma assertion válida do
+Cloudflare Access. Esse comportamento confirma a integração full-stack sem
+introduzir um bypass de autenticação.
+
+O plugin da Cloudflare é ativado somente pelo servidor de desenvolvimento. Os
+comandos atuais de build, preview e deploy de produção continuam usando o fluxo
+existente.
 
 ## Variáveis de runtime
 
@@ -94,7 +101,7 @@ Todas as rotas exigem identidade válida do Cloudflare Access.
 | Método | Rota | Função |
 | --- | --- | --- |
 | `GET` | `/api/session` | Retorna a identidade e o papel autorizados. |
-| `GET` | `/api/admin/dashboard` | Retorna métricas e alertas de retenção. |
+| `GET` | `/api/admin/dashboard` | Retorna métricas, alertas de retenção e a notificação ativa. |
 | `GET`, `POST` | `/api/admin/dogs` | Lista ou cadastra animais. |
 | `GET`, `PATCH`, `DELETE` | `/api/admin/dogs/:id` | Consulta, altera ou remove um animal. |
 | `GET`, `POST` | `/api/admin/recycle-points` | Lista ou cadastra pontos de reciclagem. |
@@ -103,10 +110,59 @@ Todas as rotas exigem identidade válida do Cloudflare Access.
 | `PATCH` | `/api/admin/adoptions/:id/status` | Atualiza o status de uma candidatura. |
 | `POST` | `/api/admin/media/sign-upload` | Gera parâmetros de upload assinado. |
 | `POST` | `/api/admin/media/delete` | Remove uma imagem validada. |
+| `GET` | `/api/admin/notifications` | Retorna a notificação ativa ou `null`. |
+| `PUT` | `/api/admin/notifications` | Publica ou substitui a notificação do painel. Somente desenvolvedores. |
+| `DELETE` | `/api/admin/notifications` | Remove a notificação atual. Somente desenvolvedores. |
 
 As mutações exigem mesma origem, validação de payload e identidade autorizada.
 O Worker restringe uploads a uma pasta fixa e valida a conta e o caminho antes
 da exclusão de imagens.
+
+### Notificação do painel
+
+O endpoint `/api/admin/notifications` administra um único documento em
+`system/notifications`. A leitura é permitida para qualquer identidade do
+painel, enquanto publicação e remoção exigem o papel `developer`.
+
+Uma publicação usa `PUT` com JSON:
+
+```json
+{
+  "message": "O cadastro ficará indisponível às 18h.",
+  "type": "info",
+  "expiration": "6h"
+}
+```
+
+Campos aceitos:
+
+| Campo | Valores e regras |
+| --- | --- |
+| `message` | Texto obrigatório, sem espaços nas extremidades, de 1 a 240 caracteres. |
+| `type` | `trivial`, `urgent`, `success` ou `info`. Define o tom e o ícone do card. |
+| `expiration` | `1h`, `6h`, `12h` ou `until_deleted`. |
+
+O Worker calcula a expiração usando o relógio do servidor e responde com o
+registro completo:
+
+```json
+{
+  "message": "O cadastro ficará indisponível às 18h.",
+  "type": "info",
+  "expiration": "6h",
+  "target": "admin",
+  "updatedAt": "2026-08-24T18:00:00.000Z",
+  "expiresAt": "2026-08-25T00:00:00.000Z",
+  "author": "developer@example.com"
+}
+```
+
+Para `until_deleted`, `expiresAt` é `null`. Depois de `expiresAt`, as respostas
+de leitura e do dashboard retornam `null` para a notificação, fazendo o card
+desaparecer da seção **Avisos e Pendências**. Uma nova publicação substitui o
+mesmo documento, e `DELETE` responde com status `204` mesmo quando não existe
+notificação ativa. Documentos antigos sem os campos de expiração são tratados
+como `until_deleted`.
 
 ## Build, verificação e publicação
 
@@ -120,3 +176,33 @@ npm run deploy:admin
 A configuração do Worker e dos Static Assets fica em
 [`apps/admin/wrangler.jsonc`](wrangler.jsonc). O painel é publicado de forma
 independente do site público e do Worker agendado.
+
+## Baseline de segurança
+
+Antes da introdução dos ambientes local e de homologação, o painel preserva os
+seguintes contratos:
+
+- `/api/session` aceita somente `GET`.
+- Requisições sem uma assertion válida do Cloudflare Access recebem `401` e não
+  são armazenadas em cache.
+- A identidade autenticada precisa estar em uma das listas de autorização do
+  runtime.
+- Não existe bypass de autenticação no frontend ou no Worker.
+
+As verificações mínimas antes de qualquer mudança de ambiente são:
+
+```bash
+npm run test:unit
+npm run test:frontend
+npm run test:worker
+npm run lint:admin
+npm run build:admin
+npm run typecheck:admin-worker
+npm run check:admin-worker
+npm run check:admin-worker:local
+npm run check:secrets
+```
+
+O deploy administrativo continua manual e separado. Mudanças relacionadas a
+autenticação local não devem ser publicadas em produção antes de passarem por
+essas verificações e pelo ambiente de homologação.

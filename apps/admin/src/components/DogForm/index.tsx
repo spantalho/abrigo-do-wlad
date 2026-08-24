@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useDropzone } from "react-dropzone";
 import { ArrowLeft, X, Save, UploadCloud } from "lucide-react";
 import { Button } from "@jaci/ui/Button";

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@jaci/ui/Button";
 import { Input, NativeSelect } from "@jaci/ui/Field";

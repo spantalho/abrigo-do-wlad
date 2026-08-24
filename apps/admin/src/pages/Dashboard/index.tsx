@@ -1,9 +1,23 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Dog, Recycle, ClipboardList, AlertTriangle, Clock, ArrowRight, HeartHandshake } from "lucide-react";
+import { Link, useNavigate } from "react-router";
+import {
+  ArrowRight,
+  Bell,
+  CheckCircle2,
+  CircleAlert,
+  ClipboardList,
+  Clock,
+  Dog,
+  HeartHandshake,
+  Info,
+  Recycle,
+  AlertTriangle,
+  type LucideIcon,
+} from "lucide-react";
 import { Button } from "@jaci/ui/Button";
-import { Card, CardBody, CardContent, CardFooter } from "@jaci/ui/Card";
+import { Card, CardBody, CardContent, CardFooter, CardIcon } from "@jaci/ui/Card";
 import { apiRequest } from "../../services/api";
+import type { AdminNotification, NotificationType } from "../../types/notifications";
 
 import styles from "./Dashboard.module.css";
 
@@ -21,7 +35,19 @@ interface DashboardResponse {
     adoptionsViaSite: number;
   };
   expiringAdoptions: ExpiringAlert[];
+  notification: AdminNotification | null;
 }
+
+const notificationPresentation: Record<NotificationType, {
+  label: string;
+  tone: "neutral" | "info" | "success" | "danger";
+  Icon: LucideIcon;
+}> = {
+  trivial: { label: "Aviso", tone: "neutral", Icon: Bell },
+  urgent: { label: "Urgente", tone: "danger", Icon: CircleAlert },
+  success: { label: "Sucesso", tone: "success", Icon: CheckCircle2 },
+  info: { label: "Informação", tone: "info", Icon: Info },
+};
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -33,6 +59,7 @@ export default function Dashboard() {
   });
 
   const [expiringAdoptions, setExpiringAdoptions] = useState<ExpiringAlert[]>([]);
+  const [notification, setNotification] = useState<AdminNotification | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,6 +68,7 @@ export default function Dashboard() {
         const data = await apiRequest<DashboardResponse>("/api/admin/dashboard");
         setMetrics(data.metrics);
         setExpiringAdoptions(data.expiringAdoptions);
+        setNotification(data.notification);
 
       } catch (error) {
         console.error("Erro ao buscar métricas principais:", error);
@@ -51,6 +79,10 @@ export default function Dashboard() {
 
     fetchMetrics();
   }, []);
+
+  const notificationStyle = notification
+    ? notificationPresentation[notification.type]
+    : null;
 
   return (
     <div className={styles.container}>
@@ -162,8 +194,28 @@ export default function Dashboard() {
           <h3>Avisos e Pendências</h3>
         </div>
 
-        {expiringAdoptions.length > 0 ? (
+        {notification || expiringAdoptions.length > 0 ? (
           <div className={styles.alertList}>
+            {notification && notificationStyle && (
+              <Card
+                className={styles.notificationCard}
+                variant="callout"
+                tone={notificationStyle.tone}
+                size="sm"
+                layout="inline"
+                role={notification.type === "urgent" ? "alert" : "status"}
+              >
+                <CardBody className={styles.notificationBody}>
+                  <CardIcon>
+                    <notificationStyle.Icon size={24} />
+                  </CardIcon>
+                  <CardContent className={styles.notificationContent}>
+                    <strong>{notificationStyle.label}</strong>
+                    <p>{notification.message}</p>
+                  </CardContent>
+                </CardBody>
+              </Card>
+            )}
             {expiringAdoptions.map(alert => (
               <div key={alert.id} className={`${styles.alertItem} ${alert.daysLeft <= 2 ? styles.alertUrgent : ''}`}>
                 <div className={styles.alertIcon}>

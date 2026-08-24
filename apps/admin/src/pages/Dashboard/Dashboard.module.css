@@ -114,6 +114,34 @@
   gap: 1rem;
 }
 
+.notificationCard {
+  height: auto;
+  text-align: left;
+}
+
+.notificationBody {
+  width: 100%;
+}
+
+.notificationContent {
+  min-width: 0;
+}
+
+.notificationContent strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: var(--card-accent);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.notificationContent p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
 .alertItem {
   display: flex;
   align-items: center;

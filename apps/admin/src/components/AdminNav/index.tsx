@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router";
 import { LayoutDashboard, Dog, Recycle, ClipboardList, Settings2 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import styles from "./AdminNav.module.css";
