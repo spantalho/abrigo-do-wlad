@@ -177,32 +177,6 @@ A configuração do Worker e dos Static Assets fica em
 [`apps/admin/wrangler.jsonc`](wrangler.jsonc). O painel é publicado de forma
 independente do site público e do Worker agendado.
 
-## Baseline de segurança
-
-Antes da introdução dos ambientes local e de homologação, o painel preserva os
-seguintes contratos:
-
-- `/api/session` aceita somente `GET`.
-- Requisições sem uma assertion válida do Cloudflare Access recebem `401` e não
-  são armazenadas em cache.
-- A identidade autenticada precisa estar em uma das listas de autorização do
-  runtime.
-- Não existe bypass de autenticação no frontend ou no Worker.
-
-As verificações mínimas antes de qualquer mudança de ambiente são:
-
-```bash
-npm run test:unit
-npm run test:frontend
-npm run test:worker
-npm run lint:admin
-npm run build:admin
-npm run typecheck:admin-worker
-npm run check:admin-worker
-npm run check:admin-worker:local
-npm run check:secrets
-```
-
 O deploy administrativo continua manual e separado. Mudanças relacionadas a
 autenticação local não devem ser publicadas em produção antes de passarem por
 essas verificações e pelo ambiente de homologação.
