@@ -25,6 +25,10 @@
   background: var(--scroll-corner);
 }
 
+.ScrollAreaScrollbarHidden {
+  display: none;
+}
+
 .ScrollAreaScrollbar[data-orientation="vertical"] {
   width: 10px;
 }
@@ -59,12 +63,29 @@
 .ScrollShadow {
   position: absolute;
   z-index: 2;
-  left: var(--scroll-shadow-inline-start, 0);
-  right: var(--scroll-shadow-inline-end, 10px);
-  height: 24px;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s ease;
+}
+
+.ScrollShadowVertical {
+  right: var(--scroll-shadow-inline-end, 10px);
+  left: var(--scroll-shadow-inline-start, 0);
+  height: 24px;
+}
+
+.ScrollShadowHorizontal {
+  top: var(--scroll-shadow-block-start, 0);
+  bottom: var(--scroll-shadow-block-end, 10px);
+  width: 24px;
+}
+
+.ScrollAreaWithoutScrollbar .ScrollShadowVertical {
+  right: var(--scroll-shadow-inline-end, 0);
+}
+
+.ScrollAreaWithoutScrollbar .ScrollShadowHorizontal {
+  bottom: var(--scroll-shadow-block-end, 0);
 }
 
 .ScrollShadowTop {
@@ -75,6 +96,16 @@
 .ScrollShadowBottom {
   bottom: 0;
   background: linear-gradient(to top, var(--scroll-shadow), transparent);
+}
+
+.ScrollShadowLeft {
+  left: 0;
+  background: linear-gradient(to right, var(--scroll-shadow), transparent);
+}
+
+.ScrollShadowRight {
+  right: 0;
+  background: linear-gradient(to left, var(--scroll-shadow), transparent);
 }
 
 .ScrollShadowVisible {

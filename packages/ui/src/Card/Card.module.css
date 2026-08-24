@@ -263,6 +263,10 @@
     flex-direction: column;
   }
 
+  .callout .cardIcon {
+    margin-bottom: 0.5rem;
+  }
+
   .layoutInline .cardBody {
     display: flex;
     flex-direction: column;

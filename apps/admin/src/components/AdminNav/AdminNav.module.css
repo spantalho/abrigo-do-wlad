@@ -6,15 +6,15 @@
   background-color: var(--surface-elevated);
 }
 
+.navScrollArea {
+  height: auto;
+  border: 0;
+  border-radius: 0;
+}
+
 .navWrapper {
   display: flex;
   gap: 0.35rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.navWrapper::-webkit-scrollbar {
-  display: none;
 }
 
 .navItem {
