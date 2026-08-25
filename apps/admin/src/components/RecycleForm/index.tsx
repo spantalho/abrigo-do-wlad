@@ -8,21 +8,6 @@ import { ErrorModal } from "../ErrorModal";
 import type { RecyclePoint } from "../../types/recycle";
 import styles from "./RecycleForm.module.css";
 
-// Lista fixa de bairros de São Paulo em ordem alfabética
-const SP_NEIGHBORHOODS = [
-  "Brooklin",
-  "Butantã",
-  "Campo Belo",
-  "Ipiranga",
-  "Jardim Bonfiglioli",
-  "Moema",
-  "Morumbi",
-  "Planalto Paulista",
-  "Vila Madalena",
-  "Vila Mascote",
-  "Vila Sônia"
-].sort();
-
 interface RecycleFormProps {
   initialData?: Partial<RecyclePoint>;
   onSubmit: (data: Omit<RecyclePoint, "id">) => Promise<void>;
@@ -112,16 +97,13 @@ export function RecycleForm({ initialData, onSubmit, title, buttonLabel }: Recyc
 
             <div className={styles.inputGroup}>
               <label>Bairro</label>
-              <NativeSelect
+              <Input
                 required
+                maxLength={120}
+                placeholder="Ex: Vila Mariana"
                 value={formData.neighborhood}
                 onChange={e => setFormData({...formData, neighborhood: e.target.value})}
-              >
-                <option value="" disabled>Selecione o bairro...</option>
-                {SP_NEIGHBORHOODS.map(bairro => (
-                  <option key={bairro} value={bairro}>{bairro}</option>
-                ))}
-              </NativeSelect>
+              />
             </div>
           </div>
 
