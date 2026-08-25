@@ -32,6 +32,16 @@
       "id": "8b61d3ad6ba44973a54a94eb5590da5f"
     }
   ],
+  "ratelimits": [
+    {
+      "name": "UPLOAD_RATE_LIMITER",
+      "namespace_id": "741903",
+      "simple": {
+        "limit": 12,
+        "period": 60
+      }
+    }
+  ],
   "observability": {
     "enabled": true,
     "logs": {

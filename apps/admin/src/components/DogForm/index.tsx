@@ -5,7 +5,12 @@ import { ArrowLeft, X, Save, UploadCloud } from "lucide-react";
 import { Button } from "@jaci/ui/Button";
 import { Input, NativeSelect, Textarea } from "@jaci/ui/Field";
 import { CORES_MAP, type DogProps } from "../../types/dogs";
-import { uploadImageToCloudinary } from "../../services/cloudinary";
+import {
+  deleteUploadedCloudinaryImage,
+  DOG_IMAGE_ACCEPT,
+  MAX_SOURCE_DOG_IMAGE_BYTES,
+  uploadImageToCloudinary,
+} from "../../services/cloudinary";
 import { SuccessModal } from "../SuccessModal";
 import { ErrorModal } from "../ErrorModal"; // <-- Importação do ErrorModal
 import styles from "./DogForm.module.css";
@@ -77,9 +82,18 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
     }
   }, [remainingPhotoSlots]);
 
+  const onDropRejected = useCallback(() => {
+    setErrorInfo({
+      show: true,
+      message: "Use imagens JPEG, PNG ou WebP de até 20 MB. A otimização é automática.",
+    });
+  }, []);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { 'image/*': [] },
+    onDropRejected,
+    accept: DOG_IMAGE_ACCEPT,
+    maxSize: MAX_SOURCE_DOG_IMAGE_BYTES,
     multiple: true,
     disabled: photoLimitReached,
   });
@@ -117,6 +131,7 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
     e.preventDefault();
     setIsSubmitting(true);
     setUploadProgress("Processando...");
+    const uploadedPhotoUrls: string[] = [];
 
     try {
       const localPhotoCount = photos.filter(photo => photo.kind === "local").length;
@@ -133,7 +148,9 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
         } else {
           uploadedPhotoCount += 1;
           setUploadProgress(`Enviando foto ${uploadedPhotoCount} de ${localPhotoCount}...`);
-          finalPhotos.push(await uploadImageToCloudinary(photo.file));
+          const uploadedUrl = await uploadImageToCloudinary(photo.file);
+          uploadedPhotoUrls.push(uploadedUrl);
+          finalPhotos.push(uploadedUrl);
         }
       }
 
@@ -148,6 +165,9 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
       setShowSuccess(true);
 
     } catch (error: unknown) {
+      await Promise.allSettled(
+        uploadedPhotoUrls.map((url) => deleteUploadedCloudinaryImage(url)),
+      );
       console.error(error);
       const message =
         error instanceof Error && error.message.trim()
@@ -275,7 +295,9 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
               ) : (
                 <>
                   {isDragActive ? <p>Solte aqui...</p> : <p>Arraste novas fotos aqui</p>}
-                  <span>(Clique para selecionar — restam {remainingPhotoSlots})</span>
+                  <span>
+                    Clique para selecionar — até 20 MB; otimização automática — restam {remainingPhotoSlots}
+                  </span>
                 </>
               )}
             </div>

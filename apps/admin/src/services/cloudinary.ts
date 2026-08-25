@@ -1,47 +1,52 @@
 import { apiRequest } from "./api";
 
-interface SignedUpload {
-  apiKey: string;
-  cloudName: string;
-  folder: string;
-  signature: string;
-  timestamp: number;
+interface AdminUploadResponse {
+  url?: unknown;
 }
 
-interface CloudinaryUploadResponse {
-  error?: {
-    message?: unknown;
-  };
-  secure_url?: unknown;
-}
+export const MAX_SOURCE_DOG_IMAGE_BYTES = 20 * 1024 * 1024;
+export const DOG_IMAGE_ACCEPT = {
+  "image/jpeg": [".jpg", ".jpeg"],
+  "image/png": [".png"],
+  "image/webp": [".webp"],
+};
+
+const ALLOWED_IMAGE_TYPES = new Set(Object.keys(DOG_IMAGE_ACCEPT));
 
 export async function uploadImageToCloudinary(file: File): Promise<string> {
-  const signed = await apiRequest<SignedUpload>("/api/admin/media/sign-upload", {
-    method: "POST",
-  });
+  if (file.size < 1 || file.size > MAX_SOURCE_DOG_IMAGE_BYTES) {
+    throw new Error("A imagem original deve ter no máximo 20 MB.");
+  }
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    throw new Error("Use uma imagem JPEG, PNG ou WebP.");
+  }
+
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("api_key", signed.apiKey);
-  formData.append("folder", signed.folder);
-  formData.append("signature", signed.signature);
-  formData.append("timestamp", String(signed.timestamp));
-  const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${encodeURIComponent(signed.cloudName)}/image/upload`,
-    { method: "POST", body: formData },
-  );
-  let payload: CloudinaryUploadResponse;
+  const response = await fetch("/api/admin/media/upload", {
+    method: "POST",
+    body: formData,
+    credentials: "same-origin",
+  });
+  let payload: AdminUploadResponse & { error?: unknown };
   try {
-    payload = (await response.json()) as CloudinaryUploadResponse;
+    payload = (await response.json()) as AdminUploadResponse & { error?: unknown };
   } catch {
     throw new Error(`Erro no upload da imagem (HTTP ${response.status}).`);
   }
-  if (!response.ok || typeof payload.secure_url !== "string") {
-    const message = payload.error?.message;
+  if (!response.ok || typeof payload.url !== "string") {
     throw new Error(
-      typeof message === "string" && message.trim()
-        ? message
+      typeof payload.error === "string" && payload.error.trim()
+        ? payload.error
         : "Erro no upload da imagem.",
     );
   }
-  return payload.secure_url;
+  return payload.url;
+}
+
+export async function deleteUploadedCloudinaryImage(imageUrl: string): Promise<void> {
+  await apiRequest("/api/admin/media/delete", {
+    method: "POST",
+    body: JSON.stringify({ imageUrl }),
+  });
 }

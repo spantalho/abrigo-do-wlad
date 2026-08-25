@@ -17,6 +17,11 @@ const env = {
       throw new Error("Asset socket connections are unavailable in unit tests.");
     },
   },
+  UPLOAD_RATE_LIMITER: {
+    async limit() {
+      return { success: true };
+    },
+  },
   ADMIN_DEVELOPER_EMAILS: "developer@example.test",
   ADMIN_ADMINISTRATOR_EMAILS: "administrator@example.test",
   CF_ACCESS_AUD: "test-audience",
@@ -66,6 +71,10 @@ test("admin assets are served only after Access authentication", async () => {
     "noindex, nofollow, noarchive, nosnippet",
   );
   assert.match(response.headers.get("Content-Security-Policy") ?? "", /fonts\.googleapis\.com/);
+  assert.doesNotMatch(
+    response.headers.get("Content-Security-Policy") ?? "",
+    /api\.cloudinary\.com/,
+  );
 });
 
 test("admin assets reject missing Access credentials before reading ASSETS", async () => {

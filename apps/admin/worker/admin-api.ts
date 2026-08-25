@@ -8,7 +8,19 @@ import {
 } from "../../../workers/shared/api/_lib/firestore";
 import { updateDogFeed } from "../../../workers/shared/api/dogs/feed";
 import type { AccessIdentity } from "./access";
-import { createSignedUpload, deleteCloudinaryImage } from "./cloudinary";
+import {
+  listAdminAuditEvents,
+  recordAdminAuditEvent,
+  type AdminAuditAction,
+  type AdminAuditEvent,
+  type AdminAuditEventInput,
+} from "./audit";
+import {
+  CloudinaryUploadError,
+  deleteCloudinaryImage,
+  uploadCloudinaryImage,
+  type UploadedDogImage,
+} from "./cloudinary";
 import {
   listSystemKeys,
   rotateSystemKey,
@@ -133,6 +145,7 @@ function requireDeveloper(identity: AccessIdentity): void {
 }
 
 export interface AdminApiDependencies {
+  consumeUploadRateLimit(env: Env, identity: AccessIdentity): Promise<boolean>;
   listSystemKeys(env: Env): Promise<SystemKeyMetadata[]>;
   rotateSystemKey(env: Env, identity: AccessIdentity): Promise<RotatedSystemKey>;
   getAdminNotification(env: Env): Promise<AdminNotification | null>;
@@ -142,15 +155,154 @@ export interface AdminApiDependencies {
     identity: AccessIdentity,
   ): Promise<AdminNotification>;
   deleteAdminNotification(env: Env, identity: AccessIdentity): Promise<void>;
+  listAdminAuditEvents(env: Env): Promise<AdminAuditEvent[]>;
+  recordAdminAuditEvent(env: Env, input: AdminAuditEventInput): Promise<void>;
+  uploadCloudinaryImage(request: Request, env: Env): Promise<UploadedDogImage>;
+}
+
+async function consumeUploadRateLimit(
+  env: Env,
+  identity: AccessIdentity,
+): Promise<boolean> {
+  const rateLimiter = env.UPLOAD_RATE_LIMITER;
+  if (!rateLimiter) {
+    throw new Error("UPLOAD_RATE_LIMITER is not configured.");
+  }
+  const result = await rateLimiter.limit({
+    key: `admin-media:${identity.subject}`,
+  });
+  return result.success;
 }
 
 const productionDependencies: AdminApiDependencies = {
+  consumeUploadRateLimit,
   listSystemKeys,
   rotateSystemKey,
   getAdminNotification,
   saveAdminNotification,
   deleteAdminNotification,
+  listAdminAuditEvents,
+  recordAdminAuditEvent,
+  uploadCloudinaryImage,
 };
+
+interface AuditDescriptor {
+  action: AdminAuditAction;
+  method: AdminAuditEventInput["method"];
+  target: string;
+}
+
+function safeAuditId(value: string | undefined): string {
+  return value && /^[A-Za-z0-9_-]{1,128}$/.test(value) ? value : "invalid";
+}
+
+function describeAuditedMutation(request: Request): AuditDescriptor | null {
+  if (!["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) return null;
+  const method = request.method as AuditDescriptor["method"];
+  const { pathname } = new URL(request.url);
+  const segments = pathname.split("/").filter(Boolean);
+
+  if (pathname === "/api/admin/dogs" && method === "POST") {
+    return { action: "dog.created", method, target: "dogs" };
+  }
+  if (segments[2] === "dogs" && segments.length === 4) {
+    const target = `dogs/${safeAuditId(segments[3])}`;
+    if (method === "PATCH") return { action: "dog.updated", method, target };
+    if (method === "DELETE") return { action: "dog.deleted", method, target };
+  }
+  if (pathname === "/api/admin/recycle-points" && method === "POST") {
+    return { action: "recycle-point.created", method, target: "recycle_points" };
+  }
+  if (segments[2] === "recycle-points" && segments.length === 4) {
+    const target = `recycle_points/${safeAuditId(segments[3])}`;
+    if (method === "PATCH") {
+      return { action: "recycle-point.updated", method, target };
+    }
+    if (method === "DELETE") {
+      return { action: "recycle-point.deleted", method, target };
+    }
+  }
+  if (
+    segments[2] === "adoptions" &&
+    segments[4] === "status" &&
+    segments.length === 5 &&
+    method === "PATCH"
+  ) {
+    return {
+      action: "adoption.status.updated",
+      method,
+      target: `adoption_application/${safeAuditId(segments[3])}`,
+    };
+  }
+  if (pathname === "/api/admin/system-keys/rotate" && method === "POST") {
+    return { action: "system-key.rotated", method, target: "system/keys" };
+  }
+  if (pathname === "/api/admin/notifications") {
+    if (method === "PUT") {
+      return { action: "notification.saved", method, target: "system/notifications" };
+    }
+    if (method === "DELETE") {
+      return { action: "notification.deleted", method, target: "system/notifications" };
+    }
+  }
+  if (pathname === "/api/admin/media/upload" && method === "POST") {
+    return { action: "media.uploaded", method, target: "cloudinary/dogs" };
+  }
+  if (pathname === "/api/admin/media/delete" && method === "POST") {
+    return { action: "media.deleted", method, target: "cloudinary/dogs" };
+  }
+
+  return null;
+}
+
+function requestAuditId(request: Request): string {
+  const rayId = request.headers.get("Cf-Ray")?.trim();
+  return rayId && /^[A-Za-z0-9:-]{1,128}$/.test(rayId)
+    ? rayId
+    : crypto.randomUUID();
+}
+
+async function scheduleAuditRecord(
+  request: Request,
+  identity: AccessIdentity,
+  descriptor: AuditDescriptor,
+  response: Response,
+  startedAt: number,
+  env: Env,
+  dependencies: AdminApiDependencies,
+  executionContext?: Pick<ExecutionContext, "waitUntil">,
+): Promise<void> {
+  const outcome = response.status >= 500
+    ? "failure"
+    : response.status >= 400
+      ? "rejected"
+      : "success";
+  const auditPromise = dependencies.recordAdminAuditEvent(env, {
+    action: descriptor.action,
+    actor: identity.email,
+    actorRole: identity.role,
+    durationMs: Date.now() - startedAt,
+    method: descriptor.method,
+    outcome,
+    path: new URL(request.url).pathname,
+    requestId: requestAuditId(request),
+    status: response.status,
+    target: descriptor.target,
+  }).catch((error: unknown) => {
+    console.error(JSON.stringify({
+      event: "admin.audit.failed",
+      action: descriptor.action,
+      actor: identity.email,
+      message: error instanceof Error ? error.message : "Unknown failure",
+    }));
+  });
+
+  if (executionContext) {
+    executionContext.waitUntil(auditPromise);
+  } else {
+    await auditPromise;
+  }
+}
 
 function numericDogId(value: string): number {
   if (!/^\d{1,16}$/.test(value)) throw new ApiError(400, "Invalid dog ID.");
@@ -393,7 +545,7 @@ async function handleDashboard(
   });
 }
 
-export async function handleAdminApi(
+async function routeAdminApi(
   request: Request,
   env: Env,
   identity: AccessIdentity,
@@ -410,6 +562,11 @@ export async function handleAdminApi(
     }
     if (url.pathname === "/api/admin/adoptions" && request.method === "GET") {
       return jsonResponse(200, await listAdoptions(env));
+    }
+    if (url.pathname === "/api/admin/audit-log") {
+      requireDeveloper(identity);
+      if (request.method !== "GET") return methodNotAllowed(["GET"]);
+      return jsonResponse(200, await dependencies.listAdminAuditEvents(env));
     }
     if (url.pathname === "/api/admin/system-keys") {
       requireDeveloper(identity);
@@ -458,9 +615,19 @@ export async function handleAdminApi(
     if (segments[2] === "recycle-points" && segments.length <= 4) {
       return handleRecycle(request, env, segments[3]);
     }
-    if (url.pathname === "/api/admin/media/sign-upload") {
+    if (url.pathname === "/api/admin/media/upload") {
       if (request.method !== "POST") return methodNotAllowed(["POST"]);
-      return jsonResponse(200, await createSignedUpload(env));
+      if (!await dependencies.consumeUploadRateLimit(env, identity)) {
+        const response = jsonResponse(429, {
+          error: "Limite de uploads excedido. Aguarde um minuto.",
+        });
+        response.headers.set("Retry-After", "60");
+        return response;
+      }
+      return jsonResponse(
+        201,
+        await dependencies.uploadCloudinaryImage(request, env),
+      );
     }
     if (url.pathname === "/api/admin/media/delete") {
       if (request.method !== "POST") return methodNotAllowed(["POST"]);
@@ -480,6 +647,9 @@ export async function handleAdminApi(
       });
     }
     if (error instanceof ApiError) return jsonResponse(error.status, { error: error.message });
+    if (error instanceof CloudinaryUploadError) {
+      return jsonResponse(error.status, { error: error.message });
+    }
     if (error instanceof FirestoreRestError && error.status === 404) {
       return jsonResponse(404, { error: "Document not found" });
     }
@@ -489,4 +659,37 @@ export async function handleAdminApi(
     }));
     return jsonResponse(500, { error: "Internal server error" });
   }
+}
+
+export async function handleAdminApi(
+  request: Request,
+  env: Env,
+  identity: AccessIdentity,
+  dependencies: AdminApiDependencies = productionDependencies,
+  executionContext?: Pick<ExecutionContext, "waitUntil">,
+): Promise<Response> {
+  const startedAt = Date.now();
+  const auditDescriptor = describeAuditedMutation(request);
+  const response = await routeAdminApi(
+    request,
+    env,
+    identity,
+    dependencies,
+    executionContext,
+  );
+
+  if (auditDescriptor) {
+    await scheduleAuditRecord(
+      request,
+      identity,
+      auditDescriptor,
+      response,
+      startedAt,
+      env,
+      dependencies,
+      executionContext,
+    );
+  }
+
+  return response;
 }

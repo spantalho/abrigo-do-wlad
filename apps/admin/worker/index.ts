@@ -25,7 +25,7 @@ export function secureAssetResponse(response: Response): Response {
   const secured = new Response(response.body, response);
   secured.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; base-uri 'none'; connect-src 'self' https://api.cloudinary.com; font-src 'self' https://fonts.gstatic.com; form-action 'self'; frame-ancestors 'none'; img-src 'self' blob: data: https://res.cloudinary.com; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "default-src 'self'; base-uri 'none'; connect-src 'self'; font-src 'self' https://fonts.gstatic.com; form-action 'self'; frame-ancestors 'none'; img-src 'self' blob: data: https://res.cloudinary.com; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   );
   secured.headers.set("Permissions-Policy", "camera=(), geolocation=(), microphone=()");
   secured.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");

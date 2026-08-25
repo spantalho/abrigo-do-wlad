@@ -63,6 +63,7 @@ describe("client isolation", () => {
     await seed("users/operator", { role: "developer" });
     await seed("system/keys", { key: "secret" });
     await seed("system/statistics", { adoptionsCount: 1 });
+    await seed("admin_audit_log/event-1", { action: "dog.updated" });
     const db = authenticatedFirestore();
 
     await assertFails(updateDoc(doc(db, "dogs/wlad"), { nome: "Changed" }));
@@ -71,6 +72,10 @@ describe("client isolation", () => {
     await assertFails(getDoc(doc(db, "users/operator")));
     await assertFails(getDoc(doc(db, "system/keys")));
     await assertFails(getDoc(doc(db, "system/statistics")));
+    await assertFails(getDoc(doc(db, "admin_audit_log/event-1")));
+    await assertFails(setDoc(doc(db, "admin_audit_log/event-2"), {
+      action: "dog.deleted",
+    }));
   });
 
   test("unknown collections fail closed", async () => {

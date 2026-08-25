@@ -45,7 +45,8 @@ apps/admin/
 │   ├── index.ts         # Validação do Access e entrega da aplicação
 │   ├── admin-api.ts     # Operações administrativas
 │   ├── access.ts        # Validação de identidade e papéis
-│   ├── cloudinary.ts    # Assinatura e remoção de mídia
+│   ├── audit.ts         # Trilha persistente das mutações administrativas
+│   ├── cloudinary.ts    # Validação, upload e remoção de mídia
 │   └── notifications.ts # Persistência e expiração das notificações
 ├── package.json
 └── wrangler.jsonc
@@ -108,15 +109,34 @@ Todas as rotas exigem identidade válida do Cloudflare Access.
 | `GET`, `PATCH`, `DELETE` | `/api/admin/recycle-points/:id` | Consulta, altera ou remove um ponto. |
 | `GET` | `/api/admin/adoptions` | Lista e descriptografa candidaturas. |
 | `PATCH` | `/api/admin/adoptions/:id/status` | Atualiza o status de uma candidatura. |
-| `POST` | `/api/admin/media/sign-upload` | Gera parâmetros de upload assinado. |
+| `GET` | `/api/admin/audit-log` | Lista os 100 eventos de auditoria mais recentes. Somente desenvolvedores. |
+| `POST` | `/api/admin/media/upload` | Valida e envia uma imagem pelo Worker. |
 | `POST` | `/api/admin/media/delete` | Remove uma imagem validada. |
 | `GET` | `/api/admin/notifications` | Retorna a notificação ativa ou `null`. |
 | `PUT` | `/api/admin/notifications` | Publica ou substitui a notificação do painel. Somente desenvolvedores. |
 | `DELETE` | `/api/admin/notifications` | Remove a notificação atual. Somente desenvolvedores. |
 
 As mutações exigem mesma origem, validação de payload e identidade autorizada.
-O Worker restringe uploads a uma pasta fixa e valida a conta e o caminho antes
-da exclusão de imagens.
+O Worker aceita somente uma imagem JPEG, PNG ou WebP por upload, com original de
+até 20 MB e 64 megapixels. O Cloudinary aplica uma transformação de entrada com
+qualidade adaptativa, preserva a proporção e limita a mídia a 2560 × 2560. A
+versão persistida deve ter no máximo 5 MB. Se a primeira otimização ainda exceder
+esse teto, o Worker remove o resultado e repete automaticamente em WebP, com até
+2048 × 2048 e a mesma qualidade adaptativa. A mídia recebe um ID único não
+sobrescrevível e fica sujeita a 12 uploads por minuto por identidade. O Worker
+também valida a conta e o caminho antes da exclusão de imagens.
+
+### Auditoria administrativa
+
+As principais mutações geram um evento na coleção `admin_audit_log`, incluindo
+ator, papel, ação, alvo, status, resultado, duração e identificador da requisição.
+Payloads, conteúdo de candidaturas e URLs de mídia não são copiados para a
+auditoria. Sucessos, rejeições e falhas são registrados; uma indisponibilidade
+da trilha não altera o resultado já produzido pela operação e também gera um
+log estruturado `admin.audit.failed` no Workers Logs.
+
+A consulta da trilha exige papel `developer`. Clientes Firestore continuam sem
+acesso direto à coleção pela regra de negação padrão.
 
 Cadastros, edições e remoções de cães agendam em segundo plano a reconstrução
 do catálogo público rotativo no mesmo namespace KV usado pelo Worker público.

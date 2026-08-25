@@ -43,42 +43,111 @@ function keyDependencies(
   overrides: Partial<AdminApiDependencies> = {},
 ): AdminApiDependencies {
   return {
+    consumeUploadRateLimit: async () => true,
     listSystemKeys: async () => [],
     rotateSystemKey: async () => ({ id: "key-id", version: "v2" }),
     getAdminNotification: async () => null,
     saveAdminNotification: async (_env, input, requestIdentity) =>
       notificationResponse(input, requestIdentity),
     deleteAdminNotification: async () => undefined,
+    listAdminAuditEvents: async () => [],
+    recordAdminAuditEvent: async () => undefined,
+    uploadCloudinaryImage: async () => ({
+      bytes: 1_024,
+      format: "jpg",
+      height: 800,
+      publicId: "abrigo-do-wlad/dogs/image-id",
+      url: "https://res.cloudinary.com/test-cloud/image/upload/v1/abrigo-do-wlad/dogs/image-id.jpg",
+      width: 1_200,
+    }),
     ...overrides,
   };
 }
 
 test("admin API rejects state changes without a same-origin Origin header", async () => {
   const response = await handleAdminApi(
-    new Request("https://admin.example.test/api/admin/media/sign-upload", {
+    new Request("https://admin.example.test/api/admin/media/upload", {
       method: "POST",
     }),
     env,
     identity,
+    keyDependencies(),
   );
 
   assert.equal(response.status, 403);
 });
 
-test("admin API signs uploads only after same-origin validation", async () => {
+test("admin API proxies uploads only after same-origin validation", async () => {
   const response = await handleAdminApi(
-    new Request("https://admin.example.test/api/admin/media/sign-upload", {
+    new Request("https://admin.example.test/api/admin/media/upload", {
       method: "POST",
       headers: { Origin: "https://admin.example.test" },
     }),
     env,
     identity,
+    keyDependencies(),
   );
   const payload = await response.json() as Record<string, unknown>;
 
-  assert.equal(response.status, 200);
-  assert.equal(payload.folder, "abrigo-do-wlad/dogs");
+  assert.equal(response.status, 201);
+  assert.equal(payload.publicId, "abrigo-do-wlad/dogs/image-id");
   assert.equal("apiSecret" in payload, false);
+});
+
+test("admin API rate limits uploads per authenticated identity", async () => {
+  let uploaded = false;
+  let auditedOutcome = "";
+  const response = await handleAdminApi(
+    new Request("https://admin.example.test/api/admin/media/upload", {
+      method: "POST",
+      headers: { Origin: "https://admin.example.test" },
+    }),
+    env,
+    identity,
+    keyDependencies({
+      consumeUploadRateLimit: async () => false,
+      uploadCloudinaryImage: async () => {
+        uploaded = true;
+        throw new Error("must not upload");
+      },
+      recordAdminAuditEvent: async (_env, event) => {
+        auditedOutcome = event.outcome;
+      },
+    }),
+  );
+
+  assert.equal(response.status, 429);
+  assert.equal(response.headers.get("Retry-After"), "60");
+  assert.equal(uploaded, false);
+  assert.equal(auditedOutcome, "rejected");
+});
+
+test("admin API records successful mutations without request payloads", async () => {
+  let audited: Parameters<AdminApiDependencies["recordAdminAuditEvent"]>[1] | undefined;
+  const response = await handleAdminApi(
+    new Request("https://admin.example.test/api/admin/media/upload", {
+      method: "POST",
+      headers: {
+        "Cf-Ray": "test-ray-123",
+        Origin: "https://admin.example.test",
+      },
+    }),
+    env,
+    identity,
+    keyDependencies({
+      recordAdminAuditEvent: async (_env, event) => {
+        audited = event;
+      },
+    }),
+  );
+
+  assert.equal(response.status, 201);
+  assert.equal(audited?.action, "media.uploaded");
+  assert.equal(audited?.actor, identity.email);
+  assert.equal(audited?.requestId, "test-ray-123");
+  assert.equal(audited?.target, "cloudinary/dogs");
+  assert.equal(audited?.outcome, "success");
+  assert.equal("imageUrl" in (audited ?? {}), false);
 });
 
 test("dog updates reject more than six photos before accessing Firestore", async () => {
@@ -165,6 +234,40 @@ test("developer identities can list sanitized system-key metadata", async () => 
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), metadata);
   assert.equal("key" in metadata[0], false);
+});
+
+test("only developer identities can read the bounded audit trail", async () => {
+  let called = false;
+  const administratorResponse = await handleAdminApi(
+    new Request("https://admin.example.test/api/admin/audit-log"),
+    env,
+    identity,
+    keyDependencies({
+      listAdminAuditEvents: async () => {
+        called = true;
+        return [];
+      },
+    }),
+  );
+
+  assert.equal(administratorResponse.status, 403);
+  assert.equal(called, false);
+
+  const developerResponse = await handleAdminApi(
+    new Request("https://admin.example.test/api/admin/audit-log"),
+    env,
+    developerIdentity,
+    keyDependencies({
+      listAdminAuditEvents: async () => {
+        called = true;
+        return [];
+      },
+    }),
+  );
+
+  assert.equal(developerResponse.status, 200);
+  assert.equal(called, true);
+  assert.deepEqual(await developerResponse.json(), []);
 });
 
 test("developer identities can rotate system keys", async () => {
