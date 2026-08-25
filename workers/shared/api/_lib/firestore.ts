@@ -40,6 +40,12 @@ interface RunQueryResult {
   document?: FirestoreApiDocument;
 }
 
+interface RunAggregationQueryResult {
+  result?: {
+    aggregateFields?: Record<string, FirestoreValue>;
+  };
+}
+
 interface GoogleTokenResponse {
   access_token?: string;
   expires_in?: number;
@@ -69,6 +75,11 @@ export interface CreateDocumentOptions {
 export interface DeleteDocumentsResult {
   commitTime?: string;
   deleted: number;
+}
+
+export interface DeleteDocumentAndIncrementResult {
+  commitTime?: string;
+  deleted: 1;
 }
 
 export interface UpdateDocumentOptions {
@@ -466,6 +477,67 @@ export class FirestoreRestClient {
     return (await response.json()) as T;
   }
 
+  private async runPaginatedQuery<T extends Record<string, unknown>>(
+    structuredQuery: Record<string, unknown>,
+    cursorFieldPaths: string[],
+    totalLimit?: number,
+  ): Promise<FirestoreDocument<T>[]> {
+    if (
+      totalLimit !== undefined &&
+      (!Number.isInteger(totalLimit) || totalLimit < 1)
+    ) {
+      throw new RangeError("Firestore query limit must be a positive integer.");
+    }
+
+    const documents: FirestoreDocument<T>[] = [];
+    let cursorValues: FirestoreValue[] | undefined;
+
+    while (totalLimit === undefined || documents.length < totalLimit) {
+      const remaining = totalLimit === undefined
+        ? MAX_QUERY_LIMIT
+        : Math.min(MAX_QUERY_LIMIT, totalLimit - documents.length);
+      const results = await this.request<RunQueryResult[]>(
+        `${this.documentsRoot}:runQuery`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            structuredQuery: {
+              ...structuredQuery,
+              limit: remaining,
+              ...(cursorValues
+                ? { startAt: { values: cursorValues, before: false } }
+                : {}),
+            },
+          }),
+        },
+      );
+      const page = results.flatMap((result) =>
+        result.document ? [result.document] : []
+      );
+
+      documents.push(...page.map((document) => decodeDocument<T>(document)));
+      if (page.length < remaining) break;
+
+      const lastDocument = page.at(-1);
+      if (!lastDocument) break;
+      cursorValues = cursorFieldPaths.map((fieldPath) => {
+        if (fieldPath === "__name__") {
+          return { referenceValue: lastDocument.name };
+        }
+
+        const value = lastDocument.fields?.[fieldPath];
+        if (!value) {
+          throw new Error(
+            `Firestore query result is missing cursor field ${fieldPath}.`,
+          );
+        }
+        return value;
+      });
+    }
+
+    return documents;
+  }
+
   async getDocument<T extends Record<string, unknown>>(
     documentPath: string,
   ): Promise<FirestoreDocument<T> | null> {
@@ -538,37 +610,107 @@ export class FirestoreRestClient {
     } = {},
   ): Promise<FirestoreDocument<T>[]> {
     assertCollectionId(collectionId);
-    const limit = options.limit ?? MAX_QUERY_LIMIT;
+    const limit = options.limit;
     const orderBy = options.orderBy ?? "__name__";
     assertFieldPath(orderBy);
 
-    if (!Number.isInteger(limit) || limit < 1 || limit > MAX_QUERY_LIMIT) {
+    if (
+      limit !== undefined &&
+      (!Number.isInteger(limit) || limit < 1)
+    ) {
       throw new RangeError(
-        `Firestore query limit must be between 1 and ${MAX_QUERY_LIMIT}.`,
+        "Firestore query limit must be a positive integer.",
       );
     }
 
-    const results = await this.request<RunQueryResult[]>(
-      `${this.documentsRoot}:runQuery`,
+    const direction = options.direction ?? "ASCENDING";
+    const cursorFieldPaths = orderBy === "__name__"
+      ? ["__name__"]
+      : [orderBy, "__name__"];
+    return this.runPaginatedQuery<T>(
+      {
+        from: [{ collectionId }],
+        orderBy: cursorFieldPaths.map((fieldPath) => ({
+          field: { fieldPath },
+          direction,
+        })),
+      },
+      cursorFieldPaths,
+      limit,
+    );
+  }
+
+  async countDocuments(collectionId: string): Promise<number> {
+    assertCollectionId(collectionId);
+    const results = await this.request<RunAggregationQueryResult[]>(
+      `${this.documentsRoot}:runAggregationQuery`,
       {
         method: "POST",
         body: JSON.stringify({
-          structuredQuery: {
-            from: [{ collectionId }],
-            orderBy: [
-              {
-                field: { fieldPath: orderBy },
-                direction: options.direction ?? "ASCENDING",
-              },
-            ],
-            limit,
+          structuredAggregationQuery: {
+            aggregations: [{ alias: "count", count: {} }],
+            structuredQuery: { from: [{ collectionId }] },
           },
         }),
       },
     );
+    const encodedCount = results.find(
+      (result) => result.result?.aggregateFields?.count,
+    )?.result?.aggregateFields?.count;
+    const count = encodedCount ? decodeFirestoreValue(encodedCount) : undefined;
 
-    return results.flatMap((result) =>
-      result.document ? [decodeDocument<T>(result.document)] : [],
+    if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) {
+      throw new Error("Firestore returned an invalid document count.");
+    }
+    return count;
+  }
+
+  async findDocumentsByTimestampRange<T extends Record<string, unknown>>(
+    collectionId: string,
+    fieldPath: string,
+    start: Date,
+    end: Date,
+  ): Promise<FirestoreDocument<T>[]> {
+    assertCollectionId(collectionId);
+    assertFieldPath(fieldPath);
+    if (
+      Number.isNaN(start.getTime()) ||
+      Number.isNaN(end.getTime()) ||
+      start.getTime() > end.getTime()
+    ) {
+      throw new TypeError("Firestore timestamp range is invalid.");
+    }
+
+    return this.runPaginatedQuery<T>(
+      {
+        from: [{ collectionId }],
+        where: {
+          compositeFilter: {
+            op: "AND",
+            filters: [
+              {
+                fieldFilter: {
+                  field: { fieldPath },
+                  op: "GREATER_THAN_OR_EQUAL",
+                  value: encodeFirestoreValue(start),
+                },
+              },
+              {
+                fieldFilter: {
+                  field: { fieldPath },
+                  op: "LESS_THAN_OR_EQUAL",
+                  value: encodeFirestoreValue(end),
+                },
+              },
+            ],
+          },
+        },
+        orderBy: [
+          { field: { fieldPath }, direction: "ASCENDING" },
+          { field: { fieldPath: "__name__" }, direction: "ASCENDING" },
+        ],
+      },
+      [fieldPath, "__name__"],
     );
   }
 
@@ -693,6 +835,66 @@ export class FirestoreRestClient {
 
   async deleteDocument(documentName: string): Promise<DeleteDocumentsResult> {
     return this.deleteDocuments([documentName]);
+  }
+
+  async deleteDocumentAndIncrementField(
+    documentName: string,
+    counterDocumentPath: string,
+    fieldPath: string,
+    amount: number,
+  ): Promise<DeleteDocumentAndIncrementResult> {
+    assertDocumentName(documentName, this.documentsRoot);
+    assertFieldPath(fieldPath);
+    if (!Number.isFinite(amount)) {
+      throw new TypeError("Firestore increment amount must be finite.");
+    }
+
+    const [collectionId, documentId, ...rest] = counterDocumentPath.split("/");
+    if (!collectionId || !documentId || rest.length > 0) {
+      throw new TypeError("Firestore counter path must target a root document.");
+    }
+    const existingCounter = await this.getDocument<Record<string, unknown>>(
+      counterDocumentPath,
+    );
+    const counterName = `${this.documentsRoot}/${collectionId}/${documentId}`;
+    if (counterName === documentName) {
+      throw new TypeError("Firestore counter and deleted document must differ.");
+    }
+    const counterWrite = existingCounter
+      ? {
+          transform: {
+            document: existingCounter.name,
+            fieldTransforms: [{
+              fieldPath,
+              increment: encodeFirestoreValue(amount),
+            }],
+          },
+          currentDocument: { exists: true },
+        }
+      : {
+          update: {
+            name: counterName,
+            fields: { [fieldPath]: encodeFirestoreValue(amount) },
+          },
+          currentDocument: { exists: false },
+        };
+    const result = await this.request<{ commitTime?: string }>(
+      `${this.databaseRoot}/documents:commit`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          writes: [
+            {
+              delete: documentName,
+              currentDocument: { exists: true },
+            },
+            counterWrite,
+          ],
+        }),
+      },
+    );
+
+    return { deleted: 1, commitTime: result.commitTime };
   }
 
   async updateDocument(

@@ -1,7 +1,13 @@
-import { AccessAuthenticationError, authenticateAccessRequest } from "./access";
+import {
+  AccessAuthenticationError,
+  authenticateAccessRequest,
+  type AccessIdentity,
+} from "./access";
 import { handleAdminApi as handleAuthenticatedAdminApi } from "./admin-api";
 
 const NO_INDEX_POLICY = "noindex, nofollow, noarchive, nosnippet";
+
+type AssetAuthenticator = (request: Request, env: Env) => Promise<AccessIdentity>;
 
 function jsonResponse(status: number, body: unknown): Response {
   return Response.json(body, {
@@ -19,7 +25,7 @@ export function secureAssetResponse(response: Response): Response {
   const secured = new Response(response.body, response);
   secured.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; base-uri 'none'; connect-src 'self' https://api.cloudinary.com; form-action 'self'; frame-ancestors 'none'; img-src 'self' blob: data: https://res.cloudinary.com; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'",
+    "default-src 'self'; base-uri 'none'; connect-src 'self' https://api.cloudinary.com; font-src 'self' https://fonts.gstatic.com; form-action 'self'; frame-ancestors 'none'; img-src 'self' blob: data: https://res.cloudinary.com; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   );
   secured.headers.set("Permissions-Policy", "camera=(), geolocation=(), microphone=()");
   secured.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -27,6 +33,31 @@ export function secureAssetResponse(response: Response): Response {
   secured.headers.set("X-Frame-Options", "DENY");
   secured.headers.set("X-Robots-Tag", NO_INDEX_POLICY);
   return secured;
+}
+
+function unauthorizedResponse(error: unknown): Response {
+  const message =
+    error instanceof AccessAuthenticationError
+      ? error.message
+      : "Unexpected authentication failure.";
+  console.error(
+    JSON.stringify({ event: "admin.access.denied", reason: message }),
+  );
+  return jsonResponse(401, { error: "Unauthorized" });
+}
+
+export async function handleAdminAsset(
+  request: Request,
+  env: Env,
+  authenticate: AssetAuthenticator = authenticateAccessRequest,
+): Promise<Response> {
+  try {
+    await authenticate(request, env);
+  } catch (error) {
+    return unauthorizedResponse(error);
+  }
+
+  return secureAssetResponse(await env.ASSETS.fetch(request));
 }
 
 export async function handleAdminApi(
@@ -63,14 +94,7 @@ export async function handleAdminApi(
       executionContext,
     );
   } catch (error) {
-    const message =
-      error instanceof AccessAuthenticationError
-        ? error.message
-        : "Unexpected authentication failure.";
-    console.error(
-      JSON.stringify({ event: "admin.access.denied", reason: message }),
-    );
-    return jsonResponse(401, { error: "Unauthorized" });
+    return unauthorizedResponse(error);
   }
 }
 
@@ -82,6 +106,6 @@ export default {
       return handleAdminApi(request, env, ctx);
     }
 
-    return secureAssetResponse(await env.ASSETS.fetch(request));
+    return handleAdminAsset(request, env);
   },
 } satisfies ExportedHandler<Env>;

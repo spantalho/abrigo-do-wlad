@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { test, vi } from "vitest";
 
-import { handleAdminApi, secureAssetResponse } from "./index";
+import {
+  handleAdminApi,
+  handleAdminAsset,
+  secureAssetResponse,
+} from "./index";
 
 const env = {
   KV: {} as KVNamespace,
@@ -37,6 +41,59 @@ test("admin assets prevent search engine indexing", async () => {
     response.headers.get("X-Robots-Tag"),
     "noindex, nofollow, noarchive, nosnippet",
   );
+});
+
+test("admin assets are served only after Access authentication", async () => {
+  let authenticated = false;
+  const response = await handleAdminAsset(
+    new Request("https://admin.example.test/index.html"),
+    env,
+    async () => {
+      authenticated = true;
+      return {
+        email: "administrator@example.test",
+        role: "administrator",
+        subject: "test-subject",
+      };
+    },
+  );
+
+  assert.equal(authenticated, true);
+  assert.equal(response.status, 200);
+  assert.equal(await response.text(), "asset");
+  assert.equal(
+    response.headers.get("X-Robots-Tag"),
+    "noindex, nofollow, noarchive, nosnippet",
+  );
+  assert.match(response.headers.get("Content-Security-Policy") ?? "", /fonts\.googleapis\.com/);
+});
+
+test("admin assets reject missing Access credentials before reading ASSETS", async () => {
+  let assetReads = 0;
+  const protectedEnv = {
+    ...env,
+    ASSETS: {
+      ...env.ASSETS,
+      async fetch() {
+        assetReads += 1;
+        return new Response("must not be returned");
+      },
+    },
+  } satisfies Env;
+  const errorLog = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+  try {
+    const response = await handleAdminAsset(
+      new Request("https://admin.example.test/index.html"),
+      protectedEnv,
+    );
+
+    assert.equal(response.status, 401);
+    assert.equal(assetReads, 0);
+    assert.deepEqual(await response.json(), { error: "Unauthorized" });
+  } finally {
+    errorLog.mockRestore();
+  }
 });
 
 test("admin session rejects requests without a Cloudflare Access assertion", async () => {

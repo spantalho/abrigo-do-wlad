@@ -65,6 +65,12 @@ const recycleUpdateSchema = recycleSchema.partial().refine(
 const adoptionStatusSchema = z.object({ status: z.enum(["approved", "rejected"]) });
 const imageDeleteSchema = z.object({ imageUrl: httpsUrl });
 
+type StoredAdoption = {
+  sensitive?: unknown;
+  keyVersion?: unknown;
+  [key: string]: unknown;
+};
+
 function jsonResponse(status: number, body: unknown): Response {
   return Response.json(body, {
     status,
@@ -160,15 +166,10 @@ function documentId(value: string): string {
   return value;
 }
 
-async function listAdoptions(env: Env): Promise<Record<string, unknown>[]> {
-  const documents = await createFirestoreClient(env).listDocuments<{
-    sensitive?: unknown;
-    keyVersion?: unknown;
-    [key: string]: unknown;
-  }>(MANAGED_COLLECTIONS.adoptions, {
-    direction: "DESCENDING",
-    orderBy: "submittedAt",
-  });
+async function serializeAdoptions(
+  documents: FirestoreDocument<StoredAdoption>[],
+  env: Env,
+): Promise<Record<string, unknown>[]> {
   const encryptedDocuments = documents.filter(
     (document) =>
       typeof document.data.sensitive === "string" &&
@@ -193,6 +194,17 @@ async function listAdoptions(env: Env): Promise<Record<string, unknown>[]> {
   });
 }
 
+async function listAdoptions(env: Env): Promise<Record<string, unknown>[]> {
+  const documents = await createFirestoreClient(env).listDocuments<StoredAdoption>(
+    MANAGED_COLLECTIONS.adoptions,
+    {
+      direction: "DESCENDING",
+      orderBy: "submittedAt",
+    },
+  );
+  return serializeAdoptions(documents, env);
+}
+
 function serializeDocuments<T extends Record<string, unknown>>(
   documents: FirestoreDocument<T>[],
 ): Array<T & { documentId: string }> {
@@ -212,6 +224,19 @@ function scheduleDogFeedUpdate(
       }));
     }),
   );
+}
+
+async function cleanupDogPhotos(
+  photos: string[],
+  env: Env,
+  dogId: number,
+): Promise<void> {
+  const deletions = await Promise.allSettled(
+    photos.map((photo) => deleteCloudinaryImage(photo, env)),
+  );
+  if (deletions.some((result) => result.status === "rejected")) {
+    console.warn(JSON.stringify({ event: "admin.media.cleanup.partial", dogId }));
+  }
 }
 
 async function handleDogs(
@@ -267,15 +292,21 @@ async function handleDogs(
     const photos = Array.isArray(document.data.fotos)
       ? document.data.fotos.filter((photo): photo is string => typeof photo === "string")
       : [];
-    const deletions = await Promise.allSettled(
-      photos.map((photo) => deleteCloudinaryImage(photo, env)),
-    );
-    if (deletions.some((result) => result.status === "rejected")) {
-      console.warn(JSON.stringify({ event: "admin.media.cleanup.partial", dogId: id }));
-    }
-    await firestore.deleteDocument(document.name);
     if (adoptedViaSite) {
-      await firestore.incrementDocumentField("system/statistics", "adoptionsCount", 1);
+      await firestore.deleteDocumentAndIncrementField(
+        document.name,
+        "system/statistics",
+        "adoptionsCount",
+        1,
+      );
+    } else {
+      await firestore.deleteDocument(document.name);
+    }
+    const cleanup = cleanupDogPhotos(photos, env, id);
+    if (executionContext) {
+      executionContext.waitUntil(cleanup);
+    } else {
+      await cleanup;
     }
     scheduleDogFeedUpdate(env, executionContext);
     return new Response(null, { status: 204 });
@@ -318,21 +349,28 @@ async function handleDashboard(
   dependencies: AdminApiDependencies,
 ): Promise<Response> {
   const firestore = createFirestoreClient(env);
-  const [dogs, recycles, adoptions, statistics, notification] = await Promise.all([
-    firestore.listDocuments("dogs"),
-    firestore.listDocuments("recycle_points"),
-    listAdoptions(env),
-    firestore.getDocument<{ adoptionsCount?: unknown }>("system/statistics"),
-    dependencies.getAdminNotification(env),
-  ]);
-  const now = Date.now();
-  const expiringAdoptions = adoptions.flatMap((adoption) => {
-    if (typeof adoption.submittedAt !== "string") return [];
-    const submittedAt = Date.parse(adoption.submittedAt);
-    if (!Number.isFinite(submittedAt)) return [];
-    const daysOld = Math.floor((now - submittedAt) / 86_400_000);
-    const daysLeft = Math.max(0, 30 - daysOld);
-    if (daysLeft > 5) return [];
+  const now = new Date();
+  const alertWindowEnd = new Date(now.getTime() + 5 * 86_400_000);
+  const [dogs, recycles, adoptions, expiringDocuments, statistics, notification] =
+    await Promise.all([
+      firestore.countDocuments(MANAGED_COLLECTIONS.dogs),
+      firestore.countDocuments(MANAGED_COLLECTIONS.recycle),
+      firestore.countDocuments(MANAGED_COLLECTIONS.adoptions),
+      firestore.findDocumentsByTimestampRange<StoredAdoption>(
+        MANAGED_COLLECTIONS.adoptions,
+        "expiresAt",
+        now,
+        alertWindowEnd,
+      ),
+      firestore.getDocument<{ adoptionsCount?: unknown }>("system/statistics"),
+      dependencies.getAdminNotification(env),
+    ]);
+  const expiring = await serializeAdoptions(expiringDocuments, env);
+  const expiringAdoptions = expiring.flatMap((adoption) => {
+    if (typeof adoption.expiresAt !== "string") return [];
+    const expiresAt = Date.parse(adoption.expiresAt);
+    if (!Number.isFinite(expiresAt)) return [];
+    const daysLeft = Math.max(0, Math.ceil((expiresAt - now.getTime()) / 86_400_000));
     return [{
       id: String(adoption.id),
       nome: typeof adoption.nome_adotante === "string" ? adoption.nome_adotante : "Candidato",
@@ -342,9 +380,9 @@ async function handleDashboard(
 
   return jsonResponse(200, {
     metrics: {
-      dogs: dogs.length,
-      recycles: recycles.length,
-      adoptions: adoptions.length,
+      dogs,
+      recycles,
+      adoptions,
       adoptionsViaSite:
         typeof statistics?.data.adoptionsCount === "number"
           ? statistics.data.adoptionsCount
