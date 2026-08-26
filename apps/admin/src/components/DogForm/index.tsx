@@ -3,7 +3,8 @@ import { useNavigate } from "react-router";
 import { useDropzone } from "react-dropzone";
 import { ArrowLeft, X, Save, UploadCloud } from "lucide-react";
 import { Button } from "@jaci/ui/Button";
-import { Input, NativeSelect, Textarea } from "@jaci/ui/Field";
+import { Input, Textarea } from "@jaci/ui/Field";
+import * as SelectComponent from "@jaci/ui/Select";
 import { CORES_MAP, type DogProps } from "../../types/dogs";
 import {
   deleteUploadedCloudinaryImage,
@@ -17,6 +18,13 @@ import styles from "./DogForm.module.css";
 
 const COMMON_TAGS = ["Dócil", "Ativo", "Tranquilo", "Sociável", "Resiliente", "Carinhoso", "Amável"];
 const MAX_DOG_PHOTOS = 6;
+const DOG_HEALTH_STATUSES = [
+  "Vacinado e Castrado",
+  "Vacinado",
+  "Castrado",
+  "Em tratamento",
+  "Adotado",
+] as const;
 
 type DogPhoto =
   | { id: string; kind: "existing"; url: string }
@@ -33,6 +41,12 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
+  const initialStatus = initialData?.status;
+  const normalizedInitialStatus = initialStatus === undefined
+    ? DOG_HEALTH_STATUSES[0]
+    : DOG_HEALTH_STATUSES.includes(initialStatus as (typeof DOG_HEALTH_STATUSES)[number])
+      ? initialStatus
+      : "";
 
   // ESTADOS PARA OS MODAIS
   const [showSuccess, setShowSuccess] = useState(false);
@@ -54,12 +68,12 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
     sexo: "Macho",
     temperamento: "",
     tags: [],
-    status: "Vacinado e Castrado",
     fotos: [],
     cor: "caramelo",
     instaLink: "",
     descricaoCompleta: "",
-    ...initialData
+    ...initialData,
+    status: normalizedInitialStatus,
   });
 
   const photoLimitReached = photos.length >= MAX_DOG_PHOTOS;
@@ -227,21 +241,34 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
           <div className={styles.row}>
             <div className={styles.inputGroup}>
               <label>Categoria</label>
-              <NativeSelect value={formData.cateIdade} onChange={e => setFormData({...formData, cateIdade: e.target.value as DogProps["cateIdade"]})}>
-                <option value="filhote">Filhote</option>
-                <option value="adulto">Adulto</option>
-                <option value="idoso">Idoso</option>
-              </NativeSelect>
+              <SelectComponent.Select
+                value={formData.cateIdade}
+                onValueChange={value => setFormData({...formData, cateIdade: value as DogProps["cateIdade"]})}
+              >
+                <SelectComponent.SelectTrigger>
+                  <SelectComponent.SelectValue placeholder="Selecione a categoria" />
+                </SelectComponent.SelectTrigger>
+                <SelectComponent.SelectContent>
+                  <SelectComponent.SelectItem value="filhote">Filhote</SelectComponent.SelectItem>
+                  <SelectComponent.SelectItem value="adulto">Adulto</SelectComponent.SelectItem>
+                  <SelectComponent.SelectItem value="idoso">Idoso</SelectComponent.SelectItem>
+                </SelectComponent.SelectContent>
+              </SelectComponent.Select>
             </div>
             <div className={styles.inputGroup}>
               <label>Sexo</label>
-              <NativeSelect
+              <SelectComponent.Select
                 value={formData.sexo}
-                onChange={e => setFormData({...formData, sexo: e.target.value as DogProps["sexo"]})}
+                onValueChange={value => setFormData({...formData, sexo: value as DogProps["sexo"]})}
               >
-                <option value="Macho">Macho</option>
-                <option value="Fêmea">Fêmea</option>
-              </NativeSelect>
+                <SelectComponent.SelectTrigger>
+                  <SelectComponent.SelectValue placeholder="Selecione o sexo" />
+                </SelectComponent.SelectTrigger>
+                <SelectComponent.SelectContent>
+                  <SelectComponent.SelectItem value="Macho">Macho</SelectComponent.SelectItem>
+                  <SelectComponent.SelectItem value="Fêmea">Fêmea</SelectComponent.SelectItem>
+                </SelectComponent.SelectContent>
+              </SelectComponent.Select>
             </div>
           </div>
         </div>
@@ -307,13 +334,23 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
         <div className={styles.section}>
           <h2>Detalhes</h2>
           <div className={styles.row}>
-             <div className={styles.inputGroup}>
+            <div className={styles.inputGroup}>
               <label>Cor</label>
-              <NativeSelect value={formData.cor} onChange={e => setFormData({...formData, cor: e.target.value})}>
-                {Object.entries(CORES_MAP).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
-                ))}
-              </NativeSelect>
+              <SelectComponent.Select
+                value={formData.cor}
+                onValueChange={value => setFormData({...formData, cor: value})}
+              >
+                <SelectComponent.SelectTrigger>
+                  <SelectComponent.SelectValue placeholder="Selecione a cor" />
+                </SelectComponent.SelectTrigger>
+                <SelectComponent.SelectContent>
+                  {Object.entries(CORES_MAP).map(([key, label]) => (
+                    <SelectComponent.SelectItem key={key} value={key}>
+                      {label}
+                    </SelectComponent.SelectItem>
+                  ))}
+                </SelectComponent.SelectContent>
+              </SelectComponent.Select>
             </div>
             <div className={styles.inputGroup}>
               <label>Temperamento</label>
@@ -351,14 +388,24 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
 
           <div className={styles.inputGroup}>
             <label>Status</label>
-            <NativeSelect value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
-               <option value="Vacinado e Castrado">Vacinado e Castrado</option>
-              <option value="Disponível para adoção">Disponível para adoção</option>
-              <option value="Vacinado">Apenas Vacinado</option>
-              <option value="Castrado">Apenas Castrado</option>
-              <option value="Em tratamento">Em tratamento</option>
-              <option value="Adotado">Adotado</option>
-            </NativeSelect>
+            <SelectComponent.Select
+              required
+              value={formData.status}
+              onValueChange={value => setFormData({...formData, status: value})}
+            >
+              <SelectComponent.SelectTrigger>
+                <SelectComponent.SelectValue placeholder="Selecione o status" />
+              </SelectComponent.SelectTrigger>
+              <SelectComponent.SelectContent>
+                <SelectComponent.SelectItem value="Vacinado e Castrado">
+                  Vacinado e Castrado
+                </SelectComponent.SelectItem>
+                <SelectComponent.SelectItem value="Vacinado">Apenas Vacinado</SelectComponent.SelectItem>
+                <SelectComponent.SelectItem value="Castrado">Apenas Castrado</SelectComponent.SelectItem>
+                <SelectComponent.SelectItem value="Em tratamento">Em tratamento</SelectComponent.SelectItem>
+                <SelectComponent.SelectItem value="Adotado">Adotado</SelectComponent.SelectItem>
+              </SelectComponent.SelectContent>
+            </SelectComponent.Select>
           </div>
         </div>
 

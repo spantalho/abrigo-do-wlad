@@ -81,41 +81,6 @@
   margin-top: 10px;
 }
 
-.inputGroup input,
-.inputGroup select,
-.inputGroup textarea {
-  width: 100%;
-  padding: 0.875rem 1rem;
-  border: 1px solid var(--control-border);
-  border-radius: var(--radius-sm);
-  background-color: var(--bg-body);
-  font-size: 1rem;
-  color: var(--text-primary);
-  transition: all 0.2s ease-in-out;
-  outline: none;
-}
-
-.inputGroup input:focus,
-.inputGroup select:focus,
-.inputGroup textarea:focus {
-  background-color: var(--surface-elevated);
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--focus-ring);
-  transform: translateY(-1px);
-}
-
-.inputGroup input:focus-visible,
-.inputGroup select:focus-visible,
-.inputGroup textarea:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-.inputGroup textarea {
-  min-height: 120px;
-  resize: vertical;
-}
-
 .dropzone {
   border: 2px dashed var(--control-border);
   border-radius: var(--radius);
