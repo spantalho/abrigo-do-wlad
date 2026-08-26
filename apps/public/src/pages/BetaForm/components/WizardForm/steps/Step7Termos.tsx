@@ -104,7 +104,7 @@ export function Step7Termos({ formData, errors, updateField }: StepProps) {
 
       <FieldWrapper
         name="contribuicao"
-        label="7.5. Concorda com a contribuição de R$ 300,00?"
+        label="7.5. Concorda com a taxa de adoção informada pelo protetor?"
         required
         errors={errors}
       >

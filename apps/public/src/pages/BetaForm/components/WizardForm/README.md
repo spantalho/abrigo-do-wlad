@@ -9,10 +9,11 @@ O `WizardForm` é um formulário multi-step (wizard) para o **processo de entrev
 ### Fluxo do Usuário
 
 ```
-Tela de Aviso → Step 1 → Step 2 → ... → Step 10 → Envio (API) → Tela de Sucesso
+4 Avisos Iniciais → Step 1 → Step 2 → ... → Step 10 → Envio (API) → Tela de Sucesso
 ```
 
-1. O usuário lê um aviso sobre o processo de adoção e concorda em prosseguir.
+1. O usuário navega por quatro avisos sobre compromisso, processo, responsáveis
+   e taxa de adoção e confirma que está ciente para prosseguir.
 2. Avança pelas 10 etapas, podendo navegar para steps anteriores já preenchidos.
 3. No último step, resolve um reCAPTCHA e envia o formulário.
 4. Recebe uma tela de confirmação de envio.
@@ -46,7 +47,8 @@ Componente principal que orquestra todo o fluxo do wizard.
 
 **Responsabilidades:**
 
-- Renderiza a **tela de aviso** inicial.
+- Renderiza os **quatro avisos** iniciais, fora da contagem das etapas do
+  formulário.
 - Exibe a **barra de progresso** e os **indicadores de step** com tooltips.
 - Controla qual step é exibido via `renderStep()`.
 - Envia os dados para a API (`POST /api/adoption/create`).

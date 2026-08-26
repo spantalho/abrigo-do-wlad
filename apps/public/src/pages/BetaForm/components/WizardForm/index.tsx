@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 
 import * as Step from "./steps";
 import { STEP_TITLES, useWizardForm } from "./useWizardForm";
@@ -25,15 +25,102 @@ import { WIZARD_STORAGE_KEYS } from "./wizardStorage";
 
 import styles from "./WizardForm.module.css";
 
+const INTRO_WARNINGS = [
+  {
+    title: "Uma decisão para toda a vida",
+    items: [
+      <>
+        Avalie se você tem <strong>tempo, paciência, disponibilidade,</strong>{" "}
+        condições financeiras e disposição para cuidar do animal em todas as
+        fases da vida.
+      </>,
+      <>
+        Mudanças de residência, relacionamento, filhos, viagens, trabalho,
+        rotina, saúde ou situação financeira não devem resultar em abandono ou
+        devolução.
+      </>,
+      <>
+        A adaptação exige dedicação. Cada animal tem seu próprio tempo e precisa
+        de paciência, compreensão e constância para se sentir seguro.
+      </>,
+      <>
+        Animais geram gastos com alimentação, higiene e veterinário. Também
+        fazem sujeira, perdem pelos e podem latir ou miar.
+      </>,
+    ],
+  },
+  {
+    title: "Como funciona o processo",
+    items: [
+      <>
+        O preenchimento deste questionário <strong>não garante a adoção.</strong>{" "}
+        A equipe avaliará a compatibilidade entre o perfil da família e as
+        necessidades, características e temperamento do animal.
+      </>,
+      <>
+        Candidatos com perfil compatível serão contatados para uma entrevista,
+        etapa essencial para conhecer melhor a família e esclarecer dúvidas.
+      </>,
+      <>
+        Preencha tudo com atenção. Respostas incompletas, inconsistentes ou que
+        não atendam ao solicitado poderão desclassificar a candidatura.
+      </>,
+      <>
+        Se a adoção ou guarda for aprovada, suas respostas serão anexadas ao
+        Termo de Responsabilidade ou ao Termo de Guarda Provisória.
+      </>,
+    ],
+  },
+  {
+    title: "Quem será responsável",
+    items: [
+      <>
+        É obrigatório ter <strong>18 anos ou mais</strong> para adotar. Alguns
+        protetores realizam adoções somente para pessoas com no mínimo 25 anos.
+      </>,
+      <>
+        Quando a adoção for feita por um casal, os dados de ambos devem constar
+        no questionário e os dois assumirão a responsabilidade pelo animal.
+      </>,
+      <>
+        Se houver mais de um responsável, informe os dados de ambos nas questões
+        1 a 7. Responsável é quem cuidará do animal até o fim da vida, inclusive
+        financeiramente.
+      </>,
+      <>Crianças não são consideradas responsáveis pela adoção.</>,
+    ],
+  },
+  {
+    title: "Taxa de adoção",
+    items: [
+      <>
+        A taxa ajuda a custear parte das despesas com resgate, alimentação,
+        vacinação, vermifugação, castração e outros cuidados veterinários.
+      </>,
+      <>
+        O abrigo realiza esse trabalho por amor aos animais, sem obrigação
+        legal, e depende dessa colaboração para continuar salvando vidas.
+      </>,
+      <>
+        Em regra, a taxa corresponde aproximadamente ao valor de uma castração.
+        Alguns animais de raça ou com características específicas poderão ter
+        uma taxa diferenciada.
+      </>,
+    ],
+  },
+] as const;
+
 interface WizardFormProps {
   onSubmitSuccess?: (result: AdoptionSubmissionResult) => void;
 }
 
 export function WizardForm({ onSubmitSuccess }: WizardFormProps) {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const petName = searchParams.get("pet") || "";
   const isDesktop = useIsDesktop();
   const submissionKeyRef = React.useRef<string | null>(null);
+  const [warningStep, setWarningStep] = React.useState(0);
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
@@ -236,58 +323,127 @@ export function WizardForm({ onSubmitSuccess }: WizardFormProps) {
   };
 
   if (showWarning) {
+    const warning = INTRO_WARNINGS[warningStep];
+    const isLastWarning = warningStep === INTRO_WARNINGS.length - 1;
+    const warningProgress = ((warningStep + 1) / INTRO_WARNINGS.length) * 100;
+
     return (
       <div className={styles.wizardContainer}>
-        <CardComponent.Card variant="callout" tone="warning" size="lg">
-          <CardComponent.CardBody>
-            <CardComponent.CardHeader>
-              <CardComponent.CardIcon>
-                <Lucide.AlertTriangle size={35} />
-              </CardComponent.CardIcon>
-              <CardComponent.CardTitle>
-                LEIA ANTES DE INICIAR
-              </CardComponent.CardTitle>
-            </CardComponent.CardHeader>
-            <CardComponent.CardContent>
-              <p>
-                O preenchimento deste documento <strong>não garante</strong> a
-                adoção. Caso aprovada, as respostas serão anexadas ao Termo de
-                Responsabilidade.
-              </p>
-              <p>
-                Resgatar animais não é uma profissão e não recebemos auxílio
-                governamental. Todo trabalho é feito com recurso próprio. Desta
-                forma, pedimos{" "}
-                <strong>contribuição no valor de R$ 300,00</strong>. Esse valor
-                auxilia na alimentação, tratamento e castração.
-              </p>
-              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                <strong>Requisitos e Considerações:</strong> Ter acima de 18
-                anos. Necessário condições financeiras (custo médio R$
-                300-400/mês). Pode levar meses para adaptar. Animais fazem
-                sujeira e precisam de veterinário.{" "}
-                <strong>Abandonar é crime!</strong>
-              </p>
-            </CardComponent.CardContent>
-          </CardComponent.CardBody>
-        </CardComponent.Card>
+        <header className={styles.warningHeader}>
+          <span className={styles.warningEyebrow}>Antes de prosseguir</span>
+          <h2>Leia com atenção</h2>
+          <p>
+            Estes quatro pontos ajudam você a entender o compromisso e o
+            processo de adoção.
+          </p>
+        </header>
+
+        <div className={styles.warningProgress}>
+          <div className={styles.warningProgressInfo}>
+            <span>
+              Aviso {warningStep + 1} de {INTRO_WARNINGS.length}
+            </span>
+            <span>{Math.round(warningProgress)}%</span>
+          </div>
+          <div
+            className={styles.warningProgressTrack}
+            role="progressbar"
+            aria-label="Progresso dos avisos iniciais"
+            aria-valuemin={1}
+            aria-valuemax={INTRO_WARNINGS.length}
+            aria-valuenow={warningStep + 1}
+          >
+            <div
+              className={styles.warningProgressFill}
+              style={{ width: `${warningProgress}%` }}
+            />
+          </div>
+        </div>
+
+        <div aria-live="polite">
+          <CardComponent.Card
+            key={warningStep}
+            variant="callout"
+            tone="warning"
+            size="lg"
+            className={styles.warningCard}
+          >
+            <CardComponent.CardBody>
+              <CardComponent.CardHeader>
+                <CardComponent.CardTitle id="warning-title">
+                  {warning.title}
+                </CardComponent.CardTitle>
+              </CardComponent.CardHeader>
+              <CardComponent.CardContent>
+                <ul
+                  className={styles.warningList}
+                  aria-labelledby="warning-title"
+                >
+                  {warning.items.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </CardComponent.CardContent>
+            </CardComponent.CardBody>
+          </CardComponent.Card>
+        </div>
 
         <div className={styles.warningActions}>
           <Button
+            type="button"
             size={isDesktop ? "lg" : "md"}
-            onClick={() => setShowWarning(false)}
-            rightIcon={<Lucide.ArrowRight size={18} />}
+            variant="ghost"
+            onClick={() => navigate("/caes")}
           >
-            Li e quero prosseguir
+            Agora não
+          </Button>
+
+          {warningStep > 0 && (
+            <Button
+              type="button"
+              size={isDesktop ? "lg" : "md"}
+              variant="secondary"
+              onClick={() => setWarningStep((step) => step - 1)}
+              leftIcon={<Lucide.ArrowLeft size={18} />}
+            >
+              Anterior
+            </Button>
+          )}
+
+          <Button
+            type="button"
+            size={isDesktop ? "lg" : "md"}
+            onClick={() => {
+              if (isLastWarning) {
+                setShowWarning(false);
+                return;
+              }
+
+              setWarningStep((step) => step + 1);
+            }}
+            rightIcon={
+              isLastWarning ? (
+                <Lucide.Check size={18} />
+              ) : (
+                <Lucide.ArrowRight size={18} />
+              )
+            }
+          >
+            {isLastWarning ? "Estou ciente e quero continuar" : "Próximo"}
           </Button>
         </div>
 
-        <div className={styles.privacyDisclaimer}>
-          <p>
-            Ao clicar em "Li e quero prosseguir" você concorda com nossa{" "}
-            <ExternalLink href="">política de privacidade</ExternalLink>
-          </p>
-        </div>
+        {isLastWarning && (
+          <div className={styles.privacyDisclaimer}>
+            <p>
+              Ao clicar em "Estou ciente e quero continuar", você concorda com
+              nossa{" "}
+              <ExternalLink href="/politica-de-privacidade">
+                política de privacidade
+              </ExternalLink>
+            </p>
+          </div>
+        )}
       </div>
     );
   }

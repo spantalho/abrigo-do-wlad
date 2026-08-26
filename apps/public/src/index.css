@@ -1,5 +1,13 @@
 @import "@jaci/ui/styles.css";
 
+:root {
+  --control-border: var(--brand-water);
+}
+
+body.dark-mode {
+  --control-border: var(--brand-earth);
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(30px);

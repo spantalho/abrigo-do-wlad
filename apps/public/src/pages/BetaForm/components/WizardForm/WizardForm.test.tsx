@@ -61,15 +61,30 @@ describe("WizardForm", () => {
     document.getElementById("recaptcha-v3-script")?.remove();
   });
 
-  it("exibe o aviso inicial e persiste a decisão de prosseguir", async () => {
+  it("exibe os quatro avisos iniciais e persiste a decisão de prosseguir", async () => {
     sessionStorage.removeItem(WIZARD_STORAGE_KEYS.showWarning);
     const user = userEvent.setup();
 
     renderWizard();
 
-    expect(screen.getByText("LEIA ANTES DE INICIAR")).toBeInTheDocument();
+    expect(screen.getByText("Uma decisão para toda a vida")).toBeInTheDocument();
+    expect(screen.getByText("Aviso 1 de 4")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Próximo" }));
+    expect(screen.getByText("Como funciona o processo")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Próximo" }));
+    expect(screen.getByText("Quem será responsável")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Próximo" }));
+    expect(screen.getByText("Taxa de adoção")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Anterior" }));
+    expect(screen.getByText("Quem será responsável")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Próximo" }));
+
     await user.click(
-      screen.getByRole("button", { name: /Li e quero prosseguir/ }),
+      screen.getByRole("button", { name: /Estou ciente e quero continuar/ }),
     );
 
     expect(screen.getByText("Dados Pessoais")).toBeInTheDocument();
