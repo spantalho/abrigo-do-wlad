@@ -176,6 +176,29 @@ test("dog updates reject more than six photos before accessing Firestore", async
   );
 });
 
+test("dog updates reject more than five tags before accessing Firestore", async () => {
+  const response = await handleAdminApi(
+    new Request("https://admin.example.test/api/admin/dogs/123", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Origin: "https://admin.example.test",
+      },
+      body: JSON.stringify({
+        tags: ["Dócil", "Ativo", "Tranquilo", "Sociável", "Carinhoso", "Brincalhão"],
+      }),
+    }),
+    env,
+    identity,
+  );
+
+  assert.equal(response.status, 400);
+  assert.equal(
+    (await response.json() as { error: string }).error,
+    "Um cachorro pode ter no máximo 5 tags.",
+  );
+});
+
 test("dog updates reject removed health statuses before accessing Firestore", async () => {
   for (const status of ["Adotado", "Em tratamento", "Vacinado", "Castrado"]) {
     const response = await handleAdminApi(

@@ -5,7 +5,13 @@ import { ArrowLeft, X, Save, UploadCloud } from "lucide-react";
 import { Button } from "@jaci/ui/Button";
 import { Input, Textarea } from "@jaci/ui/Field";
 import * as SelectComponent from "@jaci/ui/Select";
-import { CORES_MAP, DOG_HEALTH_STATUSES, type DogProps } from "../../types/dogs";
+import {
+  CORES_MAP,
+  DOG_HEALTH_STATUSES,
+  DOG_TAGS,
+  MAX_DOG_TAGS,
+  type DogProps,
+} from "../../types/dogs";
 import {
   deleteUploadedCloudinaryImage,
   DOG_IMAGE_ACCEPT,
@@ -16,7 +22,6 @@ import { SuccessModal } from "../SuccessModal";
 import { ErrorModal } from "../ErrorModal"; // <-- Importação do ErrorModal
 import styles from "./DogForm.module.css";
 
-const COMMON_TAGS = ["Dócil", "Ativo", "Tranquilo", "Sociável", "Resiliente", "Carinhoso", "Amável"];
 const MAX_DOG_PHOTOS = 6;
 type DogPhoto =
   | { id: string; kind: "existing"; url: string }
@@ -69,6 +74,8 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
 
   const photoLimitReached = photos.length >= MAX_DOG_PHOTOS;
   const remainingPhotoSlots = Math.max(0, MAX_DOG_PHOTOS - photos.length);
+  const selectedTags = formData.tags || [];
+  const tagLimitReached = selectedTags.length >= MAX_DOG_TAGS;
 
   useEffect(() => () => {
     localPreviewUrls.current.forEach(url => URL.revokeObjectURL(url));
@@ -126,14 +133,29 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
   const toggleTag = (tag: string) => {
     setFormData(prev => {
       const tags = prev.tags || [];
-      return tags.includes(tag)
-        ? { ...prev, tags: tags.filter(t => t !== tag) }
-        : { ...prev, tags: [...tags, tag] };
+      if (tags.includes(tag)) {
+        return { ...prev, tags: tags.filter(t => t !== tag) };
+      }
+
+      if (tags.length >= MAX_DOG_TAGS) {
+        return prev;
+      }
+
+      return { ...prev, tags: [...tags, tag] };
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (selectedTags.length > MAX_DOG_TAGS) {
+      setErrorInfo({
+        show: true,
+        message: `Selecione no máximo ${MAX_DOG_TAGS} tags para o cachorro.`,
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     setUploadProgress("Processando...");
     const uploadedPhotoUrls: string[] = [];
@@ -314,7 +336,7 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
                 <>
                   {isDragActive ? <p>Solte aqui...</p> : <p>Arraste novas fotos aqui</p>}
                   <span>
-                    Clique para selecionar — até 20 MB; otimização automática — restam {remainingPhotoSlots}
+                    Clique para selecionar — até 20 MB — restam {remainingPhotoSlots}
                   </span>
                 </>
               )}
@@ -351,19 +373,30 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
 
           <div className={styles.inputGroup}>
             <label>Tags</label>
+            <p id="tags-description" className={styles.fieldDescription}>
+              Características curtas e úteis para busca e apresentação. Selecione até {MAX_DOG_TAGS}.
+              <span className={styles.selectionCount}>{selectedTags.length}/{MAX_DOG_TAGS} selecionadas</span>
+            </p>
             <div className={styles.tagsContainer}>
-              {COMMON_TAGS.map(tag => (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={formData.tags?.includes(tag) ? "primary" : "outline"}
-                  key={tag}
-                  className={`${styles.tagButton} ${formData.tags?.includes(tag) ? styles.active : ''}`}
-                  onClick={() => toggleTag(tag)}
-                >
-                  {tag}
-                </Button>
-              ))}
+              {DOG_TAGS.map(tag => {
+                const isSelected = selectedTags.includes(tag);
+
+                return (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={isSelected ? "primary" : "outline"}
+                    key={tag}
+                    className={`${styles.tagButton} ${isSelected ? styles.active : ''}`}
+                    aria-describedby="tags-description"
+                    aria-pressed={isSelected}
+                    disabled={!isSelected && tagLimitReached}
+                    onClick={() => toggleTag(tag)}
+                  >
+                    {tag}
+                  </Button>
+                );
+              })}
             </div>
           </div>
 
@@ -374,7 +407,15 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
 
           <div className={styles.inputGroup}>
             <label>Descrição</label>
-            <Textarea rows={5} value={formData.descricaoCompleta} onChange={e => setFormData({...formData, descricaoCompleta: e.target.value})} />
+            <p id="dog-description-help" className={styles.fieldDescription}>
+              Descreva a personalidade do cão, seu comportamento e outras particularidades.
+            </p>
+            <Textarea
+              aria-describedby="dog-description-help"
+              rows={5}
+              value={formData.descricaoCompleta}
+              onChange={e => setFormData({...formData, descricaoCompleta: e.target.value})}
+            />
           </div>
 
           <div className={styles.inputGroup}>

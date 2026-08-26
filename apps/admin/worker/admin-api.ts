@@ -38,6 +38,7 @@ import {
 
 const MAX_BODY_BYTES = 256 * 1024;
 const MAX_DOG_PHOTOS = 6;
+const MAX_DOG_TAGS = 5;
 const MANAGED_COLLECTIONS = {
   adoptions: "adoption_application",
   dogs: "dogs",
@@ -56,7 +57,9 @@ const dogSchema = z.object({
   cateIdade: z.enum(["filhote", "adulto", "idoso"]),
   sexo: z.enum(["Macho", "Fêmea"]),
   temperamento: z.string().trim().min(1).max(240),
-  tags: z.array(z.string().trim().min(1).max(60)).max(30),
+  tags: z
+    .array(z.string().trim().min(1).max(60))
+    .max(MAX_DOG_TAGS, "Um cachorro pode ter no máximo 5 tags."),
   status: dogHealthStatusSchema,
   fotos: z.array(httpsUrl).max(MAX_DOG_PHOTOS, "Um cachorro pode ter no máximo 6 fotos."),
   cor: z.string().trim().min(1).max(80),
@@ -643,11 +646,13 @@ async function routeAdminApi(
     return jsonResponse(404, { error: "Not found" });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const photoLimitIssue = error.issues.find(
-        (issue) => issue.path[0] === "fotos" && issue.code === "too_big",
+      const dogCollectionLimitIssue = error.issues.find(
+        (issue) =>
+          (issue.path[0] === "fotos" || issue.path[0] === "tags")
+          && issue.code === "too_big",
       );
       return jsonResponse(400, {
-        error: photoLimitIssue?.message ?? "Invalid request",
+        error: dogCollectionLimitIssue?.message ?? "Invalid request",
         issues: error.issues,
       });
     }
