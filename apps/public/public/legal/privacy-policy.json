@@ -1,0 +1,111 @@
+{
+  "title": "Política de Privacidade",
+  "badge": "Transparência",
+  "description": "Como protegemos seus dados e informações pessoais.",
+  "lastUpdate": "26 de agosto de 2026",
+  "sections": [
+    {
+      "id": "base-legal",
+      "title": "Base Legal (LGPD)",
+      "content": "Coletamos suas informações pessoais com base no seu consentimento explícito, conforme exigido pela Lei Geral de Proteção de Dados (LGPD - Lei 13.709/2018). Ao iniciar o formulário de pré-adoção em nosso site, você será informado que, ao clicar no botão 'Estou ciente e quero continuar', está consentindo com a coleta e processamento de seus dados pessoais de acordo com esta política de privacidade. Este site fornece um link para esta página na mensagem de consentimento, permitindo que você revise as condições antes de prosseguir."
+    },
+    {
+      "id": "coleta",
+      "title": "Coleta de Informações",
+      "content": "Coletamos informações que você nos fornece voluntariamente através de formulários em nosso site. Isso inclui dados de contato como email e telefone, bem como informações relevantes para avaliar sua candidatura à pré-adoção. O formulário também coleta dados pessoais de natureza socioeconômica e familiar, como informações sobre sua renda, composição familiar, endereço de residência e outras informações que você fornece voluntariamente para fins de avaliação."
+    },
+    {
+      "id": "uso",
+      "title": "Uso das Informações",
+      "content": "As informações coletadas em formulários são utilizadas exclusivamente para avaliar candidatos à pré-adoção de nossos cães, verificando se estão aptos a receber um animal sob nossa responsabilidade."
+    },
+    {
+      "id": "acesso",
+      "title": "Acesso aos Dados",
+      "content": "Os dados de formulários são acessados exclusivamente por pessoas autorizadas da equipe central do Abrigo do Wlad, com a finalidade específica de avaliar candidatos à pré-adoção. Acesso ao banco de dados de produção é estritamente limitado aos administradores oficiais do projeto. É muito importante ressaltar que, por sermos um projeto de código aberto, as contribuições da comunidade externa acontecem apenas no código do site; desenvolvedores voluntários externos não têm, em hipótese alguma, acesso aos dados reais e pessoais armazenados. Nenhum dado de formulário é compartilhado com terceiros sem seu consentimento explícito."
+    },
+    {
+      "id": "retencao",
+      "title": "Retenção e Deleção de Dados",
+      "content": "Tratamos os dados com responsabilidade e conforme o princípio de minimização da LGPD. Realizamos processamento automatizado periódico para revisão da nossa base de dados. Informações relacionadas a processos de adoção que estejam inativas ou expiradas são automaticamente excluídas para garantir que não retemos dados por tempo superior ao necessário:",
+      "items": [
+        "Formulários aprovados: dados deletados após aprovação concluída",
+        "Formulários rejeitados: dados deletados após rejeição",
+        "Formulários em análise: excluídos automaticamente da base de dados após 30 dias contados a partir da data de envio, caso não sejam processados até então"
+      ]
+    },
+    {
+      "id": "seguranca",
+      "title": "Segurança dos Dados",
+      "type": "card",
+      "content": "Seus dados são armazenados de forma segura em infraestrutura de banco de dados em nuvem com criptografia em trânsito (HTTPS). Implementamos medidas técnicas para evitar acessos não autorizados. No entanto, nenhum sistema de segurança é 100% íntegro e não é possível garantir proteção absoluta contra todas as ameaças."
+    },
+    {
+      "id": "compartilhamento",
+      "title": "Compartilhamento de Dados",
+      "content": "Seus dados pessoais não são vendidos ou comercializados. Eles podem ser processados por provedores de infraestrutura em nuvem e serviços de hospedagem estritamente técnicos (nossos Operadores de Dados), que atuam apenas sob nossas diretrizes para armazenar os dados e manter o sistema operando de forma segura. Estas ferramentas processam dados em conformidade com as exigências da LGPD. Alguns dados podem ser transferidos e armazenados em infraestrutura localizada fora do Brasil e na União Europeia, possuindo garantias de proteção equivalentes às exigidas pela legislação brasileira."
+    },
+    {
+      "id": "metricas",
+      "title": "Métricas e Análises de Uso",
+      "content": "Também coletamos informações de navegação e interação de forma agregada e anonimizada para entender como o site é utilizado e melhorar a experiência dos usuários. Isso inclui páginas visitadas, tempo de permanência, interações com elementos de interface e uso do componente de feedback. Utilizamos uma ferramenta de análise focada em privacidade que não utiliza cookies ou outras tecnologias de rastreamento invasivas. Os dados coletados são armazenados de forma segura e utilizados exclusivamente para análise estatística, não sendo possível identificar pessoalmente o visitante."
+    },
+    {
+      "id": "menores",
+      "title": "Proteção de Menores de Idade",
+      "content": "Este serviço é destinado apenas a pessoas maiores de 18 anos. O formulário de pré-adoção valida o campo de data de nascimento e impede o prosseguimento caso o usuário seja menor de 18 anos. Não coletamos ou processamos intencionalmente dados de menores de idade. Caso tenhamos conhecimento de que dados foram coletados de menores de 18 anos, tomaremos medidas para remover essas informações imediatamente."
+    },
+    {
+      "id": "autoridade",
+      "title": "Autoridade Reguladora",
+      "content": "Esta política de privacidade está em conformidade com a Lei Geral de Proteção de Dados (LGPD). A Autoridade Nacional de Proteção de Dados (ANPD) é o órgão regulador responsável pelo cumprimento da LGPD no Brasil. Caso você tenha preocupações sobre como seus dados pessoais estão sendo tratados, pode registrar uma reclamação junto à ANPD através de seu site: https://www.gov.br/cidadania/pt-br/acesso-a-informacao/lgpd"
+    },
+    {
+      "id": "isencao",
+      "title": "Isenção de Responsabilidade",
+      "content": "Embora implementemos medidas de segurança, reconhecemos que nenhum programa tem 100% de integridade. Não há como ter certeza absoluta sobre a proteção de dados em qualquer sistema. Ao enviar informações, você reconhece esses limites técnicos. No entanto, em caso de incidente de segurança que acarrete risco ou dano relevante, a equipe do abrigo compromete-se a comunicar o fato à ANPD e aos titulares possivelmente afetados."
+    },
+    {
+      "id": "alteracoes",
+      "title": "Alterações nesta Política",
+      "content": "Reservamo-nos o direito de atualizar esta política de privacidade futuramente. Caso ocorram mudanças significativas, notificaremos atualizando a data no topo deste documento, para que você tenha ciência constante das nossas práticas de privacidade."
+    },
+    {
+      "id": "acessibilidade",
+      "title": "Acessibilidade e VLibras",
+      "content": "Para tornar nosso site mais inclusivo e acessível à comunidade com deficiência auditiva, utilizamos o widget VLibras, uma suíte de ferramentas de código aberto do Governo Federal (LAViD/UFPB). O widget do VLibras possui uma opção interna que permite o envio de feedbacks. É importante esclarecer que qualquer mensagem ou dado enviado através dessa funcionalidade de feedback do VLibras é direcionado exclusivamente aos mantenedores daquela ferramenta. O projeto Abrigo do Wlad não possui acesso a essas mensagens, não as armazena e não processa dados enviados especificamente por este canal de terceiros."
+    },
+    {
+      "id": "transparencia",
+      "title": "Código Fonte Aberto",
+      "content": "Acreditamos em transparência total. O código-fonte do site está aberto para leitura, estudo e contribuições da comunidade. Você pode acessar o repositório em: https://github.com/spantalho/abrigo-do-wlad"
+    },
+    {
+      "id": "sobre",
+      "title": "Sobre Este Projeto",
+      "content": "O Website do Abrigo do Wlad é um projeto sem fins lucrativos desenvolvido por voluntários que acreditam na causa animal. Todo o trabalho, incluindo este site, é realizado com dedicação e amor pelos animais."
+    },
+    {
+      "id": "direitos",
+      "title": "Seus Direitos",
+      "content": "Você tem direito a:",
+      "items": [
+        "Confirmar a existência do tratamento de dados",
+        "Solicitar acesso aos seus dados pessoais",
+        "Solicitar a correção de dados incompletos, inexatos ou desatualizados",
+        "Solicitar a exclusão de seus dados",
+        "Revogar o consentimento a qualquer momento (embora isto interrompa o andamento de formulários submetidos)",
+        "Entrar em contato conosco para esclarecimentos ou solicitações"
+      ]
+    },
+    {
+      "id": "contato",
+      "title": "Contato",
+      "content": "Para dúvidas sobre esta política ou seus dados pessoais, entre em contato conosco:",
+      "contact": {
+        "organization": "Abrigo do Wlad",
+        "email": "abrigodowlad.dev@gmail.com"
+      }
+    }
+  ]
+}

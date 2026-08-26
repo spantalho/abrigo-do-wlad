@@ -1,0 +1,391 @@
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  margin-top: 0.25rem;
+}
+
+.listContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card {
+  flex-direction: row;
+  border-radius: var(--radius-sm);
+  align-items: stretch;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border);
+}
+
+.cardBody {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.25rem !important;
+  background: var(--surface-elevated);
+}
+
+.cardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.applicantName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.detailsRow {
+  display: flex;
+  gap: 1.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  flex-wrap: wrap;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.wppLink {
+  color: var(--success);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.wppLink:hover {
+  color: var(--success);
+  text-decoration: underline;
+}
+
+.cardActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 1rem;
+}
+
+.actionBtn {
+  flex: 1;
+  gap: 0.25rem;
+}
+
+.approveBtn {
+  background-color: var(--accent-green);
+  color: var(--success);
+}
+
+.approveBtn:hover {
+  background-color: var(--success);
+  color: var(--text-on-success);
+}
+
+.rejectBtn {
+  background-color: var(--accent-red);
+  color: var(--error);
+}
+
+.rejectBtn:hover {
+  background-color: var(--error);
+  color: var(--text-on-action);
+}
+
+.viewButton {
+  flex: 1;
+  gap: 0.5rem;
+}
+
+.viewButton:hover {
+  background-color: var(--border-light);
+}
+
+.emptyState {
+  background: var(--surface-elevated);
+  padding: 4rem 2rem;
+  text-align: center;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  border: 2px dashed var(--border-light);
+}
+
+.modalContainer {
+  width: min(95vw, 800px);
+  max-width: 800px;
+  height: min(90vh, 900px);
+  max-height: 90vh;
+  padding: 0;
+  overflow: hidden;
+}
+
+.modalHeader {
+  position: relative;
+  flex: 0 0 auto;
+  background: var(--surface-elevated);
+  padding: 1.5rem 4.75rem 1.5rem 1.5rem;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  z-index: 10;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.modalActions {
+  display: flex;
+  gap: 1rem;
+  margin-left: auto;
+}
+
+.printBtn {
+  background-color: var(--primary);
+  color: var(--surface-elevated);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.closeBtn {
+  background: var(--surface-water);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.modalScrollArea {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  border: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.modalBody {
+  padding: 2rem 1.5rem;
+}
+
+.printHeader {
+  display: none;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 2rem 0 1rem;
+  border-bottom: 2px solid var(--surface-water);
+  padding-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sectionTitle:first-child {
+  margin-top: 0;
+}
+
+.dataGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.dataGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dataLabel {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.dataValue {
+  font-size: 1rem;
+  color: var(--text-primary);
+  background: var(--bg-body);
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--surface-water);
+  white-space: pre-wrap;
+}
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .printArea, .printArea * {
+    visibility: visible;
+  }
+
+  .modalOverlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: var(--surface-elevated);
+    padding: 0;
+    align-items: flex-start;
+  }
+
+  .modalContainer {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    animation: none !important;
+  }
+
+  .modalScrollArea,
+  .modalScrollArea :global([data-radix-scroll-area-viewport]) {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .modalScrollArea :global([data-radix-scroll-area-viewport]) > div {
+    display: block !important;
+    min-width: 0 !important;
+  }
+
+  .modalScrollArea :global([data-orientation]) {
+    display: none !important;
+  }
+
+  .modalBody {
+    padding: 0;
+  }
+
+  .printHeader {
+    display: block !important;
+  }
+
+  .noPrint {
+    display: none !important;
+  }
+
+  .dataValue {
+    border: none;
+    background: transparent;
+    padding: 0;
+    padding-top: 0.2rem;
+  }
+
+  .dataGrid {
+    gap: 1rem;
+  }
+
+  .dataGroup,
+  .sectionTitle {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .sectionTitle {
+    color: var(--text-primary);
+    border-color: var(--text-primary);
+  }
+}
+
+@media (max-width: 600px) {
+  .topBar { flex-direction: column; align-items: flex-start; }
+  .card { flex-direction: column; align-items: stretch; }
+  .cardBody { padding: 1.25rem !important; }
+  .cardActions {
+    width: 100%;
+    border-top: 1px solid var(--surface-water);
+    padding: 1rem 0.75rem 0.75rem;
+  }
+  .actionBtn, .viewButton { justify-content: center; }
+  .dataGrid { grid-template-columns: 1fr; }
+  .modalHeader { align-items: flex-start; flex-direction: column; }
+  .modalActions { width: 100%; margin-left: 0; }
+  .printBtn { width: 100%; justify-content: center; }
+}

@@ -1,0 +1,31 @@
+.modal {
+  width: min(90vw, 500px);
+  text-align: center;
+}
+
+.header {
+  align-items: center;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.iconArea {
+  display: grid;
+  width: 60px;
+  height: 60px;
+  margin-inline: auto;
+  border-radius: var(--radius-xl);
+  background: var(--accent-red);
+  color: var(--action);
+  place-items: center;
+}
+
+.description {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.actionButtons {
+  display: grid;
+  gap: 0.75rem;
+}

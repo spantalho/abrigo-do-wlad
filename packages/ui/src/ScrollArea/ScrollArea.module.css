@@ -1,0 +1,113 @@
+.ScrollAreaRoot {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  /* background-color: var(--accent-primary); */
+}
+
+.ScrollAreaViewport {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.ScrollAreaScrollbar {
+  display: flex;
+  user-select: none;
+  touch-action: none;
+  padding: 2px;
+  background: var(--scroll-track);
+}
+.ScrollAreaScrollbar:hover {
+  background: var(--scroll-corner);
+}
+
+.ScrollAreaScrollbarHidden {
+  display: none;
+}
+
+.ScrollAreaScrollbar[data-orientation="vertical"] {
+  width: 10px;
+}
+.ScrollAreaScrollbar[data-orientation="horizontal"] {
+  flex-direction: column;
+  height: 10px;
+}
+
+.ScrollAreaThumb {
+  flex: 1;
+  background: var(--scroll-thumb);
+  border-radius: 10px;
+  position: relative;
+}
+
+.ScrollAreaThumb::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.ScrollAreaCorner {
+  background: var(--scroll-corner);
+}
+
+.ScrollShadow {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.ScrollShadowVertical {
+  right: var(--scroll-shadow-inline-end, 10px);
+  left: var(--scroll-shadow-inline-start, 0);
+  height: 24px;
+}
+
+.ScrollShadowHorizontal {
+  top: var(--scroll-shadow-block-start, 0);
+  bottom: var(--scroll-shadow-block-end, 10px);
+  width: 24px;
+}
+
+.ScrollAreaWithoutScrollbar .ScrollShadowVertical {
+  right: var(--scroll-shadow-inline-end, 0);
+}
+
+.ScrollAreaWithoutScrollbar .ScrollShadowHorizontal {
+  bottom: var(--scroll-shadow-block-end, 0);
+}
+
+.ScrollShadowTop {
+  top: 0;
+  background: linear-gradient(to bottom, var(--scroll-shadow), transparent);
+}
+
+.ScrollShadowBottom {
+  bottom: 0;
+  background: linear-gradient(to top, var(--scroll-shadow), transparent);
+}
+
+.ScrollShadowLeft {
+  left: 0;
+  background: linear-gradient(to right, var(--scroll-shadow), transparent);
+}
+
+.ScrollShadowRight {
+  right: 0;
+  background: linear-gradient(to left, var(--scroll-shadow), transparent);
+}
+
+.ScrollShadowVisible {
+  opacity: 1;
+}

@@ -1,0 +1,39 @@
+@import "@jaci/ui/styles.css";
+
+:root {
+  --background: var(--bg-body);
+  --white: var(--surface-elevated);
+  --danger: var(--error);
+  --font-body: var(--font-sans);
+  --header-height: 70px;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}

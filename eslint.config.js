@@ -12,7 +12,7 @@ export default defineConfig([
     'coverage',
     'playwright-report',
     'test-results',
-    'worker-configuration.d.ts',
+    '**/worker-configuration.d.ts',
   ]),
   {
     files: ['**/*.{ts,tsx}'],
@@ -25,6 +25,15 @@ export default defineConfig([
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+    },
+    rules: {
+      'react-hooks/set-state-in-effect': 'off',
+    },
+  },
+  {
+    files: ['**/contexts/*.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
     },
   },
 ])

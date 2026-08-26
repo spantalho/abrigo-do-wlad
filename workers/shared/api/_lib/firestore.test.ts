@@ -184,6 +184,102 @@ test("findFirstDocument creates a document ID cursor query", async () => {
   });
 });
 
+test("findDocumentsByTimestampBefore creates a bounded expiration query", async () => {
+  let requestUrl = "";
+  let requestBody: Record<string, unknown> | undefined;
+  const fetcher = mockFetch((url, init) => {
+    requestUrl = url;
+    requestBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    return Response.json([
+      {
+        document: {
+          name: "projects/test-project/databases/(default)/documents/adoption_application/request-1",
+          fields: {
+            expiresAt: { timestampValue: "2026-08-20T00:00:00.000Z" },
+          },
+        },
+      },
+      { readTime: "2026-08-21T00:00:00.000Z" },
+    ]);
+  });
+  const client = new FirestoreRestClient("test-project", {
+    fetcher,
+    tokenProvider: async () => "test-token",
+  });
+  const cutoff = new Date("2026-08-21T00:00:00.000Z");
+
+  const documents = await client.findDocumentsByTimestampBefore(
+    "adoption_application",
+    "expiresAt",
+    cutoff,
+    200,
+  );
+
+  assert.equal(
+    requestUrl,
+    "https://firestore.googleapis.com/v1/projects/test-project/databases/(default)/documents:runQuery",
+  );
+  assert.equal(documents.length, 1);
+  assert.equal(documents[0]?.id, "request-1");
+  assert.deepEqual(requestBody, {
+    structuredQuery: {
+      from: [{ collectionId: "adoption_application" }],
+      where: {
+        fieldFilter: {
+          field: { fieldPath: "expiresAt" },
+          op: "LESS_THAN_OR_EQUAL",
+          value: { timestampValue: "2026-08-21T00:00:00.000Z" },
+        },
+      },
+      orderBy: [
+        {
+          field: { fieldPath: "expiresAt" },
+          direction: "ASCENDING",
+        },
+        {
+          field: { fieldPath: "__name__" },
+          direction: "ASCENDING",
+        },
+      ],
+      limit: 200,
+    },
+  });
+});
+
+test("deleteDocuments commits only documents from the configured database", async () => {
+  let requestBody: Record<string, unknown> | undefined;
+  const fetcher = mockFetch((_url, init) => {
+    requestBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    return Response.json({ commitTime: "2026-08-21T00:00:00.000Z" });
+  });
+  const client = new FirestoreRestClient("test-project", {
+    fetcher,
+    tokenProvider: async () => "test-token",
+  });
+  const names = [
+    "projects/test-project/databases/(default)/documents/adoption_application/request-1",
+    "projects/test-project/databases/(default)/documents/adoption_application/request-2",
+  ];
+
+  const result = await client.deleteDocuments(names);
+
+  assert.deepEqual(result, {
+    deleted: 2,
+    commitTime: "2026-08-21T00:00:00.000Z",
+  });
+  assert.deepEqual(requestBody, {
+    writes: names.map((name) => ({ delete: name })),
+  });
+
+  await assert.rejects(
+    () =>
+      client.deleteDocuments([
+        "projects/other-project/databases/(default)/documents/adoption_application/request-1",
+      ]),
+    /outside this database/,
+  );
+});
+
 test("createDocument encodes data and applies a server timestamp", async () => {
   let requestUrl = "";
   let requestBody: Record<string, unknown> | undefined;
@@ -287,6 +383,296 @@ test("getDocument maps a not found response to null", async () => {
   });
 
   assert.equal(await client.getDocument("system/missing"), null);
+});
+
+test("listDocuments and field lookup build bounded structured queries", async () => {
+  const bodies: Record<string, unknown>[] = [];
+  const client = new FirestoreRestClient("test-project", {
+    fetcher: mockFetch((_url, init) => {
+      bodies.push(JSON.parse(String(init?.body)) as Record<string, unknown>);
+      return Response.json([]);
+    }),
+    tokenProvider: async () => "test-token",
+  });
+
+  await client.listDocuments("dogs", {
+    direction: "DESCENDING",
+    limit: 50,
+    orderBy: "nome",
+  });
+  await client.findFirstDocumentByField("dogs", "id", 123);
+
+  assert.deepEqual(bodies[0], {
+    structuredQuery: {
+      from: [{ collectionId: "dogs" }],
+      orderBy: [
+        { field: { fieldPath: "nome" }, direction: "DESCENDING" },
+        { field: { fieldPath: "__name__" }, direction: "DESCENDING" },
+      ],
+      limit: 50,
+    },
+  });
+  assert.deepEqual(bodies[1], {
+    structuredQuery: {
+      from: [{ collectionId: "dogs" }],
+      where: {
+        fieldFilter: {
+          field: { fieldPath: "id" },
+          op: "EQUAL",
+          value: { integerValue: "123" },
+        },
+      },
+      limit: 1,
+    },
+  });
+});
+
+test("listDocuments paginates beyond Firestore's per-query limit", async () => {
+  const bodies: Record<string, unknown>[] = [];
+  const firstPage = Array.from({ length: 500 }, (_, index) => ({
+    document: {
+      name: `projects/test-project/databases/(default)/documents/dogs/dog-${index}`,
+      fields: { nome: { stringValue: `Dog ${index}` } },
+    },
+  }));
+  const client = new FirestoreRestClient("test-project", {
+    fetcher: mockFetch((_url, init) => {
+      bodies.push(JSON.parse(String(init?.body)) as Record<string, unknown>);
+      return Response.json(
+        bodies.length === 1
+          ? firstPage
+          : [{
+              document: {
+                name: "projects/test-project/databases/(default)/documents/dogs/dog-500",
+                fields: { nome: { stringValue: "Dog 500" } },
+              },
+            }],
+      );
+    }),
+    tokenProvider: async () => "test-token",
+  });
+
+  const documents = await client.listDocuments<{ nome: string }>("dogs", {
+    orderBy: "nome",
+  });
+
+  assert.equal(documents.length, 501);
+  assert.equal(bodies.length, 2);
+  assert.deepEqual(bodies[1], {
+    structuredQuery: {
+      from: [{ collectionId: "dogs" }],
+      orderBy: [
+        { field: { fieldPath: "nome" }, direction: "ASCENDING" },
+        { field: { fieldPath: "__name__" }, direction: "ASCENDING" },
+      ],
+      limit: 500,
+      startAt: {
+        values: [
+          { stringValue: "Dog 499" },
+          {
+            referenceValue:
+              "projects/test-project/databases/(default)/documents/dogs/dog-499",
+          },
+        ],
+        before: false,
+      },
+    },
+  });
+});
+
+test("countDocuments uses a Firestore aggregation query", async () => {
+  let requestUrl = "";
+  let requestBody: Record<string, unknown> | undefined;
+  const client = new FirestoreRestClient("test-project", {
+    fetcher: mockFetch((url, init) => {
+      requestUrl = url;
+      requestBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      return Response.json([{
+        result: {
+          aggregateFields: { count: { integerValue: "1203" } },
+        },
+      }]);
+    }),
+    tokenProvider: async () => "test-token",
+  });
+
+  assert.equal(await client.countDocuments("dogs"), 1203);
+  assert.equal(
+    requestUrl,
+    "https://firestore.googleapis.com/v1/projects/test-project/databases/(default)/documents:runAggregationQuery",
+  );
+  assert.deepEqual(requestBody, {
+    structuredAggregationQuery: {
+      aggregations: [{ alias: "count", count: {} }],
+      structuredQuery: { from: [{ collectionId: "dogs" }] },
+    },
+  });
+});
+
+test("findDocumentsByTimestampRange restricts dashboard expiration reads", async () => {
+  let requestBody: Record<string, unknown> | undefined;
+  const client = new FirestoreRestClient("test-project", {
+    fetcher: mockFetch((_url, init) => {
+      requestBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      return Response.json([]);
+    }),
+    tokenProvider: async () => "test-token",
+  });
+  const start = new Date("2026-08-25T12:00:00.000Z");
+  const end = new Date("2026-08-30T12:00:00.000Z");
+
+  await client.findDocumentsByTimestampRange(
+    "adoption_application",
+    "expiresAt",
+    start,
+    end,
+  );
+
+  assert.deepEqual(requestBody, {
+    structuredQuery: {
+      from: [{ collectionId: "adoption_application" }],
+      where: {
+        compositeFilter: {
+          op: "AND",
+          filters: [
+            {
+              fieldFilter: {
+                field: { fieldPath: "expiresAt" },
+                op: "GREATER_THAN_OR_EQUAL",
+                value: { timestampValue: start.toISOString() },
+              },
+            },
+            {
+              fieldFilter: {
+                field: { fieldPath: "expiresAt" },
+                op: "LESS_THAN_OR_EQUAL",
+                value: { timestampValue: end.toISOString() },
+              },
+            },
+          ],
+        },
+      },
+      orderBy: [
+        { field: { fieldPath: "expiresAt" }, direction: "ASCENDING" },
+        { field: { fieldPath: "__name__" }, direction: "ASCENDING" },
+      ],
+      limit: 500,
+    },
+  });
+});
+
+test("deleteDocumentAndIncrementField commits both changes atomically", async () => {
+  const requests: Array<{ url: string; body?: Record<string, unknown> }> = [];
+  const dogName =
+    "projects/test-project/databases/(default)/documents/dogs/dog-1";
+  const statisticsName =
+    "projects/test-project/databases/(default)/documents/system/statistics";
+  const client = new FirestoreRestClient("test-project", {
+    fetcher: mockFetch((url, init) => {
+      requests.push({
+        url,
+        body: init?.body
+          ? JSON.parse(String(init.body)) as Record<string, unknown>
+          : undefined,
+      });
+      if (url.endsWith("/documents/system/statistics")) {
+        return Response.json({
+          name: statisticsName,
+          fields: { adoptionsCount: { integerValue: "7" } },
+        });
+      }
+      return Response.json({ commitTime: "2026-08-25T12:00:00.000Z" });
+    }),
+    tokenProvider: async () => "test-token",
+  });
+
+  const result = await client.deleteDocumentAndIncrementField(
+    dogName,
+    "system/statistics",
+    "adoptionsCount",
+    1,
+  );
+
+  assert.deepEqual(result, {
+    deleted: 1,
+    commitTime: "2026-08-25T12:00:00.000Z",
+  });
+  assert.equal(requests.length, 2);
+  assert.deepEqual(requests[1]?.body, {
+    writes: [
+      {
+        delete: dogName,
+        currentDocument: { exists: true },
+      },
+      {
+        transform: {
+          document: statisticsName,
+          fieldTransforms: [{
+            fieldPath: "adoptionsCount",
+            increment: { integerValue: "1" },
+          }],
+        },
+        currentDocument: { exists: true },
+      },
+    ],
+  });
+});
+
+test("updateDocument uses an existence precondition and an update mask", async () => {
+  let body: Record<string, unknown> | undefined;
+  const client = new FirestoreRestClient("test-project", {
+    fetcher: mockFetch((_url, init) => {
+      body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      return Response.json({ commitTime: "2026-08-21T00:00:00Z" });
+    }),
+    tokenProvider: async () => "test-token",
+  });
+  const name = "projects/test-project/databases/(default)/documents/dogs/dog-1";
+
+  await client.updateDocument(name, { nome: "Wlad", tags: ["Dócil"] });
+
+  assert.deepEqual(body, {
+    writes: [{
+      update: {
+        name,
+        fields: {
+          nome: { stringValue: "Wlad" },
+          tags: { arrayValue: { values: [{ stringValue: "Dócil" }] } },
+        },
+      },
+      updateMask: { fieldPaths: ["nome", "tags"] },
+      currentDocument: { exists: true },
+    }],
+  });
+});
+
+test("updateDocument can guard security-sensitive writes with an update-time precondition", async () => {
+  let body: Record<string, unknown> | undefined;
+  const client = new FirestoreRestClient("test-project", {
+    fetcher: mockFetch((_url, init) => {
+      body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      return Response.json({ commitTime: "2026-08-21T00:00:01Z" });
+    }),
+    tokenProvider: async () => "test-token",
+  });
+  const name = "projects/test-project/databases/(default)/documents/system/keys";
+
+  await client.updateDocument(
+    name,
+    { active_key_id: "new-key" },
+    { expectedUpdateTime: "2026-08-21T00:00:00Z" },
+  );
+
+  assert.deepEqual(body, {
+    writes: [{
+      update: {
+        name,
+        fields: { active_key_id: { stringValue: "new-key" } },
+      },
+      updateMask: { fieldPaths: ["active_key_id"] },
+      currentDocument: { updateTime: "2026-08-21T00:00:00Z" },
+    }],
+  });
 });
 
 test("Firestore API errors retain their status and message", async () => {

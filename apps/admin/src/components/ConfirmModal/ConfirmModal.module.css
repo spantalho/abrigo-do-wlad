@@ -1,0 +1,63 @@
+.modal {
+  width: min(90vw, 440px);
+  text-align: center;
+}
+
+.header {
+  align-items: center;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.iconArea {
+  display: grid;
+  width: 60px;
+  height: 60px;
+  margin-inline: auto;
+  border-radius: var(--radius-xl);
+  place-items: center;
+}
+
+.iconConfirm {
+  background: var(--accent-green);
+  color: var(--success);
+}
+
+.iconDestructive {
+  background: var(--accent-red);
+  color: var(--error);
+}
+
+.description {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.actions {
+  gap: 0.75rem;
+  justify-content: stretch;
+}
+
+.actions > * {
+  flex: 1;
+}
+
+.btnConfirm {
+  background: var(--btn-success);
+  color: var(--success);
+}
+
+.btnConfirm:hover:not(:disabled) {
+  background: var(--btn-success-hover);
+  color: var(--text-on-success);
+}
+
+.btnDestructive {
+  background: var(--accent-red);
+  color: var(--error);
+}
+
+.btnDestructive:hover:not(:disabled) {
+  background: var(--error);
+  color: var(--text-on-action);
+}

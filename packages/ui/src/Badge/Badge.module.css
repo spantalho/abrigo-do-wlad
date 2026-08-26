@@ -1,0 +1,82 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 600;
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.badge svg {
+  width: 18px;
+  height: 18px;
+}
+
+.badge.sm svg {
+  width: 12px;
+  height: 12px;
+}
+
+.badge.lg svg {
+  width: 20px;
+  height: 20px;
+}
+
+.content {
+  line-height: 1;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+}
+
+/* Variants */
+.primary {
+  background-color: var(--badge-primary);
+  color: var(--text-on-action);
+}
+
+.secondary {
+  background-color: var(--badge-secondary);
+  color: var(--text-on-secondary);
+}
+
+.outline {
+  background-color: var(--btn-ghost-bg);
+  color: var(--text-primary);
+  border-color: var(--control-border);
+}
+
+.danger {
+  background-color: var(--badge-danger);
+  color: var(--text-on-image);
+}
+
+.success {
+  background-color: var(--badge-success);
+  color: var(--text-on-success);
+}
+
+/* sizes */
+.sm {
+  padding: 0.2rem 0.4rem;
+  font-size: 11px;
+}
+
+.md {
+  padding: 0.3rem 0.5rem;
+  font-size: 12px;
+}
+
+.lg {
+  padding: 0.8rem 1.2rem;
+  font-size: 14px;
+}
+
+/* blur */
+.blur {
+  backdrop-filter: var(--blur);
+}

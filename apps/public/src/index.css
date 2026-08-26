@@ -1,0 +1,20 @@
+@import "@jaci/ui/styles.css";
+
+:root {
+  --control-border: var(--brand-water);
+}
+
+body.dark-mode {
+  --control-border: var(--brand-earth);
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}

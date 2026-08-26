@@ -1,0 +1,284 @@
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+.pageHeader {
+  margin-bottom: 2rem;
+}
+
+.optionSection {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.optionSection + .optionSection {
+  margin-top: 2.5rem;
+}
+
+.optionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+  color: var(--warning-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+.subtitle {
+  max-width: 650px;
+  margin: 0.5rem 0 0;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.optionTitle {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.4rem;
+  line-height: 1.2;
+}
+
+.optionDescription {
+  max-width: 650px;
+  margin: 0.4rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.feedback:empty {
+  display: none;
+}
+
+.error,
+.notice {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+.error {
+  border: 1px solid var(--error);
+  background: var(--accent-red);
+  color: var(--error);
+}
+
+.notice {
+  border: 1px solid var(--success);
+  background: var(--accent-green);
+  color: var(--success);
+}
+
+.summary {
+  margin-bottom: 2rem;
+}
+
+.notificationEditor {
+  height: auto;
+  margin-bottom: 0.5rem;
+}
+
+.notificationForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
+  gap: 1.25rem;
+}
+
+.notificationMessageField,
+.notificationTypeField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.notificationMessageField textarea {
+  min-height: 6rem;
+}
+
+.characterCount {
+  align-self: flex-end;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.expirationField {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.expirationField legend {
+  margin-bottom: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.expirationOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+}
+
+.expirationOption {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.expirationOption label {
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.notificationActions {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.summaryBody {
+  width: 100%;
+}
+
+.summaryIcon {
+  background: var(--surface-earth);
+  color: var(--primary-hover);
+}
+
+.summaryContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.summaryContent strong {
+  color: var(--text-primary);
+  font-size: 1.6rem;
+}
+
+.summaryLabel,
+.summaryDetail {
+  color: var(--text-muted);
+}
+
+.summaryLabel {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.summaryDetail {
+  font-size: 0.85rem;
+}
+
+.listSection h3 {
+  margin: 0 0 1rem;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+}
+
+.list {
+  display: grid;
+  gap: 1rem;
+}
+
+.keyCard {
+  border-left: 4px solid var(--border);
+}
+
+.activeKey {
+  border-left-color: var(--success);
+}
+
+.keyHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.keyDetails dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+}
+
+.keyDetails dl div {
+  min-width: 0;
+}
+
+.keyDetails dt {
+  margin-bottom: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.keyDetails dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+}
+
+.empty {
+  padding: 2rem;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .optionHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .optionHeader button {
+    width: 100%;
+  }
+
+  .keyDetails dl {
+    grid-template-columns: 1fr;
+  }
+
+  .notificationForm {
+    grid-template-columns: 1fr;
+  }
+
+  .notificationActions button {
+    width: 100%;
+  }
+}

@@ -3,8 +3,15 @@
   "name": "abrigo-do-wlad-worker",
   "main": "./index.ts",
   "keep_vars": true,
-  "compatibility_date": "2026-08-19",
+  "compatibility_date": "2026-08-21",
   "compatibility_flags": ["nodejs_compat"],
+  "secrets": {
+    "required": [
+      "FIREBASE_PROJECT_ID",
+      "FIREBASE_CLIENT_EMAIL",
+      "FIREBASE_PRIVATE_KEY"
+    ]
+  },
   "kv_namespaces": [
     {
       "binding": "KV",

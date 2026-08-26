@@ -19,6 +19,7 @@ skinparam noteBorderColor #FDBA74
 skinparam noteBackgroundColor #FFF7ED
 
 actor "Pessoa candidata" as candidate
+actor "Equipe do abrigo" as staff
 
 package "Cloudflare" as cloudflare {
   package "Worker do app\nabrigo-do-wlad" as app_worker {
@@ -29,6 +30,11 @@ package "Cloudflare" as cloudflare {
   }
 
   component "Worker de cron\nabrigo-do-wlad-worker" as cron
+  package "Admin protegido" as admin_app {
+    component "Cloudflare Access\nJWT + MFA" as access
+    component "SPA administrativa" as admin_spa
+    component "Worker admin\nRBAC · CRUD · mídia" as admin_worker
+  }
   database "Cloudflare KV\nrate limit · hero-dog" as kv
 }
 
@@ -37,11 +43,20 @@ package "Google" as google {
   database "Firestore\ndogs · adoption_application" as firestore
 }
 
+package "Cloudinary" as cloudinary {
+  component "Imagens dos animais" as images
+}
+
 package "Gmail" as gmail {
   component "Notificação\npor e-mail" as email
 }
 
 candidate --> spa : navega e preenche o formulário
+staff --> access : autentica
+access --> admin_spa : identidade autorizada
+admin_spa --> admin_worker : /api/session · /api/admin/*
+admin_worker --> firestore : conta de serviço\nCRUD + descriptografia
+admin_worker --> images : upload assinado · exclusão validada
 spa --> router : GET /api/hero-dog
 router --> hero_api
 hero_api --> kv : lê hero-dog
@@ -53,7 +68,7 @@ adoption --> recaptcha : valida reCAPTCHA
 adoption --> firestore : CREATE candidatura\nID = Idempotency-Key\nprecondição exists: false
 adoption --> email : notifica
 
-cron --> firestore : seleciona cão
+cron --> firestore : seleciona cão\ncleanup LGPD com kill switch
 cron --> kv : atualiza hero-dog
 
 note right of adoption

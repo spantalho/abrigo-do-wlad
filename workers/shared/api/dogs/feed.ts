@@ -1,0 +1,326 @@
+import type { FirestoreDocument, FirestoreRestClient } from "../_lib/firestore";
+import { createFirestoreClient } from "../_lib/firestore";
+import type { CloudflareEnv } from "../_lib/env";
+import { jsonResponse } from "../_lib/env";
+import { getKvStore } from "../_lib/kv";
+
+const DOGS_COLLECTION = "dogs";
+const CURRENT_FEED_KEY = "dogs-feed:current";
+const FEED_KEY_PREFIX = "dogs-feed:";
+const FEED_SCHEMA_VERSION = 1;
+const FEED_RETENTION_SECONDS = 3 * 24 * 60 * 60;
+const DEFAULT_ITEMS_PER_PAGE = 6;
+const MAX_ITEMS_PER_PAGE = 24;
+const ROTATION_TIME_ZONE = "America/Fortaleza";
+
+export interface PublicDog {
+  id: string;
+  nome: string;
+  idade: string;
+  cateIdade: "filhote" | "adulto" | "idoso";
+  sexo: string;
+  temperamento: string;
+  tags: string[];
+  status: string;
+  fotos: string[];
+  cor: string;
+  instaLink?: string;
+  descricaoCompleta?: string;
+}
+
+export interface DogFeed {
+  schemaVersion: typeof FEED_SCHEMA_VERSION;
+  version: string;
+  generatedAt: string;
+  dogs: PublicDog[];
+}
+
+export interface DogFeedPage {
+  dogs: PublicDog[];
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+  itemsPerPage: number;
+  version: string;
+}
+
+type DogFeedSource = Pick<FirestoreRestClient, "listDocuments">;
+
+export interface DogFeedUpdateOptions {
+  now?: Date;
+  source?: DogFeedSource;
+}
+
+function rotationVersion(date: Date): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: ROTATION_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function seededRandom(seed: string): () => number {
+  let state = 2_166_136_261;
+  for (let index = 0; index < seed.length; index += 1) {
+    state ^= seed.charCodeAt(index);
+    state = Math.imul(state, 16_777_619);
+  }
+
+  return () => {
+    state += 0x6d2b79f5;
+    let value = state;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4_294_967_296;
+  };
+}
+
+export function seededShuffle<T>(items: readonly T[], seed: string): T[] {
+  const shuffled = [...items];
+  const random = seededRandom(seed);
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const selectedIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[selectedIndex]] = [
+      shuffled[selectedIndex],
+      shuffled[index],
+    ];
+  }
+
+  return shuffled;
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+function toPublicDog(
+  document: FirestoreDocument<Record<string, unknown>>,
+): PublicDog | null {
+  const data = document.data;
+  if (
+    typeof data.nome !== "string" ||
+    typeof data.idade !== "string" ||
+    !["filhote", "adulto", "idoso"].includes(String(data.cateIdade)) ||
+    typeof data.sexo !== "string" ||
+    typeof data.temperamento !== "string" ||
+    !isStringArray(data.tags) ||
+    typeof data.status !== "string" ||
+    !isStringArray(data.fotos) ||
+    typeof data.cor !== "string"
+  ) {
+    console.warn(JSON.stringify({
+      event: "dogs.feed.document.skipped",
+      documentId: document.id,
+    }));
+    return null;
+  }
+
+  return {
+    id: document.id,
+    nome: data.nome,
+    idade: data.idade,
+    cateIdade: data.cateIdade as PublicDog["cateIdade"],
+    sexo: data.sexo,
+    temperamento: data.temperamento,
+    tags: data.tags,
+    status: data.status,
+    fotos: data.fotos,
+    cor: data.cor,
+    ...(typeof data.instaLink === "string" && data.instaLink
+      ? { instaLink: data.instaLink }
+      : {}),
+    ...(typeof data.descricaoCompleta === "string"
+      ? { descricaoCompleta: data.descricaoCompleta }
+      : {}),
+  };
+}
+
+function isPublicDog(value: unknown): value is PublicDog {
+  if (!value || typeof value !== "object") return false;
+  const dog = value as Record<string, unknown>;
+  return (
+    typeof dog.id === "string" &&
+    typeof dog.nome === "string" &&
+    typeof dog.idade === "string" &&
+    ["filhote", "adulto", "idoso"].includes(String(dog.cateIdade)) &&
+    typeof dog.sexo === "string" &&
+    typeof dog.temperamento === "string" &&
+    isStringArray(dog.tags) &&
+    typeof dog.status === "string" &&
+    isStringArray(dog.fotos) &&
+    typeof dog.cor === "string"
+  );
+}
+
+function isDogFeed(value: unknown): value is DogFeed {
+  if (!value || typeof value !== "object") return false;
+  const feed = value as Record<string, unknown>;
+  return (
+    feed.schemaVersion === FEED_SCHEMA_VERSION &&
+    typeof feed.version === "string" &&
+    typeof feed.generatedAt === "string" &&
+    Array.isArray(feed.dogs) &&
+    feed.dogs.every(isPublicDog)
+  );
+}
+
+export async function updateDogFeed(
+  env: CloudflareEnv,
+  options: DogFeedUpdateOptions = {},
+): Promise<DogFeed> {
+  const now = options.now ?? new Date();
+  const version = rotationVersion(now);
+  const source = options.source ?? createFirestoreClient(env);
+  const documents = await source.listDocuments<Record<string, unknown>>(
+    DOGS_COLLECTION,
+  );
+  const dogs = documents.flatMap((document) => {
+    const dog = toPublicDog(document);
+    return dog ? [dog] : [];
+  });
+  const feed: DogFeed = {
+    schemaVersion: FEED_SCHEMA_VERSION,
+    version,
+    generatedAt: now.toISOString(),
+    dogs: seededShuffle(dogs, version),
+  };
+  const kv = getKvStore(env);
+
+  // Keep a versioned copy for stable pagination and a self-contained current copy.
+  // Using the full feed as the current value avoids cross-key replication ordering.
+  await kv.set(`${FEED_KEY_PREFIX}${version}`, feed, {
+    expirationTtl: FEED_RETENTION_SECONDS,
+  });
+  await kv.set(CURRENT_FEED_KEY, feed);
+
+  console.log(JSON.stringify({
+    event: "dogs.feed.updated",
+    version,
+    total: feed.dogs.length,
+  }));
+  return feed;
+}
+
+async function readDogFeed(
+  env: CloudflareEnv,
+  requestedVersion?: string,
+): Promise<DogFeed | null> {
+  const kv = getKvStore(env);
+  const feed = await kv.get<unknown>(
+    requestedVersion
+      ? `${FEED_KEY_PREFIX}${requestedVersion}`
+      : CURRENT_FEED_KEY,
+  );
+  if (!isDogFeed(feed)) return null;
+  if (requestedVersion && feed.version !== requestedVersion) return null;
+  return feed;
+}
+
+function positiveInteger(
+  value: string | null,
+  fallback: number,
+  maximum?: number,
+): number | null {
+  if (value === null) return fallback;
+  if (!/^\d+$/.test(value)) return null;
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed < 1 || (maximum && parsed > maximum)) {
+    return null;
+  }
+  return parsed;
+}
+
+function optionalFilter(value: string | null): string | undefined {
+  const normalized = value?.trim();
+  return !normalized || normalized === "all" ? undefined : normalized;
+}
+
+export function paginateDogFeed(feed: DogFeed, url: URL): DogFeedPage | null {
+  const page = positiveInteger(url.searchParams.get("page"), 1);
+  const itemsPerPage = positiveInteger(
+    url.searchParams.get("limit"),
+    DEFAULT_ITEMS_PER_PAGE,
+    MAX_ITEMS_PER_PAGE,
+  );
+  if (!page || !itemsPerPage) return null;
+
+  const cateIdade = optionalFilter(url.searchParams.get("cateIdade"));
+  const cor = optionalFilter(url.searchParams.get("cor"));
+  const tag = optionalFilter(url.searchParams.get("tag"));
+  if (
+    (cateIdade && !["filhote", "adulto", "idoso"].includes(cateIdade)) ||
+    (cor && cor.length > 80) ||
+    (tag && tag.length > 60)
+  ) {
+    return null;
+  }
+
+  const filtered = feed.dogs.filter((dog) =>
+    (!cateIdade || dog.cateIdade === cateIdade) &&
+    (!cor || dog.cor === cor) &&
+    (!tag || dog.tags.includes(tag))
+  );
+  const totalItems = filtered.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const start = (page - 1) * itemsPerPage;
+
+  return {
+    dogs: filtered.slice(start, start + itemsPerPage),
+    totalItems,
+    currentPage: page,
+    totalPages,
+    itemsPerPage,
+    version: feed.version,
+  };
+}
+
+export async function getDogFeedResponse(
+  request: Request,
+  env: CloudflareEnv,
+): Promise<Response> {
+  if (request.method !== "GET") {
+    return new Response(null, {
+      status: 405,
+      headers: { Allow: "GET", "Cache-Control": "no-store" },
+    });
+  }
+
+  const url = new URL(request.url);
+  const requestedVersion = optionalFilter(url.searchParams.get("version"));
+  if (requestedVersion && !/^\d{4}-\d{2}-\d{2}$/.test(requestedVersion)) {
+    return jsonResponse(400, { message: "Invalid feed version." });
+  }
+
+  try {
+    let feed = await readDogFeed(env, requestedVersion);
+    if (!feed && requestedVersion) {
+      return jsonResponse(409, {
+        message: "Requested feed version is no longer available.",
+      });
+    }
+    if (!feed) {
+      feed = await updateDogFeed(env);
+    }
+
+    const page = paginateDogFeed(feed, url);
+    if (!page) {
+      return jsonResponse(400, { message: "Invalid dog feed parameters." });
+    }
+
+    return jsonResponse(200, page, {
+      "Cache-Control": "public, max-age=60, s-maxage=300",
+    });
+  } catch (error) {
+    console.error(JSON.stringify({
+      event: "dogs.feed.request.failed",
+      message: error instanceof Error ? error.message : "Unknown failure",
+    }));
+    return jsonResponse(503, {
+      message: "Dog feed is temporarily unavailable.",
+    });
+  }
+}

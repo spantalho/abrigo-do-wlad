@@ -1,0 +1,123 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  min-height: 92px;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--header-bg-scrolled);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: var(--blur);
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 1.5rem;
+}
+
+.brandArea {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.brandArea:hover {
+  opacity: 0.82;
+}
+
+.logo {
+  width: auto;
+  height: 64px;
+  object-fit: contain;
+}
+
+.divider {
+  width: 1px;
+  height: 32px;
+  background-color: var(--border);
+}
+
+.adminTag {
+  border-color: var(--control-border) !important;
+  background-color: var(--surface-water) !important;
+  color: var(--secondary) !important;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.userArea {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.welcomeLabel {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.userName {
+  max-width: 260px;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logoutBtn {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  border-color: var(--error) !important;
+  border-radius: var(--radius-lg) !important;
+  background-color: var(--accent-red) !important;
+  color: var(--error) !important;
+}
+
+.logoutBtn:hover {
+  border-color: var(--error) !important;
+  background-color: var(--error) !important;
+  color: var(--text-on-action) !important;
+}
+
+@media (max-width: 600px) {
+  .header {
+    min-height: 76px;
+  }
+
+  .headerContent {
+    gap: 0.75rem;
+  }
+
+  .logo {
+    height: 52px;
+  }
+
+  .divider,
+  .userInfo {
+    display: none;
+  }
+
+  .adminTag {
+    padding-inline: 0.5rem !important;
+  }
+}

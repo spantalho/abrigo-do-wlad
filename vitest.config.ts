@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(__dirname, "./apps/public/src"),
     },
   },
   test: {
@@ -16,7 +16,13 @@ export default defineConfig({
         test: {
           name: "unit",
           environment: "node",
-          include: ["src/**/*.test.ts", "workers/**/*.test.ts"],
+          include: [
+            "apps/public/src/**/*.test.ts",
+            "apps/admin/src/**/*.test.ts",
+            "apps/admin/worker/**/*.test.ts",
+            "packages/**/*.test.ts",
+            "workers/**/*.test.ts",
+          ],
           exclude: ["**/*.worker.test.ts"],
         },
       },
@@ -25,8 +31,8 @@ export default defineConfig({
         test: {
           name: "frontend",
           environment: "jsdom",
-          include: ["src/**/*.test.tsx"],
-          setupFiles: ["./src/test/setup.ts"],
+          include: ["apps/public/src/**/*.test.tsx"],
+          setupFiles: ["./apps/public/src/test/setup.ts"],
         },
       },
     ],
@@ -34,11 +40,11 @@ export default defineConfig({
       provider: "istanbul",
       reporter: ["text", "html", "lcov"],
       reportsDirectory: "./coverage",
-      include: ["src/**/*.{ts,tsx}", "workers/**/*.ts"],
+      include: ["apps/public/src/**/*.{ts,tsx}", "workers/**/*.ts"],
       exclude: [
         "**/*.test.{ts,tsx}",
-        "src/test/**",
-        "src/vite-env.d.ts",
+        "apps/public/src/test/**",
+        "apps/public/src/vite-env.d.ts",
       ],
     },
   },

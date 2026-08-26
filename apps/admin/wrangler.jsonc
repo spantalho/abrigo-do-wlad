@@ -1,0 +1,77 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "abrigo-do-wlad-admin",
+  "main": "./worker/index.ts",
+  "keep_vars": true,
+  "compatibility_date": "2026-08-21",
+  "compatibility_flags": ["nodejs_compat"],
+  "secrets": {
+    "required": [
+      "CF_ACCESS_TEAM_DOMAIN",
+      "CF_ACCESS_AUD",
+      "ADMIN_DEVELOPER_EMAILS",
+      "ADMIN_ADMINISTRATOR_EMAILS",
+      "FIREBASE_PROJECT_ID",
+      "FIREBASE_CLIENT_EMAIL",
+      "FIREBASE_PRIVATE_KEY",
+      "MASTER_KEY",
+      "CLOUDINARY_CLOUD_NAME",
+      "CLOUDINARY_API_KEY",
+      "CLOUDINARY_API_SECRET"
+    ]
+  },
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": true
+  },
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "8b61d3ad6ba44973a54a94eb5590da5f"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "UPLOAD_RATE_LIMITER",
+      "namespace_id": "741903",
+      "simple": {
+        "limit": 12,
+        "period": 60
+      }
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 0.05
+    }
+  },
+  "env": {
+    "local": {
+      "name": "abrigo-do-wlad-admin-local",
+      "vars": {
+        "APP_ENV": "local",
+        "AUTH_MODE": "cloudflare-access",
+        "DATA_MODE": "disabled",
+        "MEDIA_MODE": "disabled"
+      },
+      "kv_namespaces": [
+        {
+          "binding": "KV",
+          "id": "8b61d3ad6ba44973a54a94eb5590da5f"
+        }
+      ],
+      "secrets": {
+        "required": []
+      }
+    }
+  }
+}

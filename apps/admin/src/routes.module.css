@@ -1,0 +1,12 @@
+.routeState {
+  display: grid;
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--bg-body);
+  place-items: center;
+}
+
+.routeCard {
+  width: min(100%, 520px);
+  height: auto;
+}
