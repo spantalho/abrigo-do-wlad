@@ -41,12 +41,6 @@ export function DogCard({ dog, onDelete, priority = false }: DogCardProps) {
       gravity: "auto",
     },
   );
-  const statusVariant = dog.status === "Em tratamento"
-    ? "danger"
-    : dog.status === "Adotado"
-      ? "success"
-      : "secondary";
-
   return (
     <Card className={styles.card} interactive>
 
@@ -70,7 +64,7 @@ export function DogCard({ dog, onDelete, priority = false }: DogCardProps) {
           </div>
         )}
 
-        <Badge className={styles.statusBadge} variant={statusVariant} size="sm">
+        <Badge className={styles.statusBadge} variant="secondary" size="sm">
           {dog.status}
         </Badge>
       </div>

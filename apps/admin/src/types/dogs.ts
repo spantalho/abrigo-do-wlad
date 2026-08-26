@@ -6,6 +6,14 @@ export const CORES_MAP: Record<string, string> = {
   BrasilEgito: "Mistura do Brasil com Egito",
 };
 
+export const DOG_HEALTH_STATUSES = [
+  "Vacinado e Castrado",
+  "Apenas Castrado",
+  "Em Protocolo Vacinal",
+] as const;
+
+export type DogHealthStatus = (typeof DOG_HEALTH_STATUSES)[number];
+
 export interface DogProps {
   id: number;
   nome: string;
@@ -14,7 +22,7 @@ export interface DogProps {
   sexo: 'Macho' | 'Fêmea';
   temperamento: string;
   tags: string[];
-  status: string;
+  status: DogHealthStatus;
   fotos: string[];
   cor: string;
   instaLink?: string;

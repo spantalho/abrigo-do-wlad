@@ -45,6 +45,11 @@ const MANAGED_COLLECTIONS = {
 } as const;
 
 const httpsUrl = z.string().url().refine((value) => value.startsWith("https://"));
+const dogHealthStatusSchema = z.enum([
+  "Vacinado e Castrado",
+  "Apenas Castrado",
+  "Em Protocolo Vacinal",
+]);
 const dogSchema = z.object({
   nome: z.string().trim().min(1).max(120),
   idade: z.string().trim().min(1).max(80),
@@ -52,7 +57,7 @@ const dogSchema = z.object({
   sexo: z.enum(["Macho", "Fêmea"]),
   temperamento: z.string().trim().min(1).max(240),
   tags: z.array(z.string().trim().min(1).max(60)).max(30),
-  status: z.string().trim().min(1).max(80),
+  status: dogHealthStatusSchema,
   fotos: z.array(httpsUrl).max(MAX_DOG_PHOTOS, "Um cachorro pode ter no máximo 6 fotos."),
   cor: z.string().trim().min(1).max(80),
   instaLink: httpsUrl.optional().or(z.literal("")),

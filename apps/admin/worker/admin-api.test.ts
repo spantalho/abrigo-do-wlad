@@ -176,6 +176,25 @@ test("dog updates reject more than six photos before accessing Firestore", async
   );
 });
 
+test("dog updates reject removed health statuses before accessing Firestore", async () => {
+  for (const status of ["Adotado", "Em tratamento", "Vacinado", "Castrado"]) {
+    const response = await handleAdminApi(
+      new Request("https://admin.example.test/api/admin/dogs/123", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: "https://admin.example.test",
+        },
+        body: JSON.stringify({ status }),
+      }),
+      env,
+      identity,
+    );
+
+    assert.equal(response.status, 400);
+  }
+});
+
 test("administrator identities cannot list system keys", async () => {
   let called = false;
   const response = await handleAdminApi(

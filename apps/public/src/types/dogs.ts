@@ -16,6 +16,14 @@ export const TAGS_MAP: Record<string, string> = {
   amavel: "Amável",
 };
 
+export const DOG_HEALTH_STATUSES = [
+  "Vacinado e Castrado",
+  "Apenas Castrado",
+  "Em Protocolo Vacinal",
+] as const;
+
+export type DogHealthStatus = (typeof DOG_HEALTH_STATUSES)[number];
+
 export interface Dog {
   id: string;
   nome: string;
@@ -24,12 +32,7 @@ export interface Dog {
   sexo: string;
   temperamento: string;
   tags: string[];
-  status:
-    | "Vacinado e Castrado"
-    | "Apenas Vacinado"
-    | "Apenas Castrado"
-    | "Em Tratamento"
-    | "Disponível para Adoção";
+  status: DogHealthStatus;
   fotos: string[];
   cor: string;
   instaLink?: string;
