@@ -36,27 +36,31 @@
 /* Variants */
 .primary {
   background-color: var(--badge-primary);
+  border-color: color-mix(in srgb, var(--badge-primary) 92%, white);
   color: var(--text-on-action);
 }
 
 .secondary {
   background-color: var(--badge-secondary);
+  border-color: color-mix(in srgb, var(--badge-secondary) 92%, white);
   color: var(--text-on-secondary);
 }
 
 .outline {
   background-color: var(--btn-ghost-bg);
   color: var(--text-primary);
-  border-color: var(--control-border);
+  border-color: var(--badge-outline-border);
 }
 
 .danger {
   background-color: var(--badge-danger);
+  border-color: color-mix(in srgb, var(--badge-danger) 92%, white);
   color: var(--text-on-image);
 }
 
 .success {
   background-color: var(--badge-success);
+  border-color: color-mix(in srgb, var(--badge-success) 92%, white);
   color: var(--text-on-success);
 }
 

@@ -72,6 +72,7 @@
   --badge-secondary: var(--secondary);
   --badge-danger: #b42318;
   --badge-success: var(--brand-leaf);
+  --badge-outline-border: rgba(255, 255, 255, 0.72);
 
   /* Shadow and radius */
   --shadow-sm: 0 2px 5px rgba(25, 67, 72, 0.08);
@@ -176,6 +177,7 @@ body.dark-mode {
   --badge-secondary: var(--secondary);
   --badge-danger: #ff8a78;
   --badge-success: #a8c77d;
+  --badge-outline-border: rgba(255, 255, 255, 0.18);
   --success: #b5d48b;
   --error: #ff9a89;
   --warning-bg: #4a2c10;
