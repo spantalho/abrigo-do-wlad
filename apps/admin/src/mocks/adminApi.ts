@@ -274,6 +274,27 @@ function noContentResponse(): Response {
   return new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
 }
 
+function adoptionSummary(adoption: MockAdoption) {
+  const {
+    id,
+    nome_adotante,
+    telefone,
+    animal_especifico,
+    status,
+    submittedAt,
+    expiresAt,
+  } = adoption;
+  return {
+    id,
+    nome_adotante,
+    telefone,
+    animal_especifico,
+    status,
+    submittedAt,
+    expiresAt,
+  };
+}
+
 function methodNotAllowed(allowed: string[]): Response {
   return new Response(null, { status: 405, headers: { Allow: allowed.join(", ") } });
 }
@@ -452,7 +473,14 @@ export async function handleMockAdminRequest(request: Request): Promise<Response
 
   if (url.pathname === "/api/admin/adoptions") {
     if (request.method !== "GET") return methodNotAllowed(["GET"]);
-    return jsonResponse(state.adoptions);
+    return jsonResponse(state.adoptions.map(adoptionSummary));
+  }
+
+  if (segments[2] === "adoptions" && segments.length === 4) {
+    if (request.method !== "GET") return methodNotAllowed(["GET"]);
+    const adoption = state.adoptions.find((item) => item.id === segments[3]);
+    if (!adoption) return jsonResponse({ error: "Adoption application not found." }, 404);
+    return jsonResponse(adoption);
   }
 
   if (

@@ -4,6 +4,10 @@ export async function getAdoptionApplications<T>(): Promise<T[]> {
   return apiRequest<T[]>("/api/admin/adoptions");
 }
 
+export async function getAdoptionApplication<T>(id: string): Promise<T> {
+  return apiRequest<T>(`/api/admin/adoptions/${encodeURIComponent(id)}`);
+}
+
 export async function updateAdoptionStatus(
   id: string,
   newStatus: "approved" | "rejected",

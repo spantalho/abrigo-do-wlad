@@ -62,6 +62,28 @@ describe("mock admin API", () => {
     expect(adoptions.find((item) => item.id === "adoption-livia")?.status).toBe("approved");
   });
 
+  test("lists adoption summaries and loads sensitive details on demand", async () => {
+    const listResponse = await handleMockAdminRequest(request("/api/admin/adoptions"));
+    const summaries = await listResponse.json() as Array<Record<string, unknown>>;
+
+    expect(summaries[0]).toMatchObject({
+      id: "adoption-livia",
+      nome_adotante: "Lívia Martins",
+      animal_especifico: "Simba",
+    });
+    expect(summaries[0]).not.toHaveProperty("email");
+    expect(summaries[0]).not.toHaveProperty("endereco");
+
+    const detailResponse = await handleMockAdminRequest(request(
+      "/api/admin/adoptions/adoption-livia",
+    ));
+    await expect(detailResponse.json()).resolves.toMatchObject({
+      id: "adoption-livia",
+      email: "livia@example.test",
+      endereco: "Fortaleza, CE",
+    });
+  });
+
   test("supports notification creation and deletion", async () => {
     const saveResponse = await handleMockAdminRequest(request("/api/admin/notifications", {
       method: "PUT",

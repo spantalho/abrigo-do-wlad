@@ -1,0 +1,105 @@
+.stepper {
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 3rem;
+}
+
+.currentTitle {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.progressSection {
+  margin-bottom: 1.5rem;
+}
+
+.progressInfo {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: var(--accent-secondary);
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--secondary);
+  transition: width 0.4s ease;
+}
+
+.indicators {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.indicator {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+}
+
+.activeIndicator {
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.sm .header {
+  margin-bottom: 1.5rem;
+}
+
+.sm .currentTitle {
+  margin-bottom: 1rem;
+}
+
+.sm .indicator {
+  width: 38px;
+  height: 38px;
+  flex-basis: 38px;
+}
+
+.panel {
+  min-width: 0;
+  animation: stepper-panel-enter 0.3s ease;
+}
+
+@keyframes stepper-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .currentTitle,
+  .indicators {
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+}

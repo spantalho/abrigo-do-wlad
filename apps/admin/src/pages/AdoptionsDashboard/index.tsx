@@ -1,33 +1,24 @@
-import { useEffect, useState } from "react";
-import { Dog, Calendar, Phone, Eye, Inbox, Printer, Check, Clock, XCircle, MessageCircle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, Calendar, Check, Clock, Dog, Eye, Inbox, MessageCircle, Phone, Printer, XCircle } from "lucide-react";
 import { Button } from "@jaci/ui/Button";
 import { Badge } from "@jaci/ui/Badge";
-import { Card, CardBody, CardContent, CardFooter } from "@jaci/ui/Card";
+import { Card, CardBody, CardContent, CardFooter, CardHeader, CardTitle } from "@jaci/ui/Card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@jaci/ui/Dialog";
 import { ScrollArea } from "@jaci/ui/ScrollArea";
-import { getAdoptionApplications, updateAdoptionStatus } from "../../services/adoptions";
+import { Stepper } from "@jaci/ui/Stepper";
+import {
+  ADOPTION_REVIEW_STEPS,
+  AdoptionDetailsSection,
+} from "../../components/AdoptionApplicationDetails";
+import {
+  getAdoptionApplication,
+  getAdoptionApplications,
+  updateAdoptionStatus,
+} from "../../services/adoptions";
 import { ConfirmModal } from "../../components/ConfirmModal";
 import { SuccessModal } from "../../components/SuccessModal";
+import type { AdoptionRequest, AdoptionRequestSummary } from "../../types/adoptions";
 import styles from "./AdoptionsDashboard.module.css";
-
-interface AdoptionRequest {
-  id: string;
-  nome_adotante?: string;
-  telefone?: string;
-  animal_especifico?: string;
-  status?: string;
-  submittedAt?: string;
-  expiresAt?: string;
-  idade?: string; estado_civil?: string; profissao?: string; empresa?: string; endereco?: string; email?: string; redes_sociais?: string;
-  qtd_adultos?: string; criancas?: string; renda_mensal?: string; acordo?: string; alergia?: string;
-  motivo?: string; porte?: string; sexo?: string; idade_animal?: string; personalidade?: string; atividade?: string;
-  responsavel?: string; horas_sozinho?: string; passeios?: string; tipo_moradia?: string; proprietario_permite?: string; detalhes_moradia?: string; moradores?: string; areas_frequentar?: string; periodos?: string; dormir?: string; acesso?: string;
-  outros_animais?: string; castrados?: string; ja_teve?: string; destino_antigos?: string; veterinario?: string; racao?: string;
-  coleira?: string; ciencia_adaptacao?: string; tempo_adaptacao?: string; adestrador?: string; motivo_nao_adestrar?: string; carro?: string; financeiro_vet?: string; vacinas?: string; gasto_mensal?: string;
-  divulgacao?: string; noticias?: string; visitas?: string; fotos_adocao?: string; contribuicao?: string; compromisso_vida?: string;
-  gravidez?: string; viagem?: string; mudanca_menor?: string; mudanca_longe?: string; separacao?: string; falecimento?: string; perder?: string; doenca?: string; morder?: string; destruicao?: string; xixi_errado?: string;
-  enxoval?: string; devolucao?: string; termo_nao_repassar?: string; obs?: string;
-}
 
 interface ExpirationPresentation {
   label: string;
@@ -78,21 +69,17 @@ function getExpirationPresentation(expiresAt?: string): ExpirationPresentation |
   };
 }
 
-function DataItem({ label, value }: { label: string, value?: string }) {
-  return (
-    <div className={styles.dataGroup}>
-      <span className={styles.dataLabel}>{label}</span>
-      <span className={styles.dataValue}>{value || "Não informado"}</span>
-    </div>
-  );
-}
-
 export default function AdoptionsDashboard() {
-  const [requests, setRequests] = useState<AdoptionRequest[]>([]);
+  const [requests, setRequests] = useState<AdoptionRequestSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedSummary, setSelectedSummary] = useState<AdoptionRequestSummary | null>(null);
   const [selectedReq, setSelectedReq] = useState<AdoptionRequest | null>(null);
+  const [detailError, setDetailError] = useState<string | null>(null);
+  const [activeReviewStep, setActiveReviewStep] = useState(0);
+  const detailsCache = useRef(new Map<string, AdoptionRequest>());
+  const detailRequestToken = useRef(0);
 
-  const [actionModal, setActionModal] = useState<{ isOpen: boolean, type: 'approved' | 'rejected', req: AdoptionRequest | null }>({
+  const [actionModal, setActionModal] = useState<{ isOpen: boolean, type: 'approved' | 'rejected', req: AdoptionRequestSummary | null }>({
     isOpen: false, type: 'approved', req: null
   });
 
@@ -102,7 +89,7 @@ export default function AdoptionsDashboard() {
 
   useEffect(() => {
     async function fetchRequests() {
-      const data = await getAdoptionApplications<AdoptionRequest>();
+      const data = await getAdoptionApplications<AdoptionRequestSummary>();
       const sortedData = data.sort((a, b) => {
         if (a.status === 'pending' && b.status !== 'pending') return -1;
         if (a.status !== 'pending' && b.status === 'pending') return 1;
@@ -126,6 +113,9 @@ export default function AdoptionsDashboard() {
       await updateAdoptionStatus(id, type);
 
       setRequests(prev => prev.map(r => r.id === id ? { ...r, status: type } : r));
+      const cached = detailsCache.current.get(id);
+      if (cached) detailsCache.current.set(id, { ...cached, status: type });
+      setSelectedReq((current) => current?.id === id ? { ...current, status: type } : current);
       setActionModal({ isOpen: false, type: 'approved', req: null });
 
       setSuccessInfo({
@@ -170,6 +160,49 @@ export default function AdoptionsDashboard() {
 
     const message = encodeURIComponent(`Olá ${name || 'Candidato'}, sou do Abrigo do Wlad e estou entrando em contato sobre a sua solicitação de adoção.`);
     return `https://wa.me/${finalPhone}?text=${message}`;
+  };
+
+  const openReview = async (requestSummary: AdoptionRequestSummary) => {
+    const requestToken = ++detailRequestToken.current;
+    setSelectedSummary(requestSummary);
+    setSelectedReq(null);
+    setDetailError(null);
+    setActiveReviewStep(0);
+
+    const cached = detailsCache.current.get(requestSummary.id);
+    if (cached) {
+      setSelectedReq(cached);
+      return;
+    }
+
+    try {
+      const detail = await getAdoptionApplication<AdoptionRequest>(requestSummary.id);
+      detailsCache.current.set(requestSummary.id, detail);
+      if (detailRequestToken.current === requestToken) setSelectedReq(detail);
+    } catch (requestError: unknown) {
+      if (detailRequestToken.current !== requestToken) return;
+      setDetailError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Não foi possível carregar a ficha.",
+      );
+    }
+  };
+
+  const closeReview = () => {
+    detailRequestToken.current += 1;
+    setSelectedSummary(null);
+    setSelectedReq(null);
+    setDetailError(null);
+    setActiveReviewStep(0);
+  };
+
+  const openPrintView = (id: string) => {
+    window.open(
+      `/admin/adoptions/${encodeURIComponent(id)}/print`,
+      "_blank",
+      "noopener,noreferrer",
+    );
   };
 
   return (
@@ -248,15 +281,27 @@ export default function AdoptionsDashboard() {
                 </CardBody>
 
                 <CardFooter className={styles.cardActions}>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className={styles.viewButton}
-                    leftIcon={<Eye size={18} />}
-                    onClick={() => setSelectedReq(req)}
-                  >
-                    Ver ficha
-                  </Button>
+                  <div className={styles.utilityActions}>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className={styles.viewButton}
+                      leftIcon={<Eye size={18} />}
+                      onClick={() => void openReview(req)}
+                    >
+                      Ver ficha
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      className={styles.printCardButton}
+                      onClick={() => openPrintView(req.id)}
+                      aria-label={`Imprimir ficha de ${req.nome_adotante || "candidato"}`}
+                      title="Imprimir ficha"
+                    >
+                      <Printer size={17} />
+                    </Button>
+                  </div>
 
                   {req.status === 'pending' && (
                     <div className={styles.decisionActions}>
@@ -287,131 +332,80 @@ export default function AdoptionsDashboard() {
         </div>
       )}
 
-      <Dialog open={Boolean(selectedReq)} onOpenChange={(open) => !open && setSelectedReq(null)}>
-        {selectedReq && (
-          <DialogContent className={`${styles.modalContainer} ${styles.printArea}`}>
+      <Dialog open={Boolean(selectedSummary)} onOpenChange={(open) => !open && closeReview()}>
+        <DialogContent className={styles.modalContainer}>
+          <div className={styles.modalHeader}>
+            <DialogHeader>
+              <DialogTitle>Ficha de Adoção</DialogTitle>
+            </DialogHeader>
+            <p className={styles.modalSubtitle}>
+              {selectedSummary?.nome_adotante || "Candidato sem nome"}
+              {selectedReq && ` · Seção ${activeReviewStep + 1} de ${ADOPTION_REVIEW_STEPS.length}`}
+            </p>
+          </div>
 
-            <div className={`${styles.modalHeader} ${styles.noPrint}`}>
-              <DialogHeader>
-                <DialogTitle>Ficha de Adoção</DialogTitle>
-              </DialogHeader>
-              <div className={styles.modalActions}>
-                <Button className={styles.printBtn} onClick={() => window.print()}>
-                  <Printer size={18} /> Imprimir Ficha
+          <div className={styles.reviewContent}>
+            {detailError && selectedSummary ? (
+              <div className={styles.detailState}>
+                <Card variant="callout" tone="danger" size="sm">
+                  <CardBody>
+                    <CardHeader><CardTitle>Não foi possível carregar a ficha</CardTitle></CardHeader>
+                    <CardContent><p>{detailError}</p></CardContent>
+                  </CardBody>
+                </Card>
+                <Button variant="secondary" onClick={() => void openReview(selectedSummary)}>
+                  Tentar novamente
                 </Button>
               </div>
-            </div>
+            ) : !selectedReq ? (
+              <div className={styles.detailState}>Carregando respostas...</div>
+            ) : (
+              <Stepper
+                className={styles.reviewStepper}
+                panelClassName={styles.reviewPanel}
+                size="sm"
+                steps={ADOPTION_REVIEW_STEPS.map(({ label, icon: Icon }) => ({
+                  label,
+                  icon: <Icon size={17} />,
+                }))}
+                activeStep={activeReviewStep}
+                onStepChange={setActiveReviewStep}
+                navigationLabel="Seções da ficha de adoção"
+              >
+                <ScrollArea className={styles.stepScrollArea} showScrollShadows>
+                  <div className={styles.stepBody}>
+                    <AdoptionDetailsSection
+                      application={selectedReq}
+                      step={ADOPTION_REVIEW_STEPS[activeReviewStep] ?? ADOPTION_REVIEW_STEPS[0]}
+                    />
+                  </div>
+                </ScrollArea>
 
-            <ScrollArea className={styles.modalScrollArea} showScrollShadows>
-              <div className={styles.modalBody}>
-                <div className={styles.printHeader}>
-                  <h1 style={{ marginBottom: '5px' }}>Abrigo do Wlad - Solicitação de Adoção</h1>
-                  <p><strong>Data de Envio:</strong> {formatDate(selectedReq.submittedAt)}</p>
-                  <hr style={{ margin: '20px 0' }} />
+                <div className={styles.stepNavigation}>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    leftIcon={<ArrowLeft size={17} />}
+                    disabled={activeReviewStep === 0}
+                    onClick={() => setActiveReviewStep((step) => Math.max(0, step - 1))}
+                  >
+                    Anterior
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    rightIcon={<ArrowRight size={17} />}
+                    disabled={activeReviewStep === ADOPTION_REVIEW_STEPS.length - 1}
+                    onClick={() => setActiveReviewStep((step) => Math.min(ADOPTION_REVIEW_STEPS.length - 1, step + 1))}
+                  >
+                    Próxima
+                  </Button>
                 </div>
-
-                <h3 className={styles.sectionTitle}>1. Dados Pessoais</h3>
-                <div className={styles.dataGrid}>
-                  <DataItem label="Nome Completo" value={selectedReq.nome_adotante} />
-                  <DataItem label="Idade" value={selectedReq.idade} />
-                  <DataItem label="Estado Civil" value={selectedReq.estado_civil} />
-                  <DataItem label="Profissão" value={selectedReq.profissao} />
-                  <DataItem label="Empresa" value={selectedReq.empresa} />
-                  <DataItem label="Telefone" value={selectedReq.telefone} />
-                  <DataItem label="E-mail" value={selectedReq.email} />
-                  <DataItem label="Redes Sociais" value={selectedReq.redes_sociais} />
-                  <DataItem label="Endereço Completo" value={selectedReq.endereco} />
-                </div>
-
-                <h3 className={styles.sectionTitle}>2. Família e Moradia</h3>
-                <div className={styles.dataGrid}>
-                  <DataItem label="Qtd. Adultos" value={selectedReq.qtd_adultos} />
-                  <DataItem label="Crianças/Visitas" value={selectedReq.criancas} />
-                  <DataItem label="Renda Mensal" value={selectedReq.renda_mensal} />
-                  <DataItem label="Todos de Acordo?" value={selectedReq.acordo} />
-                  <DataItem label="Alergias na família?" value={selectedReq.alergia} />
-                </div>
-
-                <h3 className={styles.sectionTitle}>3. Informações da Residência</h3>
-                <div className={styles.dataGrid}>
-                  <DataItem label="Tipo de Moradia" value={selectedReq.tipo_moradia} />
-                  <DataItem label="Detalhes Moradia" value={selectedReq.detalhes_moradia} />
-                  <DataItem label="Proprietário Permite?" value={selectedReq.proprietario_permite} />
-                  <DataItem label="Quem mora junto?" value={selectedReq.moradores} />
-                  <DataItem label="Onde irá dormir?" value={selectedReq.dormir} />
-                  <DataItem label="Acesso aos Cômodos" value={selectedReq.acesso} />
-                  <DataItem label="Áreas p/ frequentar" value={selectedReq.areas_frequentar} />
-                  <DataItem label="Períodos de acesso" value={selectedReq.periodos} />
-                </div>
-
-                <h3 className={styles.sectionTitle}>4. Perfil da Adoção</h3>
-                <div className={styles.dataGrid}>
-                  <DataItem label="Motivo da Adoção" value={selectedReq.motivo} />
-                  <DataItem label="Animal Específico" value={selectedReq.animal_especifico} />
-                  <DataItem label="Porte Desejado" value={selectedReq.porte} />
-                  <DataItem label="Sexo Desejado" value={selectedReq.sexo} />
-                  <DataItem label="Idade Desejada" value={selectedReq.idade_animal} />
-                  <DataItem label="Personalidade" value={selectedReq.personalidade} />
-                  <DataItem label="Atividade Principal" value={selectedReq.atividade} />
-                </div>
-
-                <h3 className={styles.sectionTitle}>5. Rotina e Responsabilidades</h3>
-                <div className={styles.dataGrid}>
-                  <DataItem label="Responsável Principal" value={selectedReq.responsavel} />
-                  <DataItem label="Tempo Sozinho" value={selectedReq.horas_sozinho} />
-                  <DataItem label="Rotina de Passeios" value={selectedReq.passeios} />
-                  <DataItem label="Possui Carro?" value={selectedReq.carro} />
-                  <DataItem label="Previsão de Gasto Mensal" value={selectedReq.gasto_mensal} />
-                  <DataItem label="Contrataria Adestrador?" value={selectedReq.adestrador} />
-                  <DataItem label="Concorda com Coleira/Placa?" value={selectedReq.coleira} />
-                  <DataItem label="Vacinação/Vermífugo?" value={selectedReq.vacinas} />
-                </div>
-
-                <h3 className={styles.sectionTitle}>6. Histórico Animal e Veterinário</h3>
-                <div className={styles.dataGrid}>
-                  <DataItem label="Tem outros animais?" value={selectedReq.outros_animais} />
-                  <DataItem label="Estão castrados?" value={selectedReq.castrados} />
-                  <DataItem label="Já teve animais antes?" value={selectedReq.ja_teve} />
-                  <DataItem label="Destino dos antigos" value={selectedReq.destino_antigos} />
-                  <DataItem label="Veterinário/Clínica" value={selectedReq.veterinario} />
-                  <DataItem label="Emergência Financeira Vet." value={selectedReq.financeiro_vet} />
-                  <DataItem label="Ração pretendida" value={selectedReq.racao} />
-                </div>
-
-                <h3 className={styles.sectionTitle}>7. Situações e Hipóteses</h3>
-                <div className={styles.dataGrid}>
-                  <DataItem label="Ciente da Adaptação?" value={selectedReq.ciencia_adaptacao} />
-                  <DataItem label="Tempo de adaptação esperado" value={selectedReq.tempo_adaptacao} />
-                  <DataItem label="E se alguém engravidar?" value={selectedReq.gravidez} />
-                  <DataItem label="E em caso de viagem?" value={selectedReq.viagem} />
-                  <DataItem label="E se mudar para casa menor?" value={selectedReq.mudanca_menor} />
-                  <DataItem label="E se mudar de cidade/país?" value={selectedReq.mudanca_longe} />
-                  <DataItem label="E em caso de separação?" value={selectedReq.separacao} />
-                  <DataItem label="Falecimento do responsável?" value={selectedReq.falecimento} />
-                  <DataItem label="E se o animal fugir/perder?" value={selectedReq.perder} />
-                  <DataItem label="E se o animal adoecer?" value={selectedReq.doenca} />
-                  <DataItem label="E se o animal morder alguém?" value={selectedReq.morder} />
-                  <DataItem label="E se destruir objetos?" value={selectedReq.destruicao} />
-                  <DataItem label="E se fizer xixi no lugar errado?" value={selectedReq.xixi_errado} />
-                </div>
-
-                <h3 className={styles.sectionTitle}>8. Termos Finais</h3>
-                <div className={styles.dataGrid}>
-                  <DataItem label="Onde viu a divulgação?" value={selectedReq.divulgacao} />
-                  <DataItem label="Aceita mandar notícias?" value={selectedReq.noticias} />
-                  <DataItem label="Aceita visitas do abrigo?" value={selectedReq.visitas} />
-                  <DataItem label="Permite foto da adoção?" value={selectedReq.fotos_adocao} />
-                  <DataItem label="Contribuição de R$300?" value={selectedReq.contribuicao} />
-                  <DataItem label="Ciente que vivem 15+ anos?" value={selectedReq.compromisso_vida} />
-                  <DataItem label="O que vai comprar de enxoval?" value={selectedReq.enxoval} />
-                  <DataItem label="Concorda em NÃO repassar?" value={selectedReq.termo_nao_repassar} />
-                  <DataItem label="Condição extrema para devolução" value={selectedReq.devolucao} />
-                  <DataItem label="Observações Livres" value={selectedReq.obs} />
-                </div>
-              </div>
-            </ScrollArea>
-          </DialogContent>
-        )}
+              </Stepper>
+            )}
+          </div>
+        </DialogContent>
       </Dialog>
 
       <ConfirmModal

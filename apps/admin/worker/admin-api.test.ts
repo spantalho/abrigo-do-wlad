@@ -43,6 +43,8 @@ function keyDependencies(
   overrides: Partial<AdminApiDependencies> = {},
 ): AdminApiDependencies {
   return {
+    listAdoptionApplications: async () => [],
+    getAdoptionApplication: async (_env, id) => ({ id }),
     consumeUploadRateLimit: async () => true,
     listSystemKeys: async () => [],
     rotateSystemKey: async () => ({ id: "key-id", version: "v2" }),
@@ -63,6 +65,48 @@ function keyDependencies(
     ...overrides,
   };
 }
+
+test("adoption list returns only the summary contract provided by the repository", async () => {
+  const summaries = [{
+    id: "application-1",
+    nome_adotante: "Lívia",
+    status: "pending",
+    submittedAt: "2026-08-24T12:00:00.000Z",
+  }];
+  const response = await handleAdminApi(
+    new Request("https://admin.example.test/api/admin/adoptions"),
+    env,
+    identity,
+    keyDependencies({ listAdoptionApplications: async () => summaries }),
+  );
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), summaries);
+});
+
+test("adoption detail validates the id and loads one full application", async () => {
+  let requestedId = "";
+  const detail = {
+    id: "application-1",
+    nome_adotante: "Lívia",
+    email: "livia@example.test",
+  };
+  const response = await handleAdminApi(
+    new Request("https://admin.example.test/api/admin/adoptions/application-1"),
+    env,
+    identity,
+    keyDependencies({
+      getAdoptionApplication: async (_env, id) => {
+        requestedId = id;
+        return detail;
+      },
+    }),
+  );
+
+  assert.equal(response.status, 200);
+  assert.equal(requestedId, "application-1");
+  assert.deepEqual(await response.json(), detail);
+});
 
 test("admin API rejects state changes without a same-origin Origin header", async () => {
   const response = await handleAdminApi(

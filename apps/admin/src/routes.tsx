@@ -11,6 +11,7 @@ import NewDog from "./pages/NewDog";
 import NewRecycle from "./pages/NewRecycle";
 import RecycleDashboard from "./pages/RecycleDashboard";
 import DeveloperOptions from "./pages/DeveloperOptions";
+import AdoptionPrint from "./pages/AdoptionPrint";
 import styles from "./routes.module.css";
 
 function RouteState({ title, message, tone = "neutral" }: {
@@ -52,6 +53,7 @@ export default function AppRoutes() {
       <BrowserRouter>
         <Routes>
           <Route element={<ProtectedLayout />}>
+            <Route path="/admin/adoptions/:id/print" element={<AdoptionPrint />} />
             <Route element={<AdminLayout />}>
               <Route path="/admin" element={<Dashboard />} />
               <Route path="/admin/dog" element={<DogDashboard />} />

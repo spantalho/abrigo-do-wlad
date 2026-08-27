@@ -121,6 +121,16 @@
   border-top: 1px solid var(--border-light);
 }
 
+.utilityActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.printCardButton {
+  flex: 0 0 auto;
+}
+
 .decisionActions {
   display: flex;
   gap: 0.5rem;
@@ -172,8 +182,8 @@
 }
 
 .modalContainer {
-  width: min(95vw, 800px);
-  max-width: 800px;
+  width: min(96vw, 1000px);
+  max-width: 1000px;
   height: min(90vh, 900px);
   max-height: 90vh;
   padding: 0;
@@ -181,17 +191,11 @@
 }
 
 .modalHeader {
-  position: relative;
   flex: 0 0 auto;
-  background: var(--surface-elevated);
-  padding: 1.5rem 4.75rem 1.5rem 1.5rem;
-  border-bottom: 1px solid var(--border-light);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  z-index: 10;
+  padding: 1.35rem 4.75rem 1.15rem 1.5rem;
   border-radius: var(--radius) var(--radius) 0 0;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--surface-elevated);
 }
 
 .modalHeader h2 {
@@ -200,198 +204,65 @@
   color: var(--text-primary);
 }
 
-.modalActions {
-  display: flex;
-  gap: 1rem;
-  margin-left: auto;
+.modalSubtitle {
+  margin: 0.3rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
 }
 
-.printBtn {
-  background-color: var(--primary);
-  color: var(--surface-elevated);
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
+.reviewContent {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  white-space: nowrap;
-}
-
-.closeBtn {
-  background: var(--surface-water);
-  border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--text-secondary);
-}
-
-.modalScrollArea {
   flex: 1 1 auto;
   min-height: 0;
-  height: auto;
-  border: none;
-  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 1.25rem 1.5rem 1.5rem;
 }
 
-.modalBody {
-  padding: 2rem 1.5rem;
-}
-
-.printHeader {
-  display: none;
-}
-
-.sectionTitle {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--primary);
-  margin: 2rem 0 1rem;
-  border-bottom: 2px solid var(--surface-water);
-  padding-bottom: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.sectionTitle:first-child {
-  margin-top: 0;
-}
-
-.dataGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.dataGroup {
+.detailState {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  gap: 0.25rem;
-}
-
-.dataLabel {
-  font-size: 0.85rem;
-  font-weight: 700;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
   color: var(--text-muted);
 }
 
-.dataValue {
-  font-size: 1rem;
-  color: var(--text-primary);
-  background: var(--bg-body);
-  padding: 0.75rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--surface-water);
-  white-space: pre-wrap;
+.detailState > * {
+  width: min(100%, 560px);
 }
 
-@media print {
-  @page {
-    margin: 12mm;
-  }
+.reviewStepper {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+}
 
-  html,
-  body {
-    height: auto !important;
-    overflow: visible !important;
-  }
+.reviewPanel {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
 
-  body * {
-    visibility: hidden;
-  }
+.stepScrollArea {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  border-color: var(--border-light);
+  background: var(--surface-card);
+}
 
-  .printArea, .printArea * {
-    visibility: visible;
-  }
+.stepBody {
+  padding: 1.25rem;
+}
 
-  .modalOverlay {
-    position: absolute;
-    left: 0;
-    top: 0;
-    background: var(--surface-elevated);
-    padding: 0;
-    align-items: flex-start;
-  }
-
-  .modalContainer {
-    position: static !important;
-    inset: auto !important;
-    transform: none !important;
-    display: block !important;
-    width: 100% !important;
-    height: auto !important;
-    max-width: none !important;
-    max-height: none !important;
-    margin: 0 !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    overflow: visible !important;
-    animation: none !important;
-  }
-
-  .modalScrollArea,
-  .modalScrollArea :global([data-radix-scroll-area-viewport]) {
-    position: static !important;
-    display: block !important;
-    width: 100% !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-  }
-
-  .modalScrollArea :global([data-radix-scroll-area-viewport]) > div {
-    display: block !important;
-    min-width: 0 !important;
-  }
-
-  .modalScrollArea :global([data-orientation]) {
-    display: none !important;
-  }
-
-  .modalBody {
-    padding: 0;
-  }
-
-  .printHeader {
-    display: block !important;
-  }
-
-  .noPrint {
-    display: none !important;
-  }
-
-  .dataValue {
-    border: none;
-    background: transparent;
-    padding: 0;
-    padding-top: 0.2rem;
-  }
-
-  .dataGrid {
-    gap: 1rem;
-  }
-
-  .dataGroup,
-  .sectionTitle {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  .sectionTitle {
-    color: var(--text-primary);
-    border-color: var(--text-primary);
-  }
+.stepNavigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1rem;
 }
 
 @media (max-width: 600px) {
@@ -401,6 +272,11 @@
     display: grid;
     grid-template-columns: 1fr;
     padding: 1rem 0.75rem 0.75rem;
+  }
+  .utilityActions {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    width: 100%;
   }
   .decisionActions {
     display: grid;
@@ -412,8 +288,6 @@
     justify-content: center;
     width: 100%;
   }
-  .dataGrid { grid-template-columns: 1fr; }
-  .modalHeader { align-items: flex-start; flex-direction: column; }
-  .modalActions { width: 100%; margin-left: 0; }
-  .printBtn { width: 100%; justify-content: center; }
+  .reviewContent { padding: 1rem; }
+  .stepBody { padding: 1rem; }
 }

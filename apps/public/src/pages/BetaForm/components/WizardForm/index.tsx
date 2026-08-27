@@ -6,10 +6,9 @@ import { STEP_TITLES, useWizardForm } from "./useWizardForm";
 import type { FormData } from "./schema";
 
 import { Button } from "@jaci/ui/Button";
-import { Badge } from "@jaci/ui/Badge";
 import * as CardComponent from "@jaci/ui/Card";
-import * as TooltipComponent from "@jaci/ui/Tooltip";
 import * as DialogComponent from "@jaci/ui/Dialog";
+import { Stepper } from "@jaci/ui/Stepper";
 import * as Lucide from "lucide-react";
 
 import { ExternalLink } from "@/components/common/ExternalLink";
@@ -207,8 +206,6 @@ export function WizardForm({ onSubmitSuccess }: WizardFormProps) {
       /* sem suporte a sessionStorage */
     }
   }, [showWarning]);
-
-  const { label, icon: Icon } = STEP_TITLES[currentStep];
 
   // pré-preencher nome do pet
   const handleUpdateField = React.useCallback(
@@ -450,71 +447,24 @@ export function WizardForm({ onSubmitSuccess }: WizardFormProps) {
 
   return (
     <div className={styles.wizardContainer}>
-      <div className={styles.wizardHeader}>
-        {/* Step Title */}
-        <div className={styles.currentStepTitle}>
-          <Badge variant="secondary" size="lg" leftIcon={<Icon />}>
-            {label}
-          </Badge>
-        </div>
-
-        {/* Progress Bar */}
-        <div className={styles.progressSection}>
-          <div className={styles.progressInfo}>
-            <span>
-              Etapa {currentStep + 1} de {totalSteps}
-            </span>
-            <span>{Math.round(progress)}%</span>
-          </div>
-          <div className={styles.progressBar}>
-            <div
-              className={styles.progressFill}
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Step Indicators */}
-        <div className={styles.stepIndicators}>
-          {STEP_TITLES.map((step, index) => (
-            <TooltipComponent.TooltipProvider key={index}>
-              <TooltipComponent.Tooltip>
-                <TooltipComponent.TooltipTrigger asChild>
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant={
-                      currentStep === index
-                        ? "secondary"
-                        : index < currentStep
-                          ? "success"
-                          : "outline"
-                    }
-                    className={`${styles.stepIndicator} ${
-                      index === currentStep ? styles.stepActive : ""
-                    } ${index < currentStep ? styles.stepCompleted : ""}`}
-                    onClick={() => goToStep(index)}
-                    disabled={index > highestCompletedStep}
-                  >
-                    {index < currentStep ? (
-                      <Lucide.Check size={18} />
-                    ) : (
-                      <span>{index + 1}</span>
-                    )}
-                  </Button>
-                </TooltipComponent.TooltipTrigger>
-                <TooltipComponent.TooltipContent side="bottom">
-                  <p>{step.label}</p>
-                </TooltipComponent.TooltipContent>
-              </TooltipComponent.Tooltip>
-            </TooltipComponent.TooltipProvider>
-          ))}
-        </div>
-      </div>
-
-      {/* Form Content */}
-      <form onSubmit={onSubmit}>
-        <div className={styles.stepWrapper}>{renderStep()}</div>
+      <Stepper
+        steps={STEP_TITLES.map(({ label, icon: Icon }, index) => ({
+          label,
+          icon: <Icon size={18} />,
+          completed: index < currentStep,
+          disabled: index > highestCompletedStep,
+        }))}
+        activeStep={currentStep}
+        onStepChange={goToStep}
+        progress={{
+          label: `Etapa ${currentStep + 1} de ${totalSteps}`,
+          value: progress,
+        }}
+        navigationLabel="Etapas do formulário de adoção"
+      >
+        {/* Form Content */}
+        <form onSubmit={onSubmit}>
+          {renderStep()}
 
         {/* Error summary */}
         {Object.keys(errors).length > 0 && (
@@ -571,7 +521,8 @@ export function WizardForm({ onSubmitSuccess }: WizardFormProps) {
             </Button>
           )}
         </div>
-      </form>
+        </form>
+      </Stepper>
 
       <DialogComponent.Dialog
         open={showResumeDialog}
