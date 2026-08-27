@@ -40,21 +40,61 @@
 }
 
 .section {
-  background: var(--surface-elevated);
-  border-radius: var(--radius);
-  padding: 2rem;
+  height: auto;
   margin-bottom: 2rem;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--primary);
 }
 
-.section h2 {
+.sectionBody {
+  padding: 2rem !important;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.sectionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-sm);
+  color: var(--primary);
+}
+
+.sectionHeading {
+  min-width: 0;
+}
+
+.sectionHeading h2 {
+  margin: 0;
+  color: var(--text-primary);
   font-size: 1rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
+  font-weight: 800;
   letter-spacing: 0.05em;
-  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.sectionHeading p {
+  margin: 0.3rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.sectionContent {
+  min-width: 0;
+  color: var(--text-secondary);
+  text-align: left;
 }
 
 .row {
@@ -78,8 +118,11 @@
   margin-left: 2px;
 }
 
-.inputGroup input,
-.inputGroup select {
+.selectTrigger {
+  width: 100%;
+}
+
+.inputGroup input {
   width: 100%;
   padding: 0.875rem 1rem;
   border: 1px solid var(--control-border);
@@ -91,15 +134,13 @@
   outline: none;
 }
 
-.inputGroup input:focus,
-.inputGroup select:focus {
+.inputGroup input:focus {
   background-color: var(--surface-elevated);
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
-.inputGroup input:focus-visible,
-.inputGroup select:focus-visible {
+.inputGroup input:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
@@ -115,8 +156,12 @@
     padding: 1.5rem 1rem;
   }
 
-  .section {
-    padding: 1.5rem;
+  .sectionBody {
+    padding: 1.5rem !important;
+  }
+
+  .sectionHeader {
+    align-items: flex-start;
   }
 
   .title {

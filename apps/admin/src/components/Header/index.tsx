@@ -1,8 +1,9 @@
 import { Link } from "react-router";
-import { LogOut, ShieldCheck } from "lucide-react";
+import { FlaskConical, LogOut, ShieldCheck } from "lucide-react";
 import { Badge } from "@jaci/ui/Badge";
 import { Button } from "@jaci/ui/Button";
 import { useAuth } from "../../contexts/AuthContext";
+import { ADMIN_MOCK_MODE } from "../../services/api";
 import styles from "./Header.module.css";
 import logoImg from "../../assets/logo1.png";
 
@@ -29,6 +30,18 @@ export function Header() {
           >
             Painel Admin
           </Badge>
+          {ADMIN_MOCK_MODE && (
+            <Badge
+              className={styles.mockTag}
+              leftIcon={<FlaskConical size={16} />}
+              variant="danger"
+              size="sm"
+              aria-label="Ambiente com dados simulados"
+              title="Ambiente com dados simulados"
+            >
+              Dados simulados
+            </Badge>
+          )}
         </Link>
 
         <div className={styles.userArea}>

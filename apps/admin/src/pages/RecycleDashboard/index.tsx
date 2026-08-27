@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { Plus, Search, MapPin, Pencil, Trash2, Map } from "lucide-react";
 import { Badge } from "@jaci/ui/Badge";
 import { Button } from "@jaci/ui/Button";
+import { Card, CardBody, CardContent, CardFooter } from "@jaci/ui/Card";
 import { Input } from "@jaci/ui/Field";
 import { getRecyclePoints, deleteRecyclePoint } from "../../services/recycle";
 import type { RecyclePoint } from "../../types/recycle";
@@ -129,38 +130,41 @@ export default function RecycleDashboard() {
         <>
           <div className={styles.listContainer}>
             {currentPoints.map((point) => (
-              <div key={point.id} className={styles.pointCard}>
-                <div className={styles.pointInfo}>
-                  <div className={styles.pointHeader}>
-                    <Badge variant="secondary">{point.zone}</Badge>
-                    <h3 className={styles.pointNeighborhood}>{point.neighborhood}</h3>
-                  </div>
-                  {point.name && <p className={styles.pointName}><strong>{point.name}</strong></p>}
-                  <p className={styles.pointAddress}>{point.address}</p>
+              <Card key={point.id} size="sm" className={styles.pointCard}>
+                <CardBody className={styles.pointBody}>
+                  <CardContent className={styles.pointInfo}>
+                    <div className={styles.pointHeader}>
+                      <Badge variant="secondary">{point.zone}</Badge>
+                      <h3 className={styles.pointNeighborhood}>{point.neighborhood}</h3>
+                    </div>
+                    {point.name && <p className={styles.pointName}><strong>{point.name}</strong></p>}
+                    <p className={styles.pointAddress}>{point.address}</p>
 
-                  {/* Link pra testar as cordenadas */}
-                  {point.latitude && point.longitude && (
-                    <a
-                      href={`https://www.google.com/maps?q=${point.latitude},${point.longitude}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.mapLink}
-                      title="Testar coordenadas no Google Maps"
-                    >
-                      <Map size={16} /> Ver no Mapa
-                    </a>
-                  )}
-                </div>
+                    {/* Link pra testar as cordenadas */}
+                    {point.latitude && point.longitude && (
+                      <a
+                        href={`https://www.google.com/maps?q=${point.latitude},${point.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.mapLink}
+                        title="Testar coordenadas no Google Maps"
+                      >
+                        <Map size={16} /> Ver no Mapa
+                      </a>
+                    )}
+                  </CardContent>
+                </CardBody>
 
-                <div className={styles.pointActions}>
+                <CardFooter className={styles.pointActions}>
                   <Button
                     variant="outline"
                     size="sm"
+                    leftIcon={<Pencil size={18} />}
                     onClick={() => navigate(`/admin/recycle/edit/${point.id}`)}
-                    className={styles.actionBtn}
+                    className={styles.editButton}
                     title="Editar"
                   >
-                    <Pencil size={18} /> Editar
+                    Editar
                   </Button>
 
                   <Button
@@ -168,13 +172,13 @@ export default function RecycleDashboard() {
                     size="icon-sm"
                     aria-label={`Excluir ${point.name || point.neighborhood}`}
                     onClick={() => openDeleteModal(point.id as string, point.name || point.neighborhood)}
-                    className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                    className={styles.deleteBtn}
                     title="Excluir"
                   >
                     <Trash2 size={18} />
                   </Button>
-                </div>
-              </div>
+                </CardFooter>
+              </Card>
             ))}
           </div>
 

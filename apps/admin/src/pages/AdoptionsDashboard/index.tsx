@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Dog, Calendar, Phone, Eye, Inbox, Printer, Check, XCircle, MessageCircle } from "lucide-react";
+import { Dog, Calendar, Phone, Eye, Inbox, Printer, Check, Clock, XCircle, MessageCircle } from "lucide-react";
 import { Button } from "@jaci/ui/Button";
 import { Badge } from "@jaci/ui/Badge";
 import { Card, CardBody, CardContent, CardFooter } from "@jaci/ui/Card";
@@ -17,6 +17,7 @@ interface AdoptionRequest {
   animal_especifico?: string;
   status?: string;
   submittedAt?: string;
+  expiresAt?: string;
   idade?: string; estado_civil?: string; profissao?: string; empresa?: string; endereco?: string; email?: string; redes_sociais?: string;
   qtd_adultos?: string; criancas?: string; renda_mensal?: string; acordo?: string; alergia?: string;
   motivo?: string; porte?: string; sexo?: string; idade_animal?: string; personalidade?: string; atividade?: string;
@@ -26,6 +27,55 @@ interface AdoptionRequest {
   divulgacao?: string; noticias?: string; visitas?: string; fotos_adocao?: string; contribuicao?: string; compromisso_vida?: string;
   gravidez?: string; viagem?: string; mudanca_menor?: string; mudanca_longe?: string; separacao?: string; falecimento?: string; perder?: string; doenca?: string; morder?: string; destruicao?: string; xixi_errado?: string;
   enxoval?: string; devolucao?: string; termo_nao_repassar?: string; obs?: string;
+}
+
+interface ExpirationPresentation {
+  label: string;
+  title: string;
+  variant: "danger" | "outline";
+}
+
+const DAY_IN_MS = 86_400_000;
+
+function getExpirationPresentation(expiresAt?: string): ExpirationPresentation | null {
+  if (!expiresAt) return null;
+
+  const expiration = new Date(expiresAt);
+  const expirationTime = expiration.getTime();
+  if (!Number.isFinite(expirationTime)) return null;
+
+  const now = new Date();
+  const formattedExpiration = expiration.toLocaleString("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+
+  if (expirationTime <= now.getTime()) {
+    return {
+      label: "Prazo expirado",
+      title: `Expirou em ${formattedExpiration}`,
+      variant: "danger",
+    };
+  }
+
+  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const expirationDay = Date.UTC(
+    expiration.getFullYear(),
+    expiration.getMonth(),
+    expiration.getDate(),
+  );
+  const daysLeft = Math.max(0, Math.round((expirationDay - today) / DAY_IN_MS));
+  const label = daysLeft === 0
+    ? "Expira hoje"
+    : daysLeft === 1
+      ? "Expira amanhã"
+      : `Expira em ${daysLeft} dias`;
+
+  return {
+    label,
+    title: `Expira em ${formattedExpiration}`,
+    variant: daysLeft <= 2 ? "danger" : "outline",
+  };
 }
 
 function DataItem({ label, value }: { label: string, value?: string }) {
@@ -140,75 +190,100 @@ export default function AdoptionsDashboard() {
         </div>
       ) : (
         <div className={styles.listContainer}>
-          {requests.map((req) => (
-            <Card key={req.id} size="sm" className={styles.card}>
-              <CardBody className={styles.cardBody}>
-                <CardContent className={styles.cardInfo}>
-                  <div className={styles.applicantName}>
-                    {req.nome_adotante || "Candidato Sem Nome"}
-                    {getStatusBadge(req.status)}
-                  </div>
-                  <div className={styles.detailsRow}>
-                    <div className={styles.detailItem}>
-                      <Dog size={16} />
-                      <span>{req.animal_especifico || "Qualquer cãozinho"}</span>
-                    </div>
+          {requests.map((req) => {
+            const expiration = getExpirationPresentation(req.expiresAt);
 
-                    {/* Link para o whatsapp no telefone */}
-                    {req.telefone ? (
-                      <a
-                        href={getWhatsAppLink(req.telefone, req.nome_adotante)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`${styles.detailItem} ${styles.wppLink}`}
-                        title="Chamar no WhatsApp"
-                      >
-                        <MessageCircle size={16} />
-                        <span>{req.telefone}</span>
-                      </a>
-                    ) : (
-                      <div className={styles.detailItem}>
-                        <Phone size={16} />
-                        <span>Sem telefone</span>
+            return (
+              <Card key={req.id} size="sm" className={styles.card}>
+                <CardBody className={styles.cardBody}>
+                  <CardContent className={styles.cardInfo}>
+                    <div className={styles.cardHeading}>
+                      <div className={styles.applicantName}>
+                        {req.nome_adotante || "Candidato Sem Nome"}
+                        {getStatusBadge(req.status)}
                       </div>
-                    )}
-
-                    <div className={styles.detailItem}>
-                      <Calendar size={16} />
-                      <span>{formatDate(req.submittedAt)}</span>
+                      {expiration && (
+                        <Badge
+                          className={styles.expirationBadge}
+                          variant={expiration.variant}
+                          size="sm"
+                          leftIcon={<Clock size={14} />}
+                          title={expiration.title}
+                        >
+                          {expiration.label}
+                        </Badge>
+                      )}
                     </div>
-                  </div>
-                </CardContent>
-              </CardBody>
+                    <div className={styles.detailsRow}>
+                      <div className={styles.detailItem}>
+                        <Dog size={16} />
+                        <span>{req.animal_especifico || "Qualquer cãozinho"}</span>
+                      </div>
 
-              <CardFooter className={styles.cardActions}>
-                {req.status === 'pending' && (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="success"
-                      className={`${styles.actionBtn} ${styles.approveBtn}`}
-                      onClick={() => setActionModal({ isOpen: true, type: 'approved', req })}
-                    >
-                      <Check size={16} style={{ display: 'inline', marginBottom: '-3px' }}/> Aprovar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      className={`${styles.actionBtn} ${styles.rejectBtn}`}
-                      onClick={() => setActionModal({ isOpen: true, type: 'rejected', req })}
-                    >
-                      <XCircle size={16} style={{ display: 'inline', marginBottom: '-3px' }}/> Reprovar
-                    </Button>
-                  </>
-                )}
+                      {/* Link para o whatsapp no telefone */}
+                      {req.telefone ? (
+                        <a
+                          href={getWhatsAppLink(req.telefone, req.nome_adotante)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`${styles.detailItem} ${styles.wppLink}`}
+                          title="Chamar no WhatsApp"
+                        >
+                          <MessageCircle size={16} />
+                          <span>{req.telefone}</span>
+                        </a>
+                      ) : (
+                        <div className={styles.detailItem}>
+                          <Phone size={16} />
+                          <span>Sem telefone</span>
+                        </div>
+                      )}
 
-                <Button variant="secondary" size="sm" className={styles.viewButton} onClick={() => setSelectedReq(req)}>
-                  <Eye size={18} /> Ver Ficha
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+                      <div className={styles.detailItem}>
+                        <Calendar size={16} />
+                        <span>{formatDate(req.submittedAt)}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </CardBody>
+
+                <CardFooter className={styles.cardActions}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className={styles.viewButton}
+                    leftIcon={<Eye size={18} />}
+                    onClick={() => setSelectedReq(req)}
+                  >
+                    Ver ficha
+                  </Button>
+
+                  {req.status === 'pending' && (
+                    <div className={styles.decisionActions}>
+                      <Button
+                        size="sm"
+                        variant="success"
+                        className={`${styles.actionBtn} ${styles.approveBtn}`}
+                        leftIcon={<Check size={16} />}
+                        onClick={() => setActionModal({ isOpen: true, type: 'approved', req })}
+                      >
+                        Aprovar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        className={`${styles.actionBtn} ${styles.rejectBtn}`}
+                        leftIcon={<XCircle size={16} />}
+                        onClick={() => setActionModal({ isOpen: true, type: 'rejected', req })}
+                      >
+                        Reprovar
+                      </Button>
+                    </div>
+                  )}
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       )}
 

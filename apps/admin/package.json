@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "CLOUDFLARE_ENV=local CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV=false vite",
+    "dev:mock": "vite --mode mock",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

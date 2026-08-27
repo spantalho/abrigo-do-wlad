@@ -4,7 +4,7 @@ import { cn } from "../utils";
 
 type CardProps = HTMLAttributes<HTMLDivElement> & {
   variant?: "default" | "callout" | "image";
-  tone?: "neutral" | "info" | "success" | "warning" | "danger";
+  tone?: "neutral" | "muted" | "info" | "success" | "warning" | "danger";
   size?: "sm" | "md" | "lg";
   layout?: "stacked" | "inline";
   interactive?: boolean;
@@ -28,6 +28,7 @@ export function Card({
         styles.card,
         variant === "callout" && styles.callout,
         variant === "image" && styles.imageVariant,
+        tone === "muted" && styles.toneMuted,
         tone === "info" && styles.toneInfo,
         tone === "success" && styles.toneSuccess,
         tone === "warning" && styles.toneWarning,

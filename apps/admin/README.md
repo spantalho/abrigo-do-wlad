@@ -57,6 +57,28 @@ Componentes visuais reutilizáveis são consumidos do workspace `@jaci/ui`, em
 
 ## Desenvolvimento local
 
+### Painel isolado com dados simulados
+
+Para desenvolver a interface sem `.env`, Cloudflare Access, Firebase,
+reCAPTCHA, Cloudinary ou qualquer outro serviço externo, execute na raiz:
+
+```bash
+npm run dev:admin:mock
+```
+
+Esse comando inicia somente o Vite, ignora arquivos de ambiente e substitui a
+API administrativa por uma implementação local em memória. A sessão simulada
+usa o papel `developer`, e o cabeçalho exibe **Dados simulados** durante todo o
+uso. Cães, pontos de coleta, candidaturas, notificações, chaves e uploads podem
+ser consultados e alterados; os dados voltam ao estado inicial quando a página
+é recarregada.
+
+O modo mock só é aceito pelo servidor de desenvolvimento. Builds e deploys não
+podem ser executados nesse modo, e o Worker de produção não contém bypass de
+autenticação.
+
+### Integração local com o Worker
+
 Na raiz do monorepo:
 
 ```bash

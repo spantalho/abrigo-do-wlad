@@ -53,6 +53,11 @@
   text-transform: uppercase;
 }
 
+.mockTag {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .userArea {
   display: flex;
   align-items: center;
@@ -119,5 +124,13 @@
 
   .adminTag {
     padding-inline: 0.5rem !important;
+  }
+
+  .mockTag {
+    padding-inline: 0.4rem !important;
+  }
+
+  .mockTag > span:last-child {
+    display: none;
   }
 }

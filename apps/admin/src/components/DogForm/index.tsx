@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { useDropzone } from "react-dropzone";
-import { ArrowLeft, X, Save, UploadCloud } from "lucide-react";
+import { ArrowLeft, Images, PawPrint, Save, Tags, UploadCloud, X } from "lucide-react";
 import { Button } from "@jaci/ui/Button";
+import { Card, CardBody, CardContent, CardHeader, CardIcon } from "@jaci/ui/Card";
 import { Input, Textarea } from "@jaci/ui/Field";
 import * as SelectComponent from "@jaci/ui/Select";
 import {
@@ -231,17 +232,25 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
       />
 
       <div className={styles.headerArea}>
-        <Button type="button" variant="text" onClick={() => navigate("/admin/dog")} className={styles.backButton}>
-          <ArrowLeft size={20} /> Voltar
+        <Button type="button" variant="text" leftIcon={<ArrowLeft size={20} />} onClick={() => navigate("/admin/dog")} className={styles.backButton}>
+          Voltar
         </Button>
         <h1 className={styles.title}>{title}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className={styles.formGrid}>
 
-        <div className={styles.section}>
-          <h2>Dados Principais</h2>
-          <div className={styles.row}>
+        <Card className={styles.section} tone="muted" size="sm">
+          <CardBody className={styles.sectionBody}>
+            <CardHeader className={styles.sectionHeader}>
+              <CardIcon className={styles.sectionIcon}><PawPrint size={24} /></CardIcon>
+              <div className={styles.sectionHeading}>
+                <h2>Dados principais</h2>
+                <p>Identificação e perfil básico do animal.</p>
+              </div>
+            </CardHeader>
+            <CardContent className={styles.sectionContent}>
+              <div className={styles.row}>
             <div className={styles.inputGroup}>
               <label>Nome</label>
               <Input required value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})} />
@@ -250,8 +259,8 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
               <label>Idade (ex: "2 anos")</label>
               <Input required value={formData.idade} onChange={e => setFormData({...formData, idade: e.target.value})} />
             </div>
-          </div>
-          <div className={styles.row}>
+              </div>
+              <div className={styles.row}>
             <div className={styles.inputGroup}>
               <label>Categoria</label>
               <SelectComponent.Select
@@ -283,11 +292,21 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
                 </SelectComponent.SelectContent>
               </SelectComponent.Select>
             </div>
-          </div>
-        </div>
+              </div>
+            </CardContent>
+          </CardBody>
+        </Card>
 
-        <div className={styles.section}>
-          <h2>Fotos ({photos.length}/{MAX_DOG_PHOTOS})</h2>
+        <Card className={styles.section} tone="muted" size="sm">
+          <CardBody className={styles.sectionBody}>
+            <CardHeader className={styles.sectionHeader}>
+              <CardIcon className={styles.sectionIcon}><Images size={24} /></CardIcon>
+              <div className={styles.sectionHeading}>
+                <h2>Fotos ({photos.length}/{MAX_DOG_PHOTOS})</h2>
+                <p>Organize a capa e as imagens exibidas no perfil do animal.</p>
+              </div>
+            </CardHeader>
+            <CardContent className={styles.sectionContent}>
           {photos.length > 0 && (
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{display:'block', marginBottom:'0.5rem', fontWeight:600, color:'var(--text-secondary)'}}>
@@ -341,12 +360,22 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
                 </>
               )}
             </div>
-          </div>
-        </div>
+              </div>
+            </CardContent>
+          </CardBody>
+        </Card>
 
-        <div className={styles.section}>
-          <h2>Detalhes</h2>
-          <div className={styles.row}>
+        <Card className={styles.section} tone="muted" size="sm">
+          <CardBody className={styles.sectionBody}>
+            <CardHeader className={styles.sectionHeader}>
+              <CardIcon className={styles.sectionIcon}><Tags size={24} /></CardIcon>
+              <div className={styles.sectionHeading}>
+                <h2>Detalhes</h2>
+                <p>Características usadas na busca e na apresentação pública.</p>
+              </div>
+            </CardHeader>
+            <CardContent className={styles.sectionContent}>
+              <div className={styles.row}>
             <div className={styles.inputGroup}>
               <label>Cor</label>
               <SelectComponent.Select
@@ -369,9 +398,9 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
               <label>Temperamento</label>
               <Input value={formData.temperamento} onChange={e => setFormData({...formData, temperamento: e.target.value})} />
             </div>
-          </div>
+              </div>
 
-          <div className={styles.inputGroup}>
+              <div className={styles.inputGroup}>
             <label>Tags</label>
             <p id="tags-description" className={styles.fieldDescription}>
               Características curtas e úteis para busca e apresentação. Selecione até {MAX_DOG_TAGS}.
@@ -398,14 +427,14 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
                 );
               })}
             </div>
-          </div>
+              </div>
 
-          <div className={styles.inputGroup}>
+              <div className={styles.inputGroup}>
             <label>Link Instagram</label>
             <Input value={formData.instaLink} onChange={e => setFormData({...formData, instaLink: e.target.value})} />
-          </div>
+              </div>
 
-          <div className={styles.inputGroup}>
+              <div className={styles.inputGroup}>
             <label>Descrição</label>
             <p id="dog-description-help" className={styles.fieldDescription}>
               Descreva a personalidade do cão, seu comportamento e outras particularidades.
@@ -416,9 +445,9 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
               value={formData.descricaoCompleta}
               onChange={e => setFormData({...formData, descricaoCompleta: e.target.value})}
             />
-          </div>
+              </div>
 
-          <div className={styles.inputGroup}>
+              <div className={styles.inputGroup}>
             <label>Status</label>
             <SelectComponent.Select
               required
@@ -439,11 +468,19 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
                 ))}
               </SelectComponent.SelectContent>
             </SelectComponent.Select>
-          </div>
-        </div>
+              </div>
+            </CardContent>
+          </CardBody>
+        </Card>
 
-        <Button type="submit" size="lg" className={styles.submitButton} disabled={isSubmitting}>
-          {isSubmitting ? <span>{uploadProgress}</span> : <><Save size={20} /> {buttonLabel}</>}
+        <Button
+          type="submit"
+          size="lg"
+          className={styles.submitButton}
+          leftIcon={isSubmitting ? undefined : <Save size={20} />}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? uploadProgress : buttonLabel}
         </Button>
       </form>
     </div>

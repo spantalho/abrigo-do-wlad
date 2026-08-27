@@ -20,6 +20,11 @@
   --card-accent: var(--secondary);
 }
 
+.toneMuted {
+  --card-body-surface: var(--surface-muted);
+  --card-accent: var(--text-secondary);
+}
+
 .toneSuccess {
   --card-body-surface: var(--accent-green);
   --card-accent: var(--success);
