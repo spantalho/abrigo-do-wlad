@@ -11,7 +11,7 @@ import { getOptimizedImageUrl } from "@abrigo/media/cloudinary";
 import { preloadDogImages } from "@/utils/common";
 import { analytics } from "@/utils/analytics";
 
-import HeroSmall from "@/components/HeroSmall";
+import Banner from "@/components/Banner";
 import { Badge } from "@jaci/ui/Badge";
 import { Skeleton } from "@jaci/ui/Skeleton";
 import { Button } from "@jaci/ui/Button";
@@ -186,15 +186,7 @@ export default function Dogs() {
   const [loadingDogId, setLoadingDogId] = React.useState<string | null>(null);
   const trackedFiltersRef = React.useRef<string>("");
 
-  const heroImage = dailyDog?.fotos?.[0]
-    ? getOptimizedImageUrl(dailyDog.fotos[0], {
-        width: 1920,
-        height: 800,
-        quality: 80,
-        crop: "fill",
-        gravity: "auto",
-      })
-    : undefined;
+  const heroImage = dailyDog?.fotos?.[0];
 
   // Pré-carregamento de imagens da página atual
   React.useEffect(() => {
@@ -253,7 +245,7 @@ export default function Dogs() {
 
   return (
     <main>
-      <HeroSmall
+      <Banner
         image={heroImage as string}
         title="Nossos Doguinhos"
         badge="Amigos Fiéis"

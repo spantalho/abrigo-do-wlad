@@ -1,7 +1,6 @@
-.heroSmall {
+.banner {
   height: 55vh;
   min-height: 400px;
-  background: center/cover no-repeat;
   position: relative;
   display: flex;
   align-items: center;
@@ -11,7 +10,26 @@
   margin-bottom: 4rem;
 }
 
-.heroSmall .heroOverlay {
+.bannerBackground {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.bannerBackground,
+.bannerBackground img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.bannerBackground img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.banner .bannerOverlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -25,7 +43,7 @@
   z-index: 1;
 }
 
-.heroSmallContent {
+.bannerContent {
   position: relative;
   max-width: 800px;
   padding: 0 20px;
@@ -37,14 +55,14 @@
   gap: 1rem;
 }
 
-.heroSmallContent h1 {
+.bannerContent h1 {
   font-size: 3rem;
   font-weight: 700;
   line-height: 1.1;
   margin: 0;
 }
 
-.heroSmallContent p {
+.bannerContent p {
   font-size: 1.1rem;
   opacity: 0.9;
   max-width: 600px;
@@ -52,20 +70,20 @@
 
 /* media query */
 @media (max-width: 768px) {
-  .heroSmall {
+  .banner {
     padding-top: 100px;
     align-items: flex-start;
   }
 
-  .heroSmallContent {
+  .bannerContent {
     margin-top: 2rem;
   }
 
-  .heroSmallContent h1 {
+  .bannerContent h1 {
     font-size: 2.2rem;
   }
 
-  .heroSmallContent p {
+  .bannerContent p {
     font-size: 1rem;
   }
 }

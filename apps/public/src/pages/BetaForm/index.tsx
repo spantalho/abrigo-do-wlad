@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import * as Lucide from "lucide-react";
 
-import HeroSmall from "@/components/HeroSmall";
+import Banner from "@/components/Banner";
 import { Badge } from "@jaci/ui/Badge";
 import { Button } from "@jaci/ui/Button";
 import {
@@ -107,7 +107,7 @@ export default function BetaForm() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <HeroSmall
+      <Banner
         image={heroImage as string}
         badge="Questionário"
         title="Intenção de Adoção"

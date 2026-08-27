@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import * as CardComponent from "@jaci/ui/Card";
-import HeroSmall from "@/components/HeroSmall";
+import Banner from "@/components/Banner";
 import { Button } from "@jaci/ui/Button";
 import * as Dialog from "@jaci/ui/Dialog";
 import { ScrollIndicators } from "@/components/ScrollIndicators";
@@ -105,7 +105,7 @@ export default function Recycle() {
         sectionCount={2}
         labels={sectionLabels}
       />
-      <HeroSmall
+      <Banner
         image={heroImage as string}
         badge="Reciclagem Solidária"
         title="Sua tampinha vale vidas"

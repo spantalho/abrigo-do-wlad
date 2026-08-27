@@ -2,7 +2,7 @@ import { Link } from "react-router";
 import { useRef } from "react";
 import * as Lucide from "lucide-react";
 import * as CardComponent from "@jaci/ui/Card";
-import HeroSmall from "../../components/HeroSmall";
+import Banner from "../../components/Banner";
 import { Skeleton } from "@jaci/ui/Skeleton";
 import { ScrollIndicators } from "../../components/ScrollIndicators";
 
@@ -42,7 +42,7 @@ export default function About() {
         sectionCount={1}
         labels={["Trajetória"]}
       />
-      <HeroSmall
+      <Banner
         image={heroImage}
         badge="Nossa Trajetória"
         title="Uma história de amor e renúncia"

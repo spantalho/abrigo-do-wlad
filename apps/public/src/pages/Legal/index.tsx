@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import * as Lucide from "lucide-react";
 import * as CardComponent from "@jaci/ui/Card";
-import HeroSmall from "../../components/HeroSmall";
+import Banner from "../../components/Banner";
 import { ScrollIndicators } from "@/components/ScrollIndicators";
 
 import styles from "./Legal.module.css";
@@ -65,7 +65,7 @@ export default function PrivacyPolicy() {
         sectionCount={data.sections.length}
         labels={data.sections.map((s) => s.title)}
       />
-      <HeroSmall
+      <Banner
         image={heroImage as string}
         badge={data.badge}
         title={data.title}
