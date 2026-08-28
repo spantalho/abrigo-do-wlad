@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, Calendar, Check, Clock, Dog, Eye, Inbox, MessageCircle, Phone, Printer, XCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, Check, Clock, Dog, Eye, Inbox, Mail, MessageCircle, Phone, Printer, XCircle } from "lucide-react";
 import { Button } from "@jaci/ui/Button";
 import { Badge } from "@jaci/ui/Badge";
 import { Card, CardBody, CardContent, CardFooter, CardHeader, CardTitle } from "@jaci/ui/Card";
@@ -12,8 +12,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@jaci/ui/Dialog";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@jaci/ui/Select";
 import { Skeleton } from "@jaci/ui/Skeleton";
-import { Stepper } from "@jaci/ui/Stepper";
 import {
   ADOPTION_REVIEW_STEPS,
   AdoptionDetailsSection,
@@ -35,6 +43,81 @@ interface ExpirationPresentation {
 }
 
 const DAY_IN_MS = 86_400_000;
+
+interface ReviewSectionNavigationProps {
+  activeStep: number;
+  onStepChange: (step: number) => void;
+}
+
+function ReviewSectionNavigation({
+  activeStep,
+  onStepChange,
+}: ReviewSectionNavigationProps) {
+  const activeItemRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    activeItemRef.current?.scrollIntoView({ block: "nearest" });
+  }, [activeStep]);
+
+  return (
+    <>
+      <div className={styles.mobileSectionPicker}>
+        <label className={styles.mobileSectionLabel} htmlFor="adoption-review-section">
+          Seção
+        </label>
+        <Select
+          value={String(activeStep)}
+          onValueChange={(value) => onStepChange(Number(value))}
+        >
+          <SelectTrigger id="adoption-review-section" className={styles.mobileSectionTrigger}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Seções da ficha</SelectLabel>
+              {ADOPTION_REVIEW_STEPS.map(({ label }, index) => (
+                <SelectItem
+                  key={label}
+                  value={String(index)}
+                  className={styles.mobileSectionOption}
+                >
+                  {index + 1}. {label}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <nav className={styles.desktopSectionNavigation} aria-label="Seções da ficha de adoção">
+        <p className={styles.sectionNavigationLabel}>Seções da ficha</p>
+        <ol className={styles.sectionNavigationList}>
+          {ADOPTION_REVIEW_STEPS.map(({ label, icon: Icon }, index) => {
+            const isActive = activeStep === index;
+
+            return (
+              <li key={label}>
+                <button
+                  ref={isActive ? activeItemRef : undefined}
+                  type="button"
+                  className={`${styles.sectionNavigationItem} ${isActive ? styles.sectionNavigationItemActive : ""}`}
+                  aria-current={isActive ? "step" : undefined}
+                  onClick={() => onStepChange(index)}
+                >
+                  <span className={styles.sectionNavigationNumber} aria-hidden="true">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <Icon className={styles.sectionNavigationIcon} size={17} aria-hidden="true" />
+                  <span>{label}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </nav>
+    </>
+  );
+}
 
 function getExpirationPresentation(expiresAt?: string): ExpirationPresentation | null {
   if (!expiresAt) return null;
@@ -86,7 +169,7 @@ export default function AdoptionsDashboard() {
   const [activeReviewStep, setActiveReviewStep] = useState(0);
   const detailsCache = useRef(new Map<string, AdoptionRequest>());
   const detailRequestToken = useRef(0);
-  const reviewBodyRef = useRef<HTMLDivElement>(null);
+  const reviewMainRef = useRef<HTMLDivElement>(null);
 
   const [actionModal, setActionModal] = useState<{ isOpen: boolean, type: 'approved' | 'rejected', req: AdoptionRequestSummary | null }>({
     isOpen: false, type: 'approved', req: null
@@ -208,7 +291,7 @@ export default function AdoptionsDashboard() {
 
   const changeReviewStep = (step: number) => {
     setActiveReviewStep(step);
-    reviewBodyRef.current?.scrollTo({ top: 0 });
+    reviewMainRef.current?.scrollTo({ top: 0 });
   };
 
   const openPrintView = (id: string) => {
@@ -218,6 +301,14 @@ export default function AdoptionsDashboard() {
       "noopener,noreferrer",
     );
   };
+
+  const selectedStatus = selectedReq?.status ?? selectedSummary?.status;
+  const selectedExpiration = getExpirationPresentation(selectedSummary?.expiresAt);
+  const selectedWhatsAppLink = getWhatsAppLink(
+    selectedReq?.telefone ?? selectedSummary?.telefone,
+    selectedReq?.nome_adotante ?? selectedSummary?.nome_adotante,
+  );
+  const currentReviewStep = ADOPTION_REVIEW_STEPS[activeReviewStep] ?? ADOPTION_REVIEW_STEPS[0];
 
   return (
     <div className={styles.container}>
@@ -347,16 +438,82 @@ export default function AdoptionsDashboard() {
       )}
 
       <Dialog open={Boolean(selectedSummary)} onOpenChange={(open) => !open && closeReview()}>
-        <DialogContent size="xl" layout="structured">
-          <DialogHeader className={styles.modalHeader}>
-            <DialogTitle>Ficha de Adoção</DialogTitle>
-            <DialogDescription className={styles.modalSubtitle}>
-              {selectedSummary?.nome_adotante || "Candidato sem nome"}
-              {selectedReq && ` · Seção ${activeReviewStep + 1} de ${ADOPTION_REVIEW_STEPS.length}`}
-            </DialogDescription>
+        <DialogContent
+          size="xl"
+          layout="structured"
+          mobileMode="fullscreen"
+          className={selectedReq ? styles.workspaceDialog : undefined}
+        >
+          <DialogHeader className={styles.workspaceHeader}>
+            <div className={styles.workspaceHeaderMain}>
+              <div className={styles.workspaceIdentity}>
+                <span className={styles.workspaceEyebrow}>Revisão da solicitação</span>
+                <div className={styles.workspaceTitleRow}>
+                  <DialogTitle className={styles.workspaceTitle}>
+                    {selectedSummary?.nome_adotante || "Candidato sem nome"}
+                  </DialogTitle>
+                  {getStatusBadge(selectedStatus)}
+                </div>
+                <DialogDescription className={styles.workspaceMeta}>
+                  <span>
+                    <Dog size={15} aria-hidden="true" />
+                    {selectedSummary?.animal_especifico || "Qualquer cãozinho"}
+                  </span>
+                  <span>
+                    <Calendar size={15} aria-hidden="true" />
+                    {formatDate(selectedSummary?.submittedAt)}
+                  </span>
+                  {selectedExpiration && (
+                    <span title={selectedExpiration.title}>
+                      <Clock size={15} aria-hidden="true" />
+                      {selectedExpiration.label}
+                    </span>
+                  )}
+                </DialogDescription>
+              </div>
+
+              {selectedSummary && (
+                <div className={styles.workspaceUtilities} role="toolbar" aria-label="Ações da ficha">
+                  {selectedWhatsAppLink && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<MessageCircle size={17} />}
+                      onClick={() => window.open(selectedWhatsAppLink, "_blank", "noopener,noreferrer")}
+                      title="Conversar pelo WhatsApp"
+                    >
+                      WhatsApp
+                    </Button>
+                  )}
+                  {selectedReq?.email && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<Mail size={17} />}
+                      onClick={() => { window.location.href = `mailto:${selectedReq.email}`; }}
+                      title="Enviar e-mail"
+                    >
+                      E-mail
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon-sm"
+                    onClick={() => openPrintView(selectedSummary.id)}
+                    aria-label="Imprimir ficha"
+                    title="Imprimir ficha"
+                  >
+                    <Printer size={17} />
+                  </Button>
+                </div>
+              )}
+            </div>
           </DialogHeader>
 
-          <DialogBody ref={reviewBodyRef} className={styles.reviewContent}>
+          <DialogBody scrollable={false} className={styles.workspaceBody}>
             {detailError && selectedSummary ? (
               <div className={styles.detailState}>
                 <Card variant="callout" tone="danger" size="sm">
@@ -382,49 +539,94 @@ export default function AdoptionsDashboard() {
                 </div>
               </div>
             ) : (
-              <Stepper
-                className={styles.reviewStepper}
-                panelClassName={styles.reviewPanel}
-                size="sm"
-                steps={ADOPTION_REVIEW_STEPS.map(({ label, icon: Icon }) => ({
-                  label,
-                  icon: <Icon size={17} />,
-                }))}
-                activeStep={activeReviewStep}
-                onStepChange={changeReviewStep}
-                navigationLabel="Seções da ficha de adoção"
-              >
-                <div className={styles.stepBody}>
-                  <AdoptionDetailsSection
-                    application={selectedReq}
-                    step={ADOPTION_REVIEW_STEPS[activeReviewStep] ?? ADOPTION_REVIEW_STEPS[0]}
-                  />
+              <div className={styles.workspaceLayout}>
+                <ReviewSectionNavigation
+                  activeStep={activeReviewStep}
+                  onStepChange={changeReviewStep}
+                />
+                <div
+                  ref={reviewMainRef}
+                  className={styles.workspaceMain}
+                  role="region"
+                  aria-labelledby="active-review-section-title"
+                  tabIndex={-1}
+                >
+                  <div className={styles.workspaceSectionHeader}>
+                    <div>
+                      <span className={styles.workspaceSectionEyebrow}>
+                        Seção {activeReviewStep + 1} de {ADOPTION_REVIEW_STEPS.length}
+                      </span>
+                      <h3 id="active-review-section-title">{currentReviewStep.label}</h3>
+                    </div>
+                    <Badge variant="outline" size="sm">
+                      {currentReviewStep.fields.length} respostas
+                    </Badge>
+                  </div>
+                  <div className={styles.stepBody}>
+                    <AdoptionDetailsSection
+                      application={selectedReq}
+                      step={currentReviewStep}
+                    />
+                  </div>
                 </div>
-              </Stepper>
+              </div>
             )}
           </DialogBody>
 
           {selectedReq && (
-            <DialogFooter className={styles.stepNavigation}>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                leftIcon={<ArrowLeft size={17} />}
-                disabled={activeReviewStep === 0}
-                onClick={() => changeReviewStep(Math.max(0, activeReviewStep - 1))}
-              >
-                Anterior
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                rightIcon={<ArrowRight size={17} />}
-                disabled={activeReviewStep === ADOPTION_REVIEW_STEPS.length - 1}
-                onClick={() => changeReviewStep(Math.min(ADOPTION_REVIEW_STEPS.length - 1, activeReviewStep + 1))}
-              >
-                Próxima
-              </Button>
+            <DialogFooter className={styles.workspaceFooter}>
+              <div className={styles.workspaceFooterNavigation}>
+                <span className={styles.workspaceFooterProgress}>
+                  {activeReviewStep + 1} / {ADOPTION_REVIEW_STEPS.length}
+                </span>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  leftIcon={<ArrowLeft size={17} />}
+                  disabled={activeReviewStep === 0}
+                  onClick={() => changeReviewStep(Math.max(0, activeReviewStep - 1))}
+                >
+                  Anterior
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  rightIcon={<ArrowRight size={17} />}
+                  disabled={activeReviewStep === ADOPTION_REVIEW_STEPS.length - 1}
+                  onClick={() => changeReviewStep(Math.min(ADOPTION_REVIEW_STEPS.length - 1, activeReviewStep + 1))}
+                >
+                  Próxima
+                </Button>
+              </div>
+
+              {selectedStatus === "pending" ? (
+                <div className={styles.workspaceDecisionActions}>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    size="sm"
+                    leftIcon={<XCircle size={16} />}
+                    onClick={() => setActionModal({ isOpen: true, type: "rejected", req: selectedSummary })}
+                  >
+                    Reprovar
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="success"
+                    size="sm"
+                    leftIcon={<Check size={16} />}
+                    onClick={() => setActionModal({ isOpen: true, type: "approved", req: selectedSummary })}
+                  >
+                    Aprovar
+                  </Button>
+                </div>
+              ) : (
+                <div className={styles.workspaceCompletedState}>
+                  <span>Análise concluída</span>
+                  {getStatusBadge(selectedStatus)}
+                </div>
+              )}
             </DialogFooter>
           )}
         </DialogContent>

@@ -8,11 +8,13 @@ import { X } from "lucide-react";
 
 export type DialogSize = "sm" | "md" | "lg" | "xl" | "fullscreen-mobile";
 export type DialogLayout = "default" | "structured";
+export type DialogMobileMode = "default" | "fullscreen";
 
 export interface DialogContentProps
   extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
   size?: DialogSize;
   layout?: DialogLayout;
+  mobileMode?: DialogMobileMode;
 }
 
 const sizeClasses: Record<DialogSize, string> = {
@@ -44,7 +46,7 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 const DialogContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
   DialogContentProps
->(({ className, children, size, layout = "default", ...props }, ref) => (
+>(({ className, children, size, layout = "default", mobileMode = "default", ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -53,6 +55,7 @@ const DialogContent = React.forwardRef<
         styles.content,
         size && sizeClasses[size],
         layout === "structured" && styles.structured,
+        mobileMode === "fullscreen" && styles.mobileFullscreen,
         className,
       )}
       {...props}
