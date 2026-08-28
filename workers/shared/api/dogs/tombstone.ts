@@ -17,8 +17,12 @@ export interface DogTombstone {
 
 export type DogTombstoneInput = Omit<DogTombstone, "schemaVersion">;
 
+export function isValidPublicDogId(id: string): boolean {
+  return DOG_PUBLIC_ID_PATTERN.test(id);
+}
+
 function dogTombstoneKey(id: string): string {
-  if (!DOG_PUBLIC_ID_PATTERN.test(id)) {
+  if (!isValidPublicDogId(id)) {
     throw new Error("Invalid public dog ID.");
   }
   return `${DOG_TOMBSTONE_KEY_PREFIX}${id}`;
@@ -30,7 +34,7 @@ function isDogTombstone(value: unknown): value is DogTombstone {
   return (
     tombstone.schemaVersion === DOG_TOMBSTONE_SCHEMA_VERSION &&
     typeof tombstone.id === "string" &&
-    DOG_PUBLIC_ID_PATTERN.test(tombstone.id) &&
+    isValidPublicDogId(tombstone.id) &&
     typeof tombstone.nome === "string" &&
     tombstone.nome.trim().length > 0 &&
     (tombstone.status === "adopted" || tombstone.status === "unavailable") &&

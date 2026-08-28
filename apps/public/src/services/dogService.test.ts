@@ -3,7 +3,9 @@ import { afterEach, test, vi } from "vitest";
 
 import {
   DogFeedVersionError,
+  DogProfileNotFoundError,
   getDogFeedPage,
+  getDogProfile,
 } from "./dogService";
 
 afterEach(() => {
@@ -49,4 +51,55 @@ test("getDogFeedPage identifies an expired feed version", async () => {
     () => getDogFeedPage({}, 2, 6, "2026-08-20"),
     DogFeedVersionError,
   );
+});
+
+test("getDogProfile loads one available dog by public id", async () => {
+  const dog = {
+    id: "dog-1",
+    nome: "Paçoca",
+    idade: "2 anos",
+    cateIdade: "adulto",
+    sexo: "Macho",
+    temperamento: "Dócil",
+    tags: ["docil"],
+    status: "Vacinado e Castrado",
+    fotos: [],
+    cor: "caramelo",
+  };
+  const fetchMock = vi.fn<typeof fetch>(async () => Response.json({
+    state: "available",
+    dog,
+  }));
+  vi.stubGlobal("fetch", fetchMock);
+
+  assert.deepEqual(await getDogProfile("dog-1"), { state: "available", dog });
+  assert.equal(String(fetchMock.mock.calls[0]?.[0]), "/api/dogs/dog-1");
+});
+
+test("getDogProfile accepts a 410 tombstone response", async () => {
+  const tombstone = {
+    schemaVersion: 1,
+    id: "dog-1",
+    nome: "Paçoca",
+    status: "adopted",
+    removedAt: "2026-08-28T15:00:00.000Z",
+  };
+  vi.stubGlobal("fetch", vi.fn<typeof fetch>(async () => Response.json({
+    state: "unavailable",
+    tombstone,
+  }, { status: 410 })));
+
+  assert.deepEqual(await getDogProfile("dog-1"), {
+    state: "unavailable",
+    tombstone,
+  });
+});
+
+test("getDogProfile distinguishes an unknown dog", async () => {
+  vi.stubGlobal("fetch", vi.fn<typeof fetch>(async () => Response.json(
+    { message: "Dog not found." },
+    { status: 404 },
+  )));
+
+  await assert.rejects(() => getDogProfile("missing"), DogProfileNotFoundError);
 });

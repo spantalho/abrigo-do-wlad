@@ -23,6 +23,8 @@ export function AppRoutes() {
         <Route path="/sobre" element={<About />} />
         <Route path="/tampinhas" element={<Recycle />} />
         <Route path="/caes" element={<Dogs />} />
+        <Route path="/caes/:dogId" element={<Dogs />} />
+        <Route path="/caes/:dogId/:slug" element={<Dogs />} />
 
         <Route
           path="/formulario"

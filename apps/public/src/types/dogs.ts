@@ -40,6 +40,18 @@ export interface Dog {
   createdAt?: Date;
 }
 
+export interface DogTombstone {
+  schemaVersion: 1;
+  id: string;
+  nome: string;
+  status: "adopted" | "unavailable";
+  removedAt: string;
+}
+
+export type DogProfile =
+  | { state: "available"; dog: Dog }
+  | { state: "unavailable"; tombstone: DogTombstone };
+
 type FilterValue<T> = T | "all";
 
 export type DogFilters = {

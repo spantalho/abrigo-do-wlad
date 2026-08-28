@@ -90,6 +90,50 @@ test("GET /api/dogs returns a filtered page from the KV feed", async () => {
   });
 });
 
+test("GET /api/dogs/:id returns one dog independently from pagination", async () => {
+  const currentDog = {
+    id: "dog-1",
+    nome: "Bidu",
+    idade: "2 anos",
+    cateIdade: "adulto",
+    sexo: "Macho",
+    temperamento: "Dócil",
+    tags: ["docil"],
+    status: "Vacinado e Castrado",
+    fotos: [],
+    cor: "caramelo",
+  };
+  const dogEnv: AppEnv = {
+    ...createEnv(),
+    KV: {
+      async get(key): Promise<string | null> {
+        if (key === "dogs-tombstone:dog-1") return null;
+        if (key === "dogs-feed:current") {
+          return JSON.stringify({
+            schemaVersion: 1,
+            version: "2026-08-28",
+            generatedAt: "2026-08-28T03:00:00.000Z",
+            dogs: [currentDog],
+          });
+        }
+        return null;
+      },
+      async put(): Promise<void> {},
+    },
+  };
+
+  const response = await worker.fetch(
+    new Request("https://example.com/api/dogs/dog-1"),
+    dogEnv,
+  );
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    state: "available",
+    dog: currentDog,
+  });
+});
+
 test("unknown API routes return JSON 404 without falling back to the SPA", async () => {
   const response = await worker.fetch(
     new Request("https://example.com/api/unknown"),

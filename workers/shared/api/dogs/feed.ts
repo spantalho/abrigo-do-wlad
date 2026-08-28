@@ -220,6 +220,10 @@ async function readDogFeed(
   return feed;
 }
 
+export async function getCurrentDogFeed(env: CloudflareEnv): Promise<DogFeed> {
+  return (await readDogFeed(env)) ?? updateDogFeed(env);
+}
+
 function positiveInteger(
   value: string | null,
   fallback: number,
@@ -296,16 +300,14 @@ export async function getDogFeedResponse(
   }
 
   try {
-    let feed = await readDogFeed(env, requestedVersion);
-    if (!feed && requestedVersion) {
+    const feed = requestedVersion
+      ? await readDogFeed(env, requestedVersion)
+      : await getCurrentDogFeed(env);
+    if (!feed) {
       return jsonResponse(409, {
         message: "Requested feed version is no longer available.",
       });
     }
-    if (!feed) {
-      feed = await updateDogFeed(env);
-    }
-
     const page = paginateDogFeed(feed, url);
     if (!page) {
       return jsonResponse(400, { message: "Invalid dog feed parameters." });

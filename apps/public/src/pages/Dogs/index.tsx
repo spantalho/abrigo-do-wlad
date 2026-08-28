@@ -1,8 +1,13 @@
 import * as React from "react";
 import * as Lucide from "lucide-react";
+import { useLocation, useNavigate, useParams } from "react-router";
 
 import { DogModal } from "./components/DogModal";
 import { DogCard } from "./components/DogCard";
+import {
+  DogRouteStatusModal,
+  type DogRouteNotice,
+} from "./components/DogRouteStatusModal";
 
 import { CORES_MAP, TAGS_MAP, type Dog, type DogFilters } from "@/types/dogs";
 import { useDogSearch } from "@/hooks/useDogSearch";
@@ -10,6 +15,11 @@ import { useDailyDog } from "@/hooks/useDailyDog";
 import { getOptimizedImageUrl } from "@abrigo/media/cloudinary";
 import { preloadDogImages } from "@/utils/common";
 import { analytics } from "@/utils/analytics";
+import { dogProfilePath } from "@/utils/dogUrl";
+import {
+  DogProfileNotFoundError,
+  getDogProfile,
+} from "@/services/dogService";
 
 import Banner from "@/components/Banner";
 import { Badge } from "@jaci/ui/Badge";
@@ -167,6 +177,9 @@ function DogFiltersComponent({
 }
 
 export default function Dogs() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { dogId } = useParams<{ dogId?: string; slug?: string }>();
   const {
     dogs,
     loading,
@@ -183,10 +196,64 @@ export default function Dogs() {
   const dailyDog = useDailyDog();
 
   const [selectedDog, setSelectedDog] = React.useState<Dog | null>(null);
+  const [routeNotice, setRouteNotice] = React.useState<DogRouteNotice | null>(null);
   const [loadingDogId, setLoadingDogId] = React.useState<string | null>(null);
   const trackedFiltersRef = React.useRef<string>("");
 
   const heroImage = dailyDog?.fotos?.[0];
+
+  React.useEffect(() => {
+    if (!dogId) {
+      setSelectedDog(null);
+      setRouteNotice(null);
+      return;
+    }
+
+    const requestedDogId = dogId;
+    const controller = new AbortController();
+    setSelectedDog((currentDog) => currentDog?.id === requestedDogId ? currentDog : null);
+    setRouteNotice(null);
+
+    async function fetchProfile() {
+      try {
+        const profile = await getDogProfile(requestedDogId, controller.signal);
+        if (controller.signal.aborted) return;
+        if (profile.state === "available") {
+          setSelectedDog(profile.dog);
+          setRouteNotice(null);
+        } else {
+          setSelectedDog(null);
+          setRouteNotice({ kind: "tombstone", tombstone: profile.tombstone });
+        }
+      } catch (profileError) {
+        if (controller.signal.aborted) return;
+        setSelectedDog(null);
+        if (profileError instanceof DogProfileNotFoundError) {
+          setRouteNotice({ kind: "not-found" });
+        } else {
+          console.error("Erro ao carregar o perfil do cachorro:", profileError);
+          setRouteNotice({ kind: "error" });
+        }
+      }
+    }
+
+    void fetchProfile();
+    return () => controller.abort();
+  }, [dogId]);
+
+  const routeDogName = selectedDog && selectedDog.id === dogId
+    ? selectedDog.nome
+    : routeNotice?.kind === "tombstone"
+      ? routeNotice.tombstone.nome
+      : null;
+
+  React.useEffect(() => {
+    if (!dogId || !routeDogName) return;
+    const canonicalPath = dogProfilePath(dogId, routeDogName);
+    if (location.pathname !== canonicalPath) {
+      void navigate(canonicalPath, { replace: true });
+    }
+  }, [dogId, location.pathname, navigate, routeDogName]);
 
   // Pré-carregamento de imagens da página atual
   React.useEffect(() => {
@@ -230,17 +297,24 @@ export default function Dogs() {
 
   const handleDogClick = async (dog: Dog) => {
     setLoadingDogId(dog.id);
+    setRouteNotice(null);
+    setSelectedDog(dog);
+    void navigate(dogProfilePath(dog.id, dog.nome));
     try {
       if (dog.fotos && dog.fotos.length > 0) {
         await preloadDogImages(dog.fotos);
       }
-      setSelectedDog(dog);
     } catch (error) {
       console.error("Erro no preload:", error);
-      setSelectedDog(dog);
     } finally {
       setLoadingDogId(null);
     }
+  };
+
+  const handleRouteClose = () => {
+    setSelectedDog(null);
+    setRouteNotice(null);
+    void navigate("/caes");
   };
 
   return (
@@ -337,8 +411,9 @@ export default function Dogs() {
             : null
         }
         isOpen={!!selectedDog}
-        onClose={() => setSelectedDog(null)}
+        onClose={handleRouteClose}
       />
+      <DogRouteStatusModal notice={routeNotice} onClose={handleRouteClose} />
     </main>
   );
 }
