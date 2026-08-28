@@ -25,7 +25,7 @@ export default function PixModal() {
   };
 
   return (
-    <Dialog.DialogContent>
+    <Dialog.DialogContent size="fullscreen-mobile">
       <Dialog.DialogHeader>
         <Dialog.DialogTitle>
           Faça uma doação via PIX. Qualquer valor é bem-vindo! :{")"}

@@ -10,7 +10,6 @@
 .carouselContainer {
   position: sticky;
   top: 0;
-  flex: 1.3;
   height: 85vh;
   max-height: 100%;
   display: flex;
@@ -18,7 +17,6 @@
   justify-content: center;
   overflow: visible;
   background-color: rgba(0, 0, 0, 0.435);
-  border-radius: var(--radius-lg);
 }
 
 .carouselImage {
@@ -47,7 +45,6 @@
 
 .carouselContainer:hover .carouselButtons {
   bottom: -2.1rem;
-  transition: all 0.3s ease-in-out;
 }
 
 .carouselNavContainer {
@@ -58,9 +55,7 @@
 
 .carouselNav {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
   padding: 0.5rem 0.5rem;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   background-color: var(--surface-card);
@@ -87,8 +82,6 @@
   height: 7px;
   border-radius: var(--radius-lg);
   background-color: var(--dot-inactive);
-  padding: 0;
-  cursor: pointer;
   transition: all 0.2s ease-in-out;
 }
 
@@ -128,16 +121,19 @@
 }
 
 .modalContent {
-  max-width: 1300px;
-  width: 95vw;
-  height: 85vh;
   padding: 0;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
   background-color: transparent;
   border: none;
   box-shadow: none;
+}
+
+@media (min-width: 769px) {
+  .modalContent {
+    width: 95vw;
+    max-width: 1300px;
+    height: 85vh;
+  }
 }
 
 .closeButton {
@@ -150,7 +146,6 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  width: 100%;
 }
 
 .title {
@@ -181,20 +176,17 @@
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
-  width: fit-content;
 }
 
 .description {
   color: var(--text-secondary);
   line-height: 1.6;
-  font-size: medium;
   text-align: justify;
 }
 
 .badges {
   display: flex;
   flex-wrap: wrap;
-  justify-content: start;
   gap: 8px;
 }
 
@@ -210,40 +202,28 @@
   width: 100%;
   justify-content: flex-end;
   align-items: center;
-  gap: 10px;
-}
-
-.footerBtn {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
 }
 
 /* media query */
 @media (max-width: 768px) {
   .modalScrollArea {
     --scroll-shadow-inline-start: 0;
+
+    border-radius: inherit;
   }
 
   .modalContent {
-    overflow: hidden;
     background-color: var(--surface-card);
   }
 
   .contentGrid {
     grid-template-columns: 1fr;
-    height: auto;
-    overflow: visible;
   }
 
   .carouselContainer {
     position: relative;
-    top: auto;
     height: 450px;
     max-height: none;
-    min-height: auto;
   }
 
   .carouselImage {
@@ -253,8 +233,6 @@
   .details {
     padding: 1.5rem;
     min-height: 0;
-    height: auto;
-    overflow: visible;
     text-align: center;
     justify-content: center;
     align-items: center;
@@ -263,11 +241,8 @@
 
   .carouselButtons {
     flex-direction: row;
-    width: 100%;
-    height: auto;
     bottom: 0 !important;
     justify-content: space-between;
-    align-items: center;
   }
 
   .carouselNav {
@@ -277,16 +252,8 @@
     backdrop-filter: var(--blur);
   }
 
-  .footerBtn {
-    flex-direction: column;
-  }
-
   .footer {
     justify-content: center;
-  }
-
-  .description {
-    font-size: 1rem;
   }
 
   .title {

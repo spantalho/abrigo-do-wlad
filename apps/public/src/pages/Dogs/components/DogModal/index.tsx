@@ -48,7 +48,7 @@ export function DogModal({ dog: parentDog, isOpen, onClose }: ModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className={styles.modalContent}>
+      <DialogContent size="fullscreen-mobile" className={styles.modalContent}>
         <div
           style={{
             position: "absolute",
@@ -249,22 +249,20 @@ export function DogModal({ dog: parentDog, isOpen, onClose }: ModalProps) {
               </div>
 
               <div className={styles.footer}>
-                <div className={styles.footerBtn}>
-                  <Link
-                    to={`/beta/formulario?pet=${encodeURIComponent(dog.nome)}`}
+                <Link
+                  to={`/beta/formulario?pet=${encodeURIComponent(dog.nome)}`}
+                >
+                  <Button
+                    leftIcon={<Lucide.Heart />}
+                    size={`${isDesktop ? "md" : "lg"}`}
+                    variant="primary"
+                    onClick={() =>
+                      analytics.trackConversionIntent("adopt_form")
+                    }
                   >
-                    <Button
-                      leftIcon={<Lucide.Heart />}
-                      size={`${isDesktop ? "md" : "lg"}`}
-                      variant="primary"
-                      onClick={() =>
-                        analytics.trackConversionIntent("adopt_form")
-                      }
-                    >
-                      Tenho Interesse
-                    </Button>
-                  </Link>
-                </div>
+                    Tenho Interesse
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

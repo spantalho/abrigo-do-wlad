@@ -3,8 +3,16 @@ import { ArrowLeft, ArrowRight, Calendar, Check, Clock, Dog, Eye, Inbox, Message
 import { Button } from "@jaci/ui/Button";
 import { Badge } from "@jaci/ui/Badge";
 import { Card, CardBody, CardContent, CardFooter, CardHeader, CardTitle } from "@jaci/ui/Card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@jaci/ui/Dialog";
-import { ScrollArea } from "@jaci/ui/ScrollArea";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@jaci/ui/Dialog";
+import { Skeleton } from "@jaci/ui/Skeleton";
 import { Stepper } from "@jaci/ui/Stepper";
 import {
   ADOPTION_REVIEW_STEPS,
@@ -78,6 +86,7 @@ export default function AdoptionsDashboard() {
   const [activeReviewStep, setActiveReviewStep] = useState(0);
   const detailsCache = useRef(new Map<string, AdoptionRequest>());
   const detailRequestToken = useRef(0);
+  const reviewBodyRef = useRef<HTMLDivElement>(null);
 
   const [actionModal, setActionModal] = useState<{ isOpen: boolean, type: 'approved' | 'rejected', req: AdoptionRequestSummary | null }>({
     isOpen: false, type: 'approved', req: null
@@ -195,6 +204,11 @@ export default function AdoptionsDashboard() {
     setSelectedReq(null);
     setDetailError(null);
     setActiveReviewStep(0);
+  };
+
+  const changeReviewStep = (step: number) => {
+    setActiveReviewStep(step);
+    reviewBodyRef.current?.scrollTo({ top: 0 });
   };
 
   const openPrintView = (id: string) => {
@@ -333,18 +347,16 @@ export default function AdoptionsDashboard() {
       )}
 
       <Dialog open={Boolean(selectedSummary)} onOpenChange={(open) => !open && closeReview()}>
-        <DialogContent className={styles.modalContainer}>
-          <div className={styles.modalHeader}>
-            <DialogHeader>
-              <DialogTitle>Ficha de Adoção</DialogTitle>
-            </DialogHeader>
-            <p className={styles.modalSubtitle}>
+        <DialogContent size="xl" layout="structured">
+          <DialogHeader className={styles.modalHeader}>
+            <DialogTitle>Ficha de Adoção</DialogTitle>
+            <DialogDescription className={styles.modalSubtitle}>
               {selectedSummary?.nome_adotante || "Candidato sem nome"}
               {selectedReq && ` · Seção ${activeReviewStep + 1} de ${ADOPTION_REVIEW_STEPS.length}`}
-            </p>
-          </div>
+            </DialogDescription>
+          </DialogHeader>
 
-          <div className={styles.reviewContent}>
+          <DialogBody ref={reviewBodyRef} className={styles.reviewContent}>
             {detailError && selectedSummary ? (
               <div className={styles.detailState}>
                 <Card variant="callout" tone="danger" size="sm">
@@ -358,7 +370,17 @@ export default function AdoptionsDashboard() {
                 </Button>
               </div>
             ) : !selectedReq ? (
-              <div className={styles.detailState}>Carregando respostas...</div>
+              <div className={styles.loadingState} role="status" aria-live="polite">
+                <span>Carregando respostas...</span>
+                <div className={styles.skeletonGrid} aria-hidden="true">
+                  {[0, 1, 2, 3].map((item) => (
+                    <div key={item} className={styles.skeletonItem}>
+                      <Skeleton className={styles.skeletonLabel} />
+                      <Skeleton className={styles.skeletonValue} />
+                    </div>
+                  ))}
+                </div>
+              </div>
             ) : (
               <Stepper
                 className={styles.reviewStepper}
@@ -369,42 +391,42 @@ export default function AdoptionsDashboard() {
                   icon: <Icon size={17} />,
                 }))}
                 activeStep={activeReviewStep}
-                onStepChange={setActiveReviewStep}
+                onStepChange={changeReviewStep}
                 navigationLabel="Seções da ficha de adoção"
               >
-                <ScrollArea className={styles.stepScrollArea} showScrollShadows>
-                  <div className={styles.stepBody}>
-                    <AdoptionDetailsSection
-                      application={selectedReq}
-                      step={ADOPTION_REVIEW_STEPS[activeReviewStep] ?? ADOPTION_REVIEW_STEPS[0]}
-                    />
-                  </div>
-                </ScrollArea>
-
-                <div className={styles.stepNavigation}>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    leftIcon={<ArrowLeft size={17} />}
-                    disabled={activeReviewStep === 0}
-                    onClick={() => setActiveReviewStep((step) => Math.max(0, step - 1))}
-                  >
-                    Anterior
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    rightIcon={<ArrowRight size={17} />}
-                    disabled={activeReviewStep === ADOPTION_REVIEW_STEPS.length - 1}
-                    onClick={() => setActiveReviewStep((step) => Math.min(ADOPTION_REVIEW_STEPS.length - 1, step + 1))}
-                  >
-                    Próxima
-                  </Button>
+                <div className={styles.stepBody}>
+                  <AdoptionDetailsSection
+                    application={selectedReq}
+                    step={ADOPTION_REVIEW_STEPS[activeReviewStep] ?? ADOPTION_REVIEW_STEPS[0]}
+                  />
                 </div>
               </Stepper>
             )}
-          </div>
+          </DialogBody>
+
+          {selectedReq && (
+            <DialogFooter className={styles.stepNavigation}>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                leftIcon={<ArrowLeft size={17} />}
+                disabled={activeReviewStep === 0}
+                onClick={() => changeReviewStep(Math.max(0, activeReviewStep - 1))}
+              >
+                Anterior
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                rightIcon={<ArrowRight size={17} />}
+                disabled={activeReviewStep === ADOPTION_REVIEW_STEPS.length - 1}
+                onClick={() => changeReviewStep(Math.min(ADOPTION_REVIEW_STEPS.length - 1, activeReviewStep + 1))}
+              >
+                Próxima
+              </Button>
+            </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
 

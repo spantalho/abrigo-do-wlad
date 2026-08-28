@@ -6,6 +6,23 @@ import styles from "./Dialog.module.css";
 
 import { X } from "lucide-react";
 
+export type DialogSize = "sm" | "md" | "lg" | "xl" | "fullscreen-mobile";
+export type DialogLayout = "default" | "structured";
+
+export interface DialogContentProps
+  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
+  size?: DialogSize;
+  layout?: DialogLayout;
+}
+
+const sizeClasses: Record<DialogSize, string> = {
+  sm: styles.sizeSm,
+  md: styles.sizeMd,
+  lg: styles.sizeLg,
+  xl: styles.sizeXl,
+  "fullscreen-mobile": styles.sizeFullscreenMobile,
+};
+
 const Dialog = DialogPrimitive.Root;
 
 const DialogTrigger = DialogPrimitive.Trigger;
@@ -26,13 +43,18 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 const DialogContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  DialogContentProps
+>(({ className, children, size, layout = "default", ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
-      className={cn(styles.content, className)}
+      className={cn(
+        styles.content,
+        size && sizeClasses[size],
+        layout === "structured" && styles.structured,
+        className,
+      )}
       {...props}
     >
       {children}
@@ -54,6 +76,18 @@ const DialogHeader = ({
   </div>
 );
 DialogHeader.displayName = "DialogHeader";
+
+const DialogBody = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & { scrollable?: boolean }
+>(({ className, scrollable = true, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(styles.body, scrollable && styles.bodyScrollable, className)}
+    {...props}
+  />
+));
+DialogBody.displayName = "DialogBody";
 
 const DialogFooter = ({
   className,
@@ -92,6 +126,7 @@ export {
   DialogTrigger,
   DialogContent,
   DialogHeader,
+  DialogBody,
   DialogFooter,
   DialogTitle,
   DialogDescription,
