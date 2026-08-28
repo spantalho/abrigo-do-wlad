@@ -1,14 +1,14 @@
 import path from "node:path";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, type ConfigEnv, type UserConfig } from "vite";
 
 // https://vite.dev/config/
-export default defineConfig(({ command, isPreview, mode }) => {
-  const enableMockAdmin = command === "serve" && mode === "mock";
+export function createAdminViteConfig({ command, isPreview, mode }: ConfigEnv): UserConfig {
+  const enableMockAdmin = command === "serve" && !isPreview && mode === "mock";
   const enableLocalWorker = command === "serve" && !isPreview && !enableMockAdmin;
 
-  if (mode === "mock" && command !== "serve") {
+  if (mode === "mock" && (command !== "serve" || isPreview)) {
     throw new Error("O modo mock do painel só pode ser usado pelo servidor de desenvolvimento.");
   }
 
@@ -24,4 +24,6 @@ export default defineConfig(({ command, isPreview, mode }) => {
         : []),
     ],
   };
-});
+}
+
+export default defineConfig(createAdminViteConfig);
