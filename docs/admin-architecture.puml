@@ -1,0 +1,56 @@
+@startuml
+!pragma layout smetana
+title Arquitetura do painel administrativo
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontColor #1F2937
+skinparam ArrowColor #64748B
+skinparam ArrowThickness 1.2
+skinparam packageBorderColor #CBD5E1
+skinparam packageBackgroundColor #F8FAFC
+skinparam componentBorderColor #94A3B8
+skinparam componentBackgroundColor #FFFFFF
+skinparam databaseBorderColor #94A3B8
+skinparam databaseBackgroundColor #FFFFFF
+
+actor "Equipe do abrigo" as staff
+
+package "Cloudflare" as cloudflare {
+  component "Cloudflare Access\nMFA · política Allow" as access
+
+  package "Worker abrigo-do-wlad-admin" as admin_worker {
+    component "Proteção e roteamento\nJWT · RBAC · mesma origem" as gateway
+    component "SPA React\nassets protegidos" as spa
+    component "Serviços do domínio\ndashboard · cães · reciclagem · candidaturas" as domain
+    component "Serviços transversais\nmídia · chaves · avisos · auditoria" as support
+  }
+
+  component "Serviços Cloudflare\nKV · Rate Limiting · Logs" as platform
+}
+
+package "Google Cloud" as google {
+  database "Firestore\ndados · configuração · auditoria" as firestore
+}
+
+package "Cloudinary" as cloudinary {
+  component "Imagens dos animais" as images
+}
+
+staff --> access : autentica com MFA
+access --> gateway : assertion JWT
+gateway --> spa : entrega assets autorizados
+spa --> gateway : /api/session · /api/admin/*
+gateway --> domain : administrator · developer
+gateway --> support : RBAC por operação
+
+domain --> firestore : conta de serviço\nCRUD + descriptografia
+support --> firestore : chaves · avisos · eventos
+support --> images : upload e exclusão\nvalidados
+domain --> platform : atualiza catálogo no KV
+support --> platform : rate limit · logs
+gateway ..> platform : acessos negados
+
+@enduml

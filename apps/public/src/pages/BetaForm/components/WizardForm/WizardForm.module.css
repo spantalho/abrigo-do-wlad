@@ -10,68 +10,7 @@
   box-shadow: var(--shadow-md);
 }
 
-.wizardHeader {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 3rem;
-}
-
-/* ========== Progress ========== */
-.progressSection {
-  margin-bottom: 1.5rem;
-}
-
-.progressInfo {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  margin-bottom: 0.5rem;
-}
-
-.progressBar {
-  width: 100%;
-  height: 8px;
-  background: var(--accent-secondary);
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.progressFill {
-  height: 100%;
-  background: var(--secondary);
-  border-radius: 999px;
-  transition: width 0.4s ease;
-}
-
-/* ========== Step Indicators ========== */
-.stepIndicators {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.stepIndicator {
-  width: 42px;
-  height: 42px;
-  flex: 0 0 42px;
-}
-
-.currentStepTitle {
-  display: flex;
-  width: 100%;
-  justify-content: start;
-  margin-bottom: 2rem;
-}
-
 /* ========== Step Content ========== */
-.stepWrapper {
-  animation: fadeIn 0.3s ease;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -369,11 +308,6 @@
 }
 
 @media (max-width: 768px) {
-  .stepIndicators,
-  .currentStepTitle {
-    justify-content: center;
-  }
-
   .navigation {
     flex-direction: column;
     gap: 0.5rem;

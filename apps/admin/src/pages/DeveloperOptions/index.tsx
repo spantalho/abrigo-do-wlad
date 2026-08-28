@@ -344,21 +344,25 @@ export default function DeveloperOptions() {
               {keys.map((key) => (
                 <Card
                   key={key.id}
-                  className={`${styles.keyCard} ${key.active ? styles.activeKey : ""}`}
+                  className={styles.keyCard}
+                  tone={key.active ? "success" : "neutral"}
+                  size="sm"
                 >
-                  <CardHeader className={styles.keyHeader}>
-                    <CardTitle>{key.version}</CardTitle>
-                    <Badge variant={key.active ? "success" : "outline"} size="sm">
-                      {key.active ? "Ativa" : "Arquivada"}
-                    </Badge>
-                  </CardHeader>
-                  <CardContent className={styles.keyDetails}>
-                    <dl>
-                      <div><dt>Criada em</dt><dd>{formatDate(key.createdAt)}</dd></div>
-                      <div><dt>Autor</dt><dd>{key.author ?? "Não informado"}</dd></div>
-                      <div><dt>Itens criptografados</dt><dd>{key.counter}</dd></div>
-                    </dl>
-                  </CardContent>
+                  <CardBody className={styles.keyBody}>
+                    <CardHeader className={styles.keyHeader}>
+                      <CardTitle>{key.version}</CardTitle>
+                      <Badge variant={key.active ? "success" : "outline"} size="sm">
+                        {key.active ? "Ativa" : "Arquivada"}
+                      </Badge>
+                    </CardHeader>
+                    <CardContent className={styles.keyDetails}>
+                      <dl>
+                        <div><dt>Criada em</dt><dd>{formatDate(key.createdAt)}</dd></div>
+                        <div><dt>Autor</dt><dd>{key.author ?? "Não informado"}</dd></div>
+                        <div><dt>Itens criptografados</dt><dd>{key.counter}</dd></div>
+                      </dl>
+                    </CardContent>
+                  </CardBody>
                 </Card>
               ))}
             </div>

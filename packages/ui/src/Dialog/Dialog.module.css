@@ -30,6 +30,69 @@
   flex-direction: column;
 }
 
+.sizeSm {
+  width: min(calc(100vw - 2rem), 25rem);
+}
+
+.sizeMd {
+  width: min(calc(100vw - 2rem), 35rem);
+}
+
+.sizeLg {
+  width: min(calc(100vw - 2rem), 47.5rem);
+}
+
+.sizeXl {
+  width: min(calc(100vw - 2rem), 62.5rem);
+}
+
+.structured {
+  max-height: min(90dvh, 900px);
+  padding: 0;
+  overflow: hidden;
+}
+
+.structured .header {
+  flex: 0 0 auto;
+  padding: 1.35rem 4.75rem 1.15rem 1.5rem;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--surface-elevated);
+}
+
+.structured .description {
+  max-width: none;
+  margin: 0.35rem 0 0;
+}
+
+.structured .title {
+  max-width: none;
+}
+
+.body {
+  min-width: 0;
+}
+
+.structured .body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.bodyScrollable {
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.structured .footer {
+  flex: 0 0 auto;
+  gap: 1rem;
+  margin: 0;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-light);
+  background: var(--surface-elevated);
+}
+
 .content:focus {
   outline: none;
 }
@@ -77,8 +140,8 @@
   z-index: 1;
   top: 1rem;
   right: 1rem;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: 0;
   border-radius: 100%;
@@ -90,10 +153,16 @@
   cursor: pointer;
   transition: var(--transition);
   flex-shrink: 0;
-  padding: 0.5rem;
 }
 .closeButton:hover {
+  background-color: var(--btn-ghost-bg);
   color: var(--text-primary);
+}
+
+.closeButton:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--focus-ring);
 }
 
 .footer {
@@ -151,11 +220,47 @@
     align-items: center;
   }
 
-  .description {
+  .title {
+    justify-content: center;
+    width: 100%;
+    max-width: none;
+    padding-inline: 2.25rem;
     text-align: center;
+  }
+
+  .description {
+    width: 100%;
+    max-width: none;
+    margin: 0.5rem 0 0.75rem;
+    text-align: center;
+  }
+
+  .closeButton {
+    top: 0.5rem;
+    right: 0.5rem;
   }
 
   .content {
     width: 90%;
+  }
+
+  .structured .header {
+    padding: 1rem;
+  }
+
+  .structured .body {
+    padding: 1rem;
+  }
+
+  .structured .footer {
+    padding: 0.875rem 1rem;
+  }
+
+  .sizeFullscreenMobile,
+  .mobileFullscreen {
+    width: calc(100vw - 0.5rem);
+    height: calc(100dvh - 0.5rem);
+    max-height: calc(100dvh - 0.5rem);
+    border-radius: var(--radius);
   }
 }

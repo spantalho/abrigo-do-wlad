@@ -1,29 +1,20 @@
 # Publicação segura do painel administrativo
 
-O admin não usa Firebase Auth nem acessa o Firestore pelo navegador. O
-Cloudflare Access autentica a pessoa, o Worker valida o JWT e mapeia o e-mail
-verificado para um papel configurado exclusivamente no runtime. Todas as
-operações administrativas usam a conta de serviço do Worker.
+Roteiro para publicar o painel atrás do Cloudflare Access e aplicar as regras
+finais do Firestore. A arquitetura e a API estão resumidas no
+[`README` do painel](../../apps/admin/README.md).
 
-## Fronteiras de segurança
+## Pré-requisitos
 
-| Papel           | Origem da lista              | Escopo atual                                     |
-| --------------- | ---------------------------- | ------------------------------------------------ |
-| `developer`     | `ADMIN_DEVELOPER_EMAILS`     | Operações administrativas e manutenção técnica   |
-| `administrator` | `ADMIN_ADMINISTRATOR_EMAILS` | Animais, reciclagem, candidaturas e estatísticas |
+O Access deve exigir MFA, negar acesso por padrão e permitir apenas os e-mails
+configurados no Worker. Não versione identidades ou secrets.
 
-As listas acima não devem ser versionadas com identidades reais. Configure-as
-como valores de runtime e repita as mesmas identidades na política `Allow` da
-aplicação Access. Exija MFA e mantenha uma política de negação como padrão.
+| Papel | Lista no runtime | Escopo |
+| --- | --- | --- |
+| `developer` | `ADMIN_DEVELOPER_EMAILS` | Administração e manutenção técnica. |
+| `administrator` | `ADMIN_ADMINISTRATOR_EMAILS` | Animais, reciclagem, candidaturas e métricas. |
 
-As Firestore Rules permitem ao cliente somente leitura de `dogs`,
-`recycle_points` e `system/settings`. Escritas, candidaturas, usuários, chaves e
-estatísticas são negados inclusive para clientes Firebase autenticados. A conta
-de serviço dos Workers é controlada por IAM e não pelas Rules.
-
-## Variáveis do Worker do admin
-
-Valores de configuração:
+Configure como valores de runtime:
 
 ```text
 CF_ACCESS_TEAM_DOMAIN
@@ -33,7 +24,7 @@ ADMIN_ADMINISTRATOR_EMAILS
 CLOUDINARY_CLOUD_NAME
 ```
 
-Secrets:
+Configure como secrets:
 
 ```text
 FIREBASE_PROJECT_ID
@@ -44,26 +35,27 @@ CLOUDINARY_API_KEY
 CLOUDINARY_API_SECRET
 ```
 
-Use `apps/admin/.dev.vars` apenas localmente; o arquivo é ignorado. Em produção,
-cadastre os secrets no Cloudflare e não em `wrangler.jsonc` nem em variáveis
-`VITE_*`.
+Use `apps/admin/.dev.vars` somente no ambiente local. Em produção, não coloque
+secrets em `wrangler.jsonc` nem em variáveis `VITE_*`.
 
-## Ordem de publicação
+## Checklist de publicação
 
-1. Execute toda a verificação local e confirme que o secret scan está limpo.
-2. Configure o Worker admin, o hostname e a aplicação Access sem expor o
-   hostname fora da política.
-3. Publique e valide `/api/session` e os CRUDs com uma identidade de cada papel;
-   confirme também a negação para uma identidade externa.
-4. Publique as Firestore Rules finais somente após o Worker admin estar
-   operacional, evitando interromper o painel durante o corte.
-5. Configure o cron com `ADOPTION_CLEANUP_MODE=dry-run`, revise os logs e faça o
-   backup operacional necessário. O log informa `matched`, `deleted` e
-   `hasMore`; o dry-run nunca chama a exclusão.
-6. Altere o modo para `delete` somente após validar o conjunto de candidaturas
-   vencidas. `disabled` é o padrão quando a variável está ausente ou inválida.
+1. Execute as verificações abaixo e confirme que o secret scan está limpo.
+2. Configure o Worker, o hostname e a aplicação Access antes de divulgar o
+   endereço.
+3. Publique o painel com `npm run deploy:admin` e valide `/api/session` e os
+   CRUDs com uma identidade de cada papel. Confirme também a negação para uma
+   identidade externa.
+4. Com o Worker operacional, publique as Firestore Rules finais. Elas devem
+   permitir ao cliente apenas a leitura de `dogs`, `recycle_points` e
+   `system/settings`; todo o restante permanece negado. A conta de serviço dos
+   Workers é autorizada por IAM, não pelas Rules.
+5. Inicie o cron com `ADOPTION_CLEANUP_MODE=dry-run`. Revise `matched`, `deleted`
+   e `hasMore` nos logs e faça o backup necessário; o dry-run não exclui dados.
+6. Após conferir as candidaturas vencidas, altere o modo para `delete`. Ausência
+   ou valor inválido mantém o cron em `disabled`.
 
-O deploy não é executado automaticamente pelos comandos de verificação.
+Os comandos de verificação e o CI não fazem deploy automaticamente.
 
 ## Verificação antes do push
 
@@ -84,4 +76,4 @@ npm run check:admin-worker
 npm run check:cron
 ```
 
-O CI repete essas verificações e usa Gitleaks com o histórico completo.
+O CI repete essas verificações e executa o Gitleaks sobre todo o histórico.

@@ -44,7 +44,7 @@ export default function Recycle() {
   const containerRef = useRef<HTMLDivElement>(null!);
   const section1Ref = useRef<HTMLElement>(null!);
   const section2Ref = useRef<HTMLElement>(null!);
-  const sectionLabels = ["O que doar?", "Pontos de Coleta"];
+  const sectionLabels = ["O que doar?", "Pontos de coleta"];
 
   const [collectionPoints, setCollectionPoints] = useState<GroupedPoints[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,7 +107,7 @@ export default function Recycle() {
       />
       <Banner
         image={heroImage as string}
-        badge="Reciclagem Solidária"
+        badge="Reciclagem solidária"
         title="Sua tampinha vale vidas"
         description="Transformamos plástico em ração e medicamentos. Descubra como um gesto simples pode salvar nossos animais."
       />
@@ -129,15 +129,15 @@ export default function Recycle() {
               </li>
               <li>
                 <Lucide.CheckCircle className={styles.checklistIcon} />
-                <span>Tampas de Shampoo, Detergente, Amaciante</span>
+                <span>Tampas de shampoo, detergente e amaciante</span>
               </li>
               <li>
                 <Lucide.CheckCircle className={styles.checklistIcon} />
-                <span>Tampas de Caneta, Creme, Maionese</span>
+                <span>Tampas de caneta, creme e maionese</span>
               </li>
               <li>
                 <Lucide.CheckCircle className={styles.checklistIcon} />
-                <span>Lacres de Latinha de Alumínio</span>
+                <span>Lacres de latinhas de alumínio</span>
               </li>
             </ul>
           </div>
@@ -147,7 +147,7 @@ export default function Recycle() {
           <div style={{ width: "100%" }}>
             <div style={{ marginBottom: "2rem" }}>
               <h2 className="section-title" style={{ marginBottom: "0.5rem" }}>
-                Pontos de Coleta
+                Pontos de coleta
               </h2>
               <p style={{ color: "var(--text-secondary)" }}>
                 Encontre o local mais próximo de você e saiba como contribuir.{" "}
@@ -338,7 +338,7 @@ export default function Recycle() {
                       <Badge variant="danger">BETA</Badge>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <strong>Recurso Em Fase Experimental</strong>
+                      <strong>Recurso em fase experimental</strong>
                       <p>
                         A localização exibida pode apresentar imprecisões.
                         Consulte-nos para mais informações.
@@ -346,7 +346,7 @@ export default function Recycle() {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                {mapModal.location?.name || "Localização no Mapa"}
+                {mapModal.location?.name || "Localização no mapa"}
               </div>
             </Dialog.DialogTitle>
             <Dialog.DialogDescription>

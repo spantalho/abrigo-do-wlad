@@ -47,7 +47,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--surface-earth);
+  background-color: var(--surface-card);
+  box-shadow: var(--shadow-sm);
   color: var(--primary);
   flex-shrink: 0;
 }
@@ -75,6 +76,16 @@
 }
 
 .adoptedIcon {
+  background-color: var(--surface-card);
+  color: var(--danger);
+}
+
+.recycleIcon {
+  background-color: var(--surface-card);
+  color: var(--success);
+}
+
+.adoptionsIcon {
   background-color: var(--surface-card);
   color: var(--action);
 }
@@ -127,7 +138,7 @@
   min-width: 0;
 }
 
-.notificationContent strong {
+.notificationLabel {
   display: block;
   margin-bottom: 0.2rem;
   color: var(--card-accent);
@@ -142,67 +153,21 @@
   white-space: pre-wrap;
 }
 
-.alertItem {
-  display: flex;
-  align-items: center;
-  background-color: var(--surface-earth);
-  border-left: 4px solid var(--primary);
-  padding: 1rem 1.25rem;
-  border-radius: var(--radius-sm);
-  gap: 1rem;
-  transition: transform 0.2s;
-}
-
-.alertItem:hover {
-  transform: translateY(-2px);
-}
-
-.alertUrgent {
-  background-color: var(--accent-red);
-  border-left-color: var(--error);
-}
-
-.alertUrgent .alertIcon {
-  color: var(--error);
-}
-
-.alertIcon {
-  color: var(--primary-hover);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.alertContent {
-  flex: 1;
-  text-align: left;
-}
-
-.alertText {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-}
-
-.alertText strong {
-  color: var(--text-primary);
-}
-
 .alertLink {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  color: var(--primary);
+  margin-top: 0.6rem;
+  color: var(--card-accent);
   font-weight: 600;
   font-size: 0.9rem;
   text-decoration: none;
-  padding: 0.5rem;
-  border-radius: var(--radius-sm);
-  transition: background-color 0.2s;
+  transition: color 0.2s;
 }
 
 .alertLink:hover {
-  background-color: var(--surface-coral);
+  color: var(--text-primary);
+  text-decoration: underline;
 }
 
 .emptyRecent {
@@ -233,17 +198,6 @@
 
   .metricValue {
     font-size: 2rem;
-  }
-
-  .alertItem {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
-  .alertLink {
-    width: 100%;
-    justify-content: flex-end;
   }
 
   .metricSummary {

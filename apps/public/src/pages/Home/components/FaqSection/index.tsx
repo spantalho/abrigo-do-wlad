@@ -53,26 +53,26 @@ export function FaqSection() {
         className={`${styles.accordionWrapper} ${isVisible ? styles.visible : ""}`}
       >
         <AccordionItem value="item-1">
-          <AccordionTrigger>Vocês fazem Resgate de Animais?</AccordionTrigger>
+          <AccordionTrigger>Vocês fazem resgate de animais?</AccordionTrigger>
           <AccordionContent>
             <div className={styles.faqContainer}>
               <p>
                 A responsabilidade pelo resgate é do{" "}
-                <strong>Poder Público</strong>. O{" "}
-                <strong>Abrigo do Wlad</strong>, como a maioria das ONGs, está
-                lotado e sem condições de receber novos animais. Mas você pode
-                ajudar: leve o animal ao veterinário, vacine, vermifugue, castre
-                (ou busque castração social), tire boas fotos, divulgue para
-                adoção em redes sociais e eventos da região, e crie vakinhas ou
-                rifas para cobrir os custos — assim você dá ao animal a mesma
-                chance que damos aos nossos resgatados!
+                <strong>poder público</strong>. O{" "}
+                <strong>Abrigo do Wlad</strong> está lotado e sem condições de
+                receber novos animais. Mas você pode ajudar: leve o animal ao
+                veterinário, vacine, vermifugue, castre (ou busque castração
+                social), tire boas fotos, divulgue para adoção em redes sociais
+                e eventos da região e crie vaquinhas ou rifas para cobrir os
+                custos — assim você dá ao animal a mesma chance que damos aos
+                nossos resgatados!
               </p>
             </div>
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="item-2">
-          <AccordionTrigger>Posso Visitar o Abrigo?</AccordionTrigger>
+          <AccordionTrigger>Posso visitar o abrigo?</AccordionTrigger>
           <AccordionContent>
             <div className={styles.faqContainer}>
               <p>Sim! As visitas devem ser agendadas com antecedência.</p>
@@ -87,19 +87,19 @@ export function FaqSection() {
                       <Lucide.Calendar />
                     </CardComponent.CardIcon>
                     <CardComponent.CardTitle>
-                      Agendar Visita
+                      Agendar visita
                     </CardComponent.CardTitle>
                   </CardComponent.CardHeader>
                   <CardComponent.CardContent>
                     <div className={styles.faqCardBadges}>
                       <Badge className={styles.faqBadge} variant="outline">
-                        Segunda à Sábado
+                        Segunda a sábado
                       </Badge>
                       <Badge className={styles.faqBadge} variant="outline">
                         14h às 17h
                       </Badge>
                       <Badge className={styles.faqBadge} variant="danger">
-                        Exceto em Feriados
+                        Exceto em feriados
                       </Badge>
                     </div>
                     <p>

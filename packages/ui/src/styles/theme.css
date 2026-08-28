@@ -1,6 +1,7 @@
 :root {
   /* Typography */
   --font-sans: "Poppins", sans-serif;
+  --font-dog-voice: "Playwrite BR", cursive;
   --text-primary: #1e2926;
   --text-secondary: #405658;
   --text-muted: #5f6f70;
@@ -30,6 +31,7 @@
   --bg-body: #f2f8f8;
   --surface-card: #fffdf9;
   --surface-elevated: #ffffff;
+  --surface-muted: #f2f0eb;
   --surface-water: #dceff0;
   --surface-earth: #f1e2d2;
   --surface-leaf: #e3ead8;
@@ -133,6 +135,7 @@ body.dark-mode {
   --bg-body: #1b100b;
   --surface-card: #2a1912;
   --surface-elevated: #352118;
+  --surface-muted: #322823;
   --surface-water: #30231c;
   --surface-earth: #40271b;
   --surface-leaf: #30351f;

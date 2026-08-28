@@ -210,11 +210,11 @@
 }
 
 .keyCard {
-  border-left: 4px solid var(--border);
+  height: auto;
 }
 
-.activeKey {
-  border-left-color: var(--success);
+.keyBody {
+  padding: 1.25rem !important;
 }
 
 .keyHeader {
@@ -222,6 +222,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .keyDetails dl {

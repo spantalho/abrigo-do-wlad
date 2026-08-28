@@ -34,8 +34,9 @@ export function Footer() {
             <span>ABRIGO DO WLAD</span>
           </div>
           <p>
-            Resgatando vidas e transformando histórias desde 2012. Somos uma
-            organização sem fins lucrativos dedicada ao amor e respeito animal.
+            Desde 2012, o Abrigo do Wlad acolhe e cuida de cães resgatados.
+            Somos um projeto social independente, mantido por doações e
+            dedicado à adoção responsável.
           </p>
           <div className={styles.footerBadges}>
             <Badge variant="success" leftIcon={<Lucide.MapPin />}>
@@ -51,22 +52,22 @@ export function Footer() {
             Início
           </NavLink>
           <NavLink to="/caes" className={styles.linkItem}>
-            Nossos Cães
+            Nossos cães
           </NavLink>
           <NavLink to="/sobre" className={styles.linkItem}>
-            Sobre Nós
+            Sobre nós
           </NavLink>
           <NavLink to="/tampinhas" className={styles.linkItem}>
             Projeto Tampinhas
           </NavLink>
           <NavLink to="/formulario" className={styles.linkItem} onClick={() => analytics.trackConversionIntent("adopt_form")}>
-            Formulário de Interesse
+            Formulário de interesse
           </NavLink>
         </div>
 
         {/* Contact */}
         <div className={styles.footerSocial}>
-          <h4 className={styles.columnTitle}>Fale Conosco</h4>
+          <h4 className={styles.columnTitle}>Fale conosco</h4>
 
           <a
             href="https://instagram.com/abrigodowlad"
@@ -100,11 +101,11 @@ export function Footer() {
               &copy; {new Date().getFullYear()} Abrigo do Wlad
             </p>
             {isDesktop && <span style={{ opacity: 0.5 }}>•</span>}
-            <p style={{ opacity: 0.8 }}>Todos os Direitos Reservados</p>
+            <p style={{ opacity: 0.8 }}>Todos os direitos reservados</p>
           </div>
         </div>
         <div className={styles.footerBottomGroup}>
-          <Link to="/politica-de-privacidade">Política de Privacidade</Link>
+          <Link to="/politica-de-privacidade">Política de privacidade</Link>
           <p className={styles.credits}>
             Por{" "}
             <ExternalLink href="https://alanclimaco.github.io/Portfolio/">

@@ -44,7 +44,7 @@ export default function About() {
       />
       <Banner
         image={heroImage}
-        badge="Nossa Trajetória"
+        badge="Nossa trajetória"
         title="Uma história de amor e renúncia"
         description="Conheça os passos que transformaram um quintal em um refúgio de esperança."
       />
@@ -58,48 +58,46 @@ export default function About() {
               Como tudo começou
             </h2>
             <p>
-              Há mais de 12 anos, Wladimir Cruz deixou emprego fixo e bem
-              remunerado para seguir os passos de seu pai que era uma pessoa que
-              ajudava a todos e principalmente os animais. Não podia ver um
-              cãozinho perdido que já trazia para casa.
+              Em 2012, Wladimir Cruz deixou um emprego fixo e bem remunerado
+              para seguir o exemplo de seu pai, Sr. Bene, que sempre ajudou
+              pessoas e, especialmente, animais. Bastava encontrar um cão
+              perdido para acolhê-lo em casa.
             </p>
             <p>
-              Com o tempo o Sr. Bene, pai do Wladimir, começou a ajudar outros
-              protetores de animais abrindo um espaço da sua casa para dar lar
-              temporário para os cães resgatados. Recebia uns trocados como
-              agradecimento. Seu filho, também amante da causa animal, começou a
-              resgatar e logo o amplo quintal passou a ser o lar temporário para
-              muitos cães abandonados e ai surgiu o Abrigo do Wlad.
-            </p>
-
-            <h3 data-subsection="O Espaço">O Espaço</h3>
-            <p>
-              Apesar do Wladimir iniciar a prestação de serviços de lar
-              temporário de forma mais consistente, os recursos sempre foram
-              escassos porque os gastos com um animalzinho não se atém a ração e
-              água. Empregados, luz, água, medicação, manutenção, veterinário,
-              internações e outras despesas consomem o valor mensal que se
-              recebe pelo serviço prestado. Além de que os cães resgatados pelo
-              próprio Wladimir são custeados integralmente por ele.
+              Com o tempo, Sr. Bene passou a apoiar outros protetores, cedendo
+              parte de sua casa como lar temporário para cães resgatados.
+              Inspirado pelo pai e comprometido com a causa animal, Wladimir
+              também começou a resgatar. Logo, o amplo quintal da família se
+              tornou o lar temporário de muitos cães abandonados — e assim
+              nasceu o Abrigo do Wlad.
             </p>
 
+            <h3 data-subsection="O espaço">O espaço</h3>
             <p>
-              No entanto, são 12 anos que se passaram sem uma reforma no abrigo
-              e hoje o espaço está bem deteriorado e já não atende a necessidade
-              de conforto para os animais, muitos viverão para sempre lá dentro.
+              À medida que o trabalho de lar temporário cresceu, os recursos
+              continuaram limitados. Os custos vão muito além de ração e água:
+              equipe, energia, medicamentos, manutenção, atendimento
+              veterinário e internações consomem grande parte do orçamento. Os
+              cães resgatados pelo próprio Wladimir são custeados integralmente
+              por ele.
             </p>
 
             <p>
-              Com a ajuda de amigos e alguns projetos implantados, em 2020
-              iniciou-se uma obra no terreno ao lado do abrigo para construir os
-              espaços de idosos especiais, quarentena e medicação. Em 2021
-              iniciamos as obras da parte antiga que está bem deteriorada. Pisos
-              com buracos, infiltrações nas paredes e pisos, adequação dos
-              espaços para melhorar a distribuição dos cães, novos portões de
-              segurança, telas e telhado novo.
+              Com o passar dos anos, o espaço se deteriorou e deixou de atender
+              adequadamente às necessidades de conforto e segurança dos
+              animais, sobretudo daqueles que permanecerão no abrigo.
             </p>
 
-            <div data-subsection="Captação de Recursos">
+            <p>
+              Com a ajuda de amigos e de projetos de arrecadação, uma obra foi
+              iniciada em 2020 no terreno ao lado para criar espaços destinados
+              a cães idosos e com necessidades especiais, quarentena e
+              medicação. Em 2021, começaram as melhorias na área antiga, com
+              reparos em pisos e infiltrações, reorganização dos ambientes e
+              instalação de novos portões, telas e telhado.
+            </p>
+
+            <div data-subsection="Captação de recursos">
               <CardComponent.Card tone="info" variant="callout">
                 <CardComponent.CardBody>
                   <CardComponent.CardHeader>
@@ -107,25 +105,23 @@ export default function About() {
                       <Lucide.HandCoins size={30} strokeWidth={1.5} />
                     </CardComponent.CardIcon>
                     <CardComponent.CardTitle>
-                      Captação de Recursos
+                      Captação de recursos
                     </CardComponent.CardTitle>
                   </CardComponent.CardHeader>
                   <CardComponent.CardContent>
                     <p style={{ textAlign: "justify" }}>
-                      Um dos projetos implantado para arrecadação de recursos
-                      para financiar a obra foi a reciclagem de tampinhas
-                      plásticas. Consiste na coleta de tampas plásticas ou
-                      qualquer material que seja de polipropileno que é vendido
-                      para empresas que transformam esse material e revendem
-                      para a indústria de brinquedos, eletrodomésticos,
-                      automobilística e outras.
+                      Um dos projetos criados para arrecadar recursos foi a
+                      reciclagem de tampinhas plásticas. A iniciativa coleta
+                      tampas e outros materiais de polipropileno, que são
+                      vendidos a empresas recicladoras. O valor arrecadado
+                      contribui para as obras e para o cuidado dos animais.
                     </p>
                   </CardComponent.CardContent>
                 </CardComponent.CardBody>
                 <CardComponent.CardFooter>
                   <Link to="/tampinhas" className="btn-text">
                     <CardComponent.CardButton>
-                      Saiba Mais <Lucide.ArrowRight size={20} />
+                      Saiba mais <Lucide.ArrowRight size={20} />
                     </CardComponent.CardButton>
                   </Link>
                 </CardComponent.CardFooter>
@@ -167,11 +163,11 @@ export default function About() {
                   </TooltipComponent.TooltipTrigger>
                   <TooltipComponent.TooltipContent side="bottom">
                     <p>
-                      <strong>12+ Anos de História</strong>
+                      <strong>Desde 2012</strong>
                     </p>
                     <p>
-                      Centenas de vidas transformadas pelo amor e dedicação de
-                      voluntários.
+                      Vidas transformadas por cuidado, dedicação e novas
+                      oportunidades.
                     </p>
                   </TooltipComponent.TooltipContent>
                 </TooltipComponent.Tooltip>

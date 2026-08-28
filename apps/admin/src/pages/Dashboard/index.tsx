@@ -116,10 +116,12 @@ export default function Dashboard() {
             </CardFooter>
           </Card>
 
-          <Card variant="default" size="sm" className={styles.metricCard}>
+          <Card variant="default" tone="success" size="sm" className={styles.metricCard}>
             <CardBody className={styles.metricBody}>
               <div className={styles.metricSummary}>
-                <div className={styles.iconWrapper}><Recycle size={28} /></div>
+                <div className={`${styles.iconWrapper} ${styles.recycleIcon}`}>
+                  <Recycle size={28} />
+                  </div>
                 <CardContent className={styles.metricInfo}>
                   <span className={styles.metricValue}>{metrics.recycles}</span>
                   <span className={styles.metricLabel}>Pontos de coleta</span>
@@ -139,10 +141,12 @@ export default function Dashboard() {
             </CardFooter>
           </Card>
 
-          <Card variant="default" size="sm" className={styles.metricCard}>
+          <Card variant="default" tone="info" size="sm" className={styles.metricCard}>
             <CardBody className={styles.metricBody}>
               <div className={styles.metricSummary}>
-                <div className={styles.iconWrapper}><ClipboardList size={28} /></div>
+                <div className={`${styles.iconWrapper} ${styles.adoptionsIcon}`}>
+                  <ClipboardList size={28} />
+                  </div>
                 <CardContent className={styles.metricInfo}>
                   <span className={styles.metricValue}>{metrics.adoptions}</span>
                   <span className={styles.metricLabel}>Solicitações de adoção</span>
@@ -162,7 +166,7 @@ export default function Dashboard() {
             </CardFooter>
           </Card>
 
-          <Card variant="default" size="sm" className={styles.metricCard}>
+          <Card variant="default" tone="danger" size="sm" className={styles.metricCard}>
             <CardBody className={styles.metricBody}>
               <div className={styles.metricSummary}>
                 <div className={`${styles.iconWrapper} ${styles.adoptedIcon}`}>
@@ -210,26 +214,39 @@ export default function Dashboard() {
                     <notificationStyle.Icon size={24} />
                   </CardIcon>
                   <CardContent className={styles.notificationContent}>
-                    <strong>{notificationStyle.label}</strong>
+                    <strong className={styles.notificationLabel}>{notificationStyle.label}</strong>
                     <p>{notification.message}</p>
                   </CardContent>
                 </CardBody>
               </Card>
             )}
             {expiringAdoptions.map(alert => (
-              <div key={alert.id} className={`${styles.alertItem} ${alert.daysLeft <= 2 ? styles.alertUrgent : ''}`}>
-                <div className={styles.alertIcon}>
-                  {alert.daysLeft <= 2 ? <AlertTriangle size={20} /> : <Clock size={20} />}
-                </div>
-                <div className={styles.alertContent}>
-                  <p className={styles.alertText}>
-                    A ficha de adoção de <strong>{alert.nome}</strong> expira e será apagada em <strong>{alert.daysLeft} {alert.daysLeft === 1 ? 'dia' : 'dias'}</strong>.
-                  </p>
-                </div>
-                <Link to="/admin/adoptions" className={styles.alertLink}>
-                  Ver ficha <ArrowRight size={16} />
-                </Link>
-              </div>
+              <Card
+                key={alert.id}
+                className={styles.notificationCard}
+                variant="callout"
+                tone={alert.daysLeft <= 2 ? "danger" : "warning"}
+                size="sm"
+                layout="inline"
+                role={alert.daysLeft <= 2 ? "alert" : "status"}
+              >
+                <CardBody className={styles.notificationBody}>
+                  <CardIcon>
+                    {alert.daysLeft <= 2 ? <AlertTriangle size={24} /> : <Clock size={24} />}
+                  </CardIcon>
+                  <CardContent className={styles.notificationContent}>
+                    <strong className={styles.notificationLabel}>
+                      {alert.daysLeft <= 2 ? "Expiração urgente" : "Expiração próxima"}
+                    </strong>
+                    <p>
+                      A ficha de adoção de <strong>{alert.nome}</strong> expira e será apagada em <strong>{alert.daysLeft} {alert.daysLeft === 1 ? 'dia' : 'dias'}</strong>.
+                    </p>
+                    <Link to="/admin/adoptions" className={styles.alertLink}>
+                      Ver ficha <ArrowRight size={16} />
+                    </Link>
+                  </CardContent>
+                </CardBody>
+              </Card>
             ))}
           </div>
         ) : (

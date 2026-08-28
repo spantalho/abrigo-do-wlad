@@ -153,6 +153,8 @@ function requireDeveloper(identity: AccessIdentity): void {
 }
 
 export interface AdminApiDependencies {
+  listAdoptionApplications(env: Env): Promise<Record<string, unknown>[]>;
+  getAdoptionApplication(env: Env, id: string): Promise<Record<string, unknown>>;
   consumeUploadRateLimit(env: Env, identity: AccessIdentity): Promise<boolean>;
   listSystemKeys(env: Env): Promise<SystemKeyMetadata[]>;
   rotateSystemKey(env: Env, identity: AccessIdentity): Promise<RotatedSystemKey>;
@@ -183,6 +185,8 @@ async function consumeUploadRateLimit(
 }
 
 const productionDependencies: AdminApiDependencies = {
+  listAdoptionApplications: listAdoptions,
+  getAdoptionApplication: getAdoption,
   consumeUploadRateLimit,
   listSystemKeys,
   rotateSystemKey,
@@ -362,7 +366,28 @@ async function listAdoptions(env: Env): Promise<Record<string, unknown>[]> {
       orderBy: "submittedAt",
     },
   );
-  return serializeAdoptions(documents, env);
+  const adoptions = await serializeAdoptions(documents, env);
+
+  return adoptions.map((adoption) => ({
+    id: adoption.id,
+    nome_adotante: adoption.nome_adotante,
+    telefone: adoption.telefone,
+    animal_especifico: adoption.animal_especifico,
+    status: adoption.status,
+    submittedAt: adoption.submittedAt,
+    expiresAt: adoption.expiresAt,
+  }));
+}
+
+async function getAdoption(env: Env, id: string): Promise<Record<string, unknown>> {
+  const document = await createFirestoreClient(env).getDocument<StoredAdoption>(
+    `${MANAGED_COLLECTIONS.adoptions}/${id}`,
+  );
+  if (!document) throw new ApiError(404, "Adoption application not found.");
+
+  const [adoption] = await serializeAdoptions([document], env);
+  if (!adoption) throw new ApiError(404, "Adoption application not found.");
+  return adoption;
 }
 
 function serializeDocuments<T extends Record<string, unknown>>(
@@ -569,7 +594,12 @@ async function routeAdminApi(
       return handleDashboard(env, dependencies);
     }
     if (url.pathname === "/api/admin/adoptions" && request.method === "GET") {
-      return jsonResponse(200, await listAdoptions(env));
+      return jsonResponse(200, await dependencies.listAdoptionApplications(env));
+    }
+    if (segments[2] === "adoptions" && segments.length === 4) {
+      if (request.method !== "GET") return methodNotAllowed(["GET"]);
+      const id = documentId(segments[3] ?? "");
+      return jsonResponse(200, await dependencies.getAdoptionApplication(env, id));
     }
     if (url.pathname === "/api/admin/audit-log") {
       requireDeveloper(identity);

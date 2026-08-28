@@ -96,7 +96,7 @@ export function Header() {
           className={getLinkClass("/sobre")}
           onClick={closeMenu}
         >
-          Sobre Nós
+          Sobre nós
         </NavLink>
 
         <NavLink
@@ -117,7 +117,7 @@ export function Header() {
               onClick={() => analytics.trackButtonClick("header_donate")}
             >
               <Lucide.HeartHandshake size={20} />
-              <span>Quero Ajudar</span>
+              <span>Quero ajudar</span>
             </Button>
           </Dialog.DialogTrigger>
           <PixModal />

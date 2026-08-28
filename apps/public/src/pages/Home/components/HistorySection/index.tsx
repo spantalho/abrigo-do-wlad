@@ -66,14 +66,14 @@ export function HistorySection() {
         <div
           className={`${styles.textSide} ${isVisible ? styles.visible : ""}`}
         >
-          <h2 className="section-title">Nossa História</h2>
+          <h2 className="section-title">Nossa história</h2>
 
           <p>
-            Há mais de 12 anos, <strong>Wladimir Cruz</strong> decidiu deixar um
-            emprego estável e bem remunerado para seguir a paixão herdada de seu
-            pai, Sr. Bene, que sempre ajudou pessoas e animais. Sr. Bene
-            costumava acolher cães abandonados e até abriu espaço em sua casa
-            para oferecer lar temporário aos resgatados.
+            Em 2012, <strong>Wladimir Cruz</strong> decidiu deixar um emprego
+            estável e bem remunerado para seguir o exemplo de seu pai, Sr. Bene,
+            que sempre ajudou pessoas e animais. Ele costumava acolher cães
+            abandonados e abriu espaço em sua casa para oferecer lar temporário
+            aos resgatados.
           </p>
 
           <p>

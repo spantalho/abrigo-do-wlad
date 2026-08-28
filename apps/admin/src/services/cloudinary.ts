@@ -1,4 +1,4 @@
-import { apiRequest } from "./api";
+import { adminFetch, apiRequest } from "./api";
 
 interface AdminUploadResponse {
   url?: unknown;
@@ -23,7 +23,7 @@ export async function uploadImageToCloudinary(file: File): Promise<string> {
 
   const formData = new FormData();
   formData.append("file", file);
-  const response = await fetch("/api/admin/media/upload", {
+  const response = await adminFetch("/api/admin/media/upload", {
     method: "POST",
     body: formData,
     credentials: "same-origin",

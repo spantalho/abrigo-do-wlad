@@ -1,0 +1,105 @@
+.section {
+  min-width: 0;
+}
+
+.sectionTitle {
+  margin: 0 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border-light);
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dataGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 2rem;
+  margin: 0;
+}
+
+.dataGroup {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 1rem 0 1.1rem;
+  border-top: 1px solid var(--border-light);
+  break-inside: avoid;
+}
+
+.dataGroup:nth-child(-n + 2) {
+  border-top: 0;
+}
+
+.dataLabel {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.fieldNumber {
+  color: var(--secondary);
+  font-size: 0.7rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.fieldQuestion {
+  min-width: 0;
+}
+
+.dataValue {
+  margin: 0 0 0 2.75rem;
+  padding: 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.missingValue {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  .dataGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .dataValue {
+    margin-left: 0;
+  }
+
+  .dataGroup:nth-child(2) {
+    border-top: 1px solid var(--border-light);
+  }
+}
+
+@media print {
+  .section {
+    margin-bottom: 1.5rem;
+  }
+
+  .dataGrid {
+    gap: 0 1.25rem;
+  }
+
+  .dataGroup {
+    padding: 0.6rem 0 0.7rem;
+  }
+}

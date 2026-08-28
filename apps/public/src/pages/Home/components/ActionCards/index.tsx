@@ -47,7 +47,7 @@ export function ActionCards() {
             <Card.CardIcon>
               <Lucide.Heart size={38} strokeWidth={1.5} />
             </Card.CardIcon>
-            <Card.CardTitle>Adoção Responsável</Card.CardTitle>
+            <Card.CardTitle>Adoção responsável</Card.CardTitle>
           </Card.CardHeader>
           <Card.CardContent>
             <p>
@@ -60,7 +60,7 @@ export function ActionCards() {
         <Card.CardFooter>
           <Link to="/caes">
             <Card.CardButton>
-              Conheça Nossos Cães <Lucide.ChevronRight size={20} />
+              Conheça nossos cães <Lucide.ChevronRight size={20} />
             </Card.CardButton>
           </Link>
         </Card.CardFooter>
@@ -76,7 +76,7 @@ export function ActionCards() {
             <Card.CardIcon>
               <Lucide.HeartHandshake size={38} strokeWidth={1.5} />
             </Card.CardIcon>
-            <Card.CardTitle>Faça uma Doação</Card.CardTitle>
+            <Card.CardTitle>Faça uma doação</Card.CardTitle>
           </Card.CardHeader>
           <Card.CardContent>
             <p>
@@ -89,7 +89,7 @@ export function ActionCards() {
           <Dialog.Dialog>
             <Dialog.DialogTrigger asChild>
               <Card.CardButton onClick={() => analytics.trackConversionIntent("donation")}>
-                Doação via PIX
+                Doação via Pix
                 <Lucide.ChevronUp size={20} />
               </Card.CardButton>
             </Dialog.DialogTrigger>
@@ -121,7 +121,7 @@ export function ActionCards() {
         <Card.CardFooter>
           <Link to="/tampinhas">
             <Card.CardButton>
-              Ver Pontos de Coleta <Lucide.ChevronRight size={20} />
+              Ver pontos de coleta <Lucide.ChevronRight size={20} />
             </Card.CardButton>
           </Link>
         </Card.CardFooter>
