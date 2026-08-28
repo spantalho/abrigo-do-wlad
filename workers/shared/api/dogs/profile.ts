@@ -11,6 +11,10 @@ export type DogProfilePayload =
   | { state: "available"; dog: PublicDog }
   | { state: "unavailable"; tombstone: DogTombstone };
 
+export type DogProfileResolution =
+  | DogProfilePayload
+  | { state: "not_found" };
+
 function tombstoneIsNewerThanFeed(
   tombstone: DogTombstone,
   feedGeneratedAt: string,
@@ -25,6 +29,31 @@ function unavailableResponse(tombstone: DogTombstone): Response {
   } satisfies DogProfilePayload, {
     "Cache-Control": "public, max-age=300, s-maxage=3600",
   });
+}
+
+export async function resolveDogProfile(
+  env: CloudflareEnv,
+  dogId: string,
+): Promise<DogProfileResolution> {
+  const tombstone = await getDogTombstone(env, dogId);
+  let feed: DogFeed;
+  try {
+    feed = await getCurrentDogFeed(env);
+  } catch (error) {
+    if (tombstone) return { state: "unavailable", tombstone };
+    throw error;
+  }
+
+  const dog = feed.dogs.find((item) => item.id === dogId);
+  if (
+    tombstone &&
+    (!dog || tombstoneIsNewerThanFeed(tombstone, feed.generatedAt))
+  ) {
+    return { state: "unavailable", tombstone };
+  }
+  if (dog) return { state: "available", dog };
+  if (tombstone) return { state: "unavailable", tombstone };
+  return { state: "not_found" };
 }
 
 export async function getDogProfileResponse(
@@ -43,31 +72,18 @@ export async function getDogProfileResponse(
   }
 
   try {
-    const tombstone = await getDogTombstone(env, dogId);
-    let feed: DogFeed;
-    try {
-      feed = await getCurrentDogFeed(env);
-    } catch (error) {
-      if (tombstone) return unavailableResponse(tombstone);
-      throw error;
+    const profile = await resolveDogProfile(env, dogId);
+    if (profile.state === "unavailable") {
+      return unavailableResponse(profile.tombstone);
     }
-
-    const dog = feed.dogs.find((item) => item.id === dogId);
-    if (
-      tombstone &&
-      (!dog || tombstoneIsNewerThanFeed(tombstone, feed.generatedAt))
-    ) {
-      return unavailableResponse(tombstone);
-    }
-    if (dog) {
+    if (profile.state === "available") {
       return jsonResponse(200, {
         state: "available",
-        dog,
+        dog: profile.dog,
       } satisfies DogProfilePayload, {
         "Cache-Control": "public, max-age=60, s-maxage=300",
       });
     }
-    if (tombstone) return unavailableResponse(tombstone);
 
     return jsonResponse(404, { message: "Dog not found." });
   } catch (error) {

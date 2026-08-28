@@ -21,6 +21,71 @@ function createEnv(): AppEnv {
   };
 }
 
+const dogPageDocument = `<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <title>Abrigo do Wlad</title>
+    <meta name="description" content="Descrição geral">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    <link rel="canonical" href="https://abrigodowlad.com.br/">
+    <meta property="og:title" content="Abrigo do Wlad">
+    <meta property="og:description" content="Descrição geral">
+    <meta property="og:image" content="https://abrigodowlad.com.br/og-image.jpg">
+    <meta property="og:image:secure_url" content="https://abrigodowlad.com.br/og-image.jpg">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1600">
+    <meta property="og:image:height" content="900">
+    <meta property="og:image:alt" content="Abrigo do Wlad">
+    <meta property="og:url" content="https://abrigodowlad.com.br/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Abrigo do Wlad">
+    <meta name="twitter:description" content="Descrição geral">
+    <meta name="twitter:image" content="https://abrigodowlad.com.br/og-image.jpg">
+    <meta name="twitter:image:alt" content="Abrigo do Wlad">
+  </head>
+  <body><div id="root"></div></body>
+</html>`;
+
+function createDogPageEnv(): AppEnv {
+  return {
+    ...createEnv(),
+    ASSETS: {
+      async fetch(): Promise<Response> {
+        return new Response(dogPageDocument, {
+          headers: { "Content-Type": "text/html; charset=utf-8" },
+        });
+      },
+    },
+  };
+}
+
+function currentDogFeed() {
+  return {
+    schemaVersion: 1,
+    version: "2026-08-28",
+    generatedAt: "2026-08-28T14:00:00.000Z",
+    dogs: [
+      {
+        id: "dog-1",
+        nome: "Paçoca",
+        idade: "2 anos",
+        cateIdade: "adulto",
+        sexo: "Macho",
+        temperamento: "Dócil",
+        tags: ["dócil"],
+        status: "Disponível para Adoção",
+        fotos: [
+          "https://res.cloudinary.com/demo/image/upload/v1/dogs/pacoca.png",
+        ],
+        cor: "caramelo",
+        descricaoCompleta: "Carinhoso, brincalhão e pronto para uma família.",
+      },
+    ],
+  };
+}
+
 function adoptionRequest(
   body = "{}",
   headers: Record<string, string> = {},
@@ -40,6 +105,8 @@ function adoptionRequest(
 describe("Worker app runtime", () => {
   beforeEach(async () => {
     await env.KV.delete("rate-limit:203.0.113.0");
+    await env.KV.delete("dogs-feed:current");
+    await env.KV.delete("dogs-tombstone:dog-1");
     blockedFetch.mockClear();
     vi.stubGlobal("fetch", blockedFetch);
   });
@@ -92,6 +159,72 @@ describe("Worker app runtime", () => {
       "strict-origin-when-cross-origin",
     );
     await expect(response.text()).resolves.toBe("asset:/sobre");
+  });
+
+  it("renders dog-specific Open Graph metadata in the initial HTML", async () => {
+    await env.KV.put("dogs-feed:current", JSON.stringify(currentDogFeed()));
+
+    const response = await worker.fetch(
+      new Request("https://abrigo.test/caes/dog-1/pacoca"),
+      createDogPageEnv(),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toBe(
+      "public, max-age=60, s-maxage=300",
+    );
+    const html = await response.text();
+    expect(html).toContain("<title>Paçoca para adoção | Abrigo do Wlad</title>");
+    expect(html).toContain(
+      'content="https://abrigodowlad.com.br/caes/dog-1/pacoca"',
+    );
+    expect(html).toContain(
+      "https://res.cloudinary.com/demo/image/upload/c_fill,w_1200,h_630,q_85,f_jpg,g_auto/v1/dogs/pacoca.png",
+    );
+    expect(html).toContain('content="1200"');
+    expect(html).toContain('content="630"');
+    expect(html).toContain('content="summary_large_image"');
+  });
+
+  it("redirects stale dog slugs to the canonical profile URL", async () => {
+    await env.KV.put("dogs-feed:current", JSON.stringify(currentDogFeed()));
+
+    const response = await worker.fetch(
+      new Request("https://abrigo.test/caes/dog-1/nome-antigo?origem=share"),
+      createDogPageEnv(),
+    );
+
+    expect(response.status).toBe(308);
+    expect(response.headers.get("Location")).toBe(
+      "https://abrigo.test/caes/dog-1/pacoca?origem=share",
+    );
+  });
+
+  it("returns tombstone pages as 410 with noindex metadata", async () => {
+    await env.KV.put("dogs-feed:current", JSON.stringify(currentDogFeed()));
+    await env.KV.put("dogs-tombstone:dog-1", JSON.stringify({
+      schemaVersion: 1,
+      id: "dog-1",
+      nome: "Paçoca",
+      status: "adopted",
+      removedAt: "2026-08-28T15:00:00.000Z",
+    }));
+
+    const response = await worker.fetch(
+      new Request("https://abrigo.test/caes/dog-1/pacoca"),
+      createDogPageEnv(),
+    );
+
+    expect(response.status).toBe(410);
+    expect(response.headers.get("X-Robots-Tag")).toBe("noindex, follow");
+    const html = await response.text();
+    expect(html).toContain(
+      "<title>Paçoca encontrou uma família | Abrigo do Wlad</title>",
+    );
+    expect(html).toContain('content="noindex, follow"');
+    expect(html).toContain(
+      'content="https://abrigodowlad.com.br/og-image.jpg"',
+    );
   });
 
   it("does not expose the debug email route in production", async () => {
