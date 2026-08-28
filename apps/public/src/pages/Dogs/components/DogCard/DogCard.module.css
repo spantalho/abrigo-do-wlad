@@ -9,6 +9,22 @@
   align-items: center;
 }
 
+.dogTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.dogName {
+  font-family: var(--font-dog-voice);
+  font-size: 1.4em;
+  font-weight: 400;
+  line-height: 1.15;
+}
+
 .cardContainer {
   display: flex;
   flex-direction: column;

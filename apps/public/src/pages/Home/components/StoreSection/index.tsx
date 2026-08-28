@@ -70,7 +70,7 @@ export function StoreSection() {
           <div className={styles.buttonWrapper}>
             <a href={STORE_URL} target="_blank" rel="noopener noreferrer">
               <Button variant="text" rightIcon={<Lucide.ArrowUpRight size={20} />}>
-                Visitar Bazar
+                Visitar bazar
               </Button>
             </a>
           </div>

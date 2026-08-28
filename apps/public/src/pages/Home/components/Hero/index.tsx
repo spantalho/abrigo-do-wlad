@@ -39,22 +39,23 @@ export function Hero({ dog }: HeroProps) {
     <section className={styles.heroContainer}>
       <div className={styles.heroContent}>
         <h1 className={styles.title}>
-          Transformando abandono em finais felizes.
+          Transformando abandono em novos começos.
         </h1>
 
         <p className={styles.description}>
-          O <strong>Abrigo do Wlad</strong> é refúgio, cura e esperança para
-          centenas de cães que só conheciam a dor. Adote, doe, faça parte.
+          O <strong>Abrigo do Wlad</strong> é um projeto social independente que
+          acolhe, cuida e busca novas famílias para cães resgatados. Adote,
+          contribua e faça parte dessa história.
         </p>
 
         <div className={styles.btnGroup}>
           <Link to="/caes" className="btn-primary" onClick={() => analytics.trackButtonClick("hero_dogs_list")}>
-            <Button size="lg">Conheça Nossos Cães</Button>
+            <Button size="lg">Conheça nossos cães</Button>
           </Link>
 
           <a href="#historia" className="btn-secondary" onClick={() => analytics.trackButtonClick("hero_our_story")}>
             <Button size="lg" variant="text">
-              Nossa História
+              Nossa história
               <Lucide.ChevronRight size={25} />
             </Button>
           </a>

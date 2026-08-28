@@ -28,24 +28,24 @@ export default function PixModal() {
     <Dialog.DialogContent size="fullscreen-mobile">
       <Dialog.DialogHeader>
         <Dialog.DialogTitle>
-          Faça uma doação via PIX. Qualquer valor é bem-vindo! :{")"}
+          Faça uma doação via Pix. Qualquer valor é bem-vindo! :{")"}
         </Dialog.DialogTitle>
         <Dialog.DialogDescription>
           Para doar, escaneie o QR Code com o app do seu banco ou copie a chave
-          PIX abaixo.
+          Pix abaixo.
         </Dialog.DialogDescription>
       </Dialog.DialogHeader>
       <ScrollArea className={styles.pixScrollArea} showScrollShadows>
         <div className={styles.pixModalContainer}>
           {/* qr code image */}
           <div className={styles.qrCodeWrapper}>
-            <img src={qrCodePix} alt="Código QR para doação via PIX" />
+            <img src={qrCodePix} alt="Código QR para doação via Pix" />
           </div>
 
           {/* clipboard pix key */}
           <div className={styles.pixCard}>
             <div>
-              <p>Copiar chave PIX</p>
+              <p>Copiar chave Pix</p>
               <span>Clique para copiar</span>
             </div>
             <Button
@@ -84,7 +84,7 @@ export default function PixModal() {
                 <strong>Agência:</strong> 0118
               </li>
               <li>
-                <strong>Conta Corrente:</strong> 0136878-8
+                <strong>Conta corrente:</strong> 0136878-8
               </li>
             </ul>
           </div>

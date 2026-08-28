@@ -74,11 +74,11 @@ function DogFiltersComponent({
           onValueChange={(value) => handleFilterChange("tags", value)}
         >
           <SelectComponent.SelectTrigger className={styles.selectTrigger}>
-            <SelectComponent.SelectValue placeholder="Qualquer Temperamento" />
+            <SelectComponent.SelectValue placeholder="Qualquer temperamento" />
           </SelectComponent.SelectTrigger>
           <SelectComponent.SelectContent>
             <SelectComponent.SelectItem value="all">
-              Qualquer Temperamento
+              Qualquer temperamento
             </SelectComponent.SelectItem>
             {Object.entries(TAGS_MAP).map(([key, label]) => (
               <SelectComponent.SelectItem key={key} value={label}>
@@ -93,11 +93,11 @@ function DogFiltersComponent({
           onValueChange={(value) => handleFilterChange("cateIdade", value)}
         >
           <SelectComponent.SelectTrigger className={styles.selectTrigger}>
-            <SelectComponent.SelectValue placeholder="Todas as Idades" />
+            <SelectComponent.SelectValue placeholder="Todas as idades" />
           </SelectComponent.SelectTrigger>
           <SelectComponent.SelectContent>
             <SelectComponent.SelectItem value="all">
-              Todas as Idades
+              Todas as idades
             </SelectComponent.SelectItem>
             <SelectComponent.SelectItem value="filhote">
               Filhote (até 1 ano)
@@ -116,11 +116,11 @@ function DogFiltersComponent({
           onValueChange={(value) => handleFilterChange("cor", value)}
         >
           <SelectComponent.SelectTrigger className={styles.selectTrigger}>
-            <SelectComponent.SelectValue placeholder="Todas as Cores" />
+            <SelectComponent.SelectValue placeholder="Todas as cores" />
           </SelectComponent.SelectTrigger>
           <SelectComponent.SelectContent>
             <SelectComponent.SelectItem value="all">
-              Todas as Cores
+              Todas as cores
             </SelectComponent.SelectItem>
             {Object.entries(CORES_MAP).map(([key, label]) => (
               <SelectComponent.SelectItem key={key} value={key}>
@@ -147,7 +147,7 @@ function DogFiltersComponent({
                 size="sm"
                 style={{ cursor: "help" }}
               >
-                Ordem Rotativa
+                Ordem rotativa
               </Badge>
             </TooltipComponent.TooltipTrigger>
             <TooltipComponent.TooltipContent>
@@ -247,8 +247,8 @@ export default function Dogs() {
     <main>
       <Banner
         image={heroImage as string}
-        title="Nossos Doguinhos"
-        badge="Amigos Fiéis"
+        title="Nossos doguinhos"
+        badge="Amigos fiéis"
         description="Cada um tem uma história e uma personalidade única. Utilize os filtros abaixo para encontrar quem combina com seu estilo de vida."
       />
 

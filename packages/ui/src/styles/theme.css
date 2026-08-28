@@ -1,6 +1,7 @@
 :root {
   /* Typography */
   --font-sans: "Poppins", sans-serif;
+  --font-dog-voice: "Playwrite BR", cursive;
   --text-primary: #1e2926;
   --text-secondary: #405658;
   --text-muted: #5f6f70;

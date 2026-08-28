@@ -48,7 +48,7 @@ export default function BetaForm() {
           <DialogHeader>
             <DialogTitle>
               <Lucide.CheckCircle size={25} color="var(--success)" />
-              Formulário Enviado com Sucesso!
+              Formulário enviado com sucesso!
             </DialogTitle>
             <DialogDescription>
               {successId && (
@@ -110,7 +110,7 @@ export default function BetaForm() {
       <Banner
         image={heroImage as string}
         badge="Questionário"
-        title="Intenção de Adoção"
+        title="Intenção de adoção"
         description="Por favor, responda com sinceridade. Adoção é um ato de amor e responsabilidade."
       />
       <div className="container">
@@ -122,7 +122,7 @@ export default function BetaForm() {
         ) : settings?.acceptingApplications === false ? (
           <div className={styles.notAcceptingContainer}>
             <Lucide.Info size={48} color="var(--primary)" />
-            <h2>Solicitações Temporariamente Pausadas</h2>
+            <h2>Solicitações temporariamente pausadas</h2>
             <p>
               No momento não estamos recebendo novas solicitações de adoção.
               Por favor, acompanhe nossas redes sociais para saber quando
@@ -149,7 +149,7 @@ export default function BetaForm() {
       <div className={styles.betaDisclaimer}>
         <div>
           <Badge variant="outline" size="sm" leftIcon={<Lucide.TestTube2 />}>
-            Funcionalidade em Beta
+            Funcionalidade em beta
           </Badge>
         </div>
         <p>
@@ -174,7 +174,7 @@ export default function BetaForm() {
                 }
               }}
             >
-              Testar Email de Notificação
+              Testar e-mail de notificação
             </Button>
           </div>
         )}
