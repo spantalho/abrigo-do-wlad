@@ -162,14 +162,14 @@
   color: var(--text-on-action);
 }
 
-.viewButton {
-  gap: 0.5rem;
+.reviewButton {
   flex: 0 0 auto;
+  min-width: 12.5rem;
   white-space: nowrap;
 }
 
-.viewButton:hover {
-  background-color: var(--border-light);
+.reviewButtonPending {
+  box-shadow: var(--shadow-sm);
 }
 
 .emptyState {
@@ -624,7 +624,7 @@
     width: 100%;
     margin-left: 0;
   }
-  .actionBtn, .viewButton {
+  .actionBtn, .reviewButton {
     justify-content: center;
     width: 100%;
   }

@@ -158,14 +158,30 @@ export const ADOPTION_REVIEW_STEPS: readonly AdoptionReviewStep[] = [
   },
 ];
 
+function splitFieldLabel(label: string): { number: string | null; question: string } {
+  const match = label.match(/^((?:\d+\.)*\d+)\.\s+(.+)$/);
+
+  if (!match) return { number: null, question: label };
+
+  return {
+    number: match[1],
+    question: match[2],
+  };
+}
+
 function DataItem({ label, value }: { label: string; value?: string }) {
   const hasValue = Boolean(value?.trim());
+  const { number, question } = splitFieldLabel(label);
+
   return (
     <div className={styles.dataGroup}>
-      <span className={styles.dataLabel}>{label}</span>
-      <span className={`${styles.dataValue} ${!hasValue ? styles.missingValue : ""}`}>
+      <dt className={styles.dataLabel}>
+        {number && <span className={styles.fieldNumber}>{number}.</span>}
+        <span className={styles.fieldQuestion}>{question}</span>
+      </dt>
+      <dd className={`${styles.dataValue} ${!hasValue ? styles.missingValue : ""}`}>
         {hasValue ? value : "Não informado"}
-      </span>
+      </dd>
     </div>
   );
 }
@@ -182,7 +198,7 @@ export function AdoptionDetailsSection({
   return (
     <section className={styles.section}>
       {showTitle && <h2 className={styles.sectionTitle}>{step.label}</h2>}
-      <div className={styles.dataGrid}>
+      <dl className={styles.dataGrid}>
         {step.fields.map((field) => (
           <DataItem
             key={field.key}
@@ -190,7 +206,7 @@ export function AdoptionDetailsSection({
             value={application[field.key]}
           />
         ))}
-      </div>
+      </dl>
     </section>
   );
 }

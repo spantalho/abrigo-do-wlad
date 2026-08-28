@@ -1,8 +1,30 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, Calendar, Check, Clock, Dog, Eye, Inbox, Mail, MessageCircle, Phone, Printer, XCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Calendar,
+  Check,
+  ChevronUp,
+  ClipboardCheck,
+  Clock,
+  Dog,
+  Inbox,
+  Mail,
+  MessageCircle,
+  Phone,
+  Printer,
+  XCircle,
+} from "lucide-react";
 import { Button } from "@jaci/ui/Button";
 import { Badge } from "@jaci/ui/Badge";
-import { Card, CardBody, CardContent, CardFooter, CardHeader, CardTitle } from "@jaci/ui/Card";
+import {
+  Card,
+  CardBody,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@jaci/ui/Card";
 import {
   Dialog,
   DialogBody,
@@ -33,7 +55,10 @@ import {
 } from "../../services/adoptions";
 import { ConfirmModal } from "../../components/ConfirmModal";
 import { SuccessModal } from "../../components/SuccessModal";
-import type { AdoptionRequest, AdoptionRequestSummary } from "../../types/adoptions";
+import type {
+  AdoptionRequest,
+  AdoptionRequestSummary,
+} from "../../types/adoptions";
 import styles from "./AdoptionsDashboard.module.css";
 
 interface ExpirationPresentation {
@@ -62,14 +87,20 @@ function ReviewSectionNavigation({
   return (
     <>
       <div className={styles.mobileSectionPicker}>
-        <label className={styles.mobileSectionLabel} htmlFor="adoption-review-section">
+        <label
+          className={styles.mobileSectionLabel}
+          htmlFor="adoption-review-section"
+        >
           Seção
         </label>
         <Select
           value={String(activeStep)}
           onValueChange={(value) => onStepChange(Number(value))}
         >
-          <SelectTrigger id="adoption-review-section" className={styles.mobileSectionTrigger}>
+          <SelectTrigger
+            id="adoption-review-section"
+            className={styles.mobileSectionTrigger}
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -89,7 +120,10 @@ function ReviewSectionNavigation({
         </Select>
       </div>
 
-      <nav className={styles.desktopSectionNavigation} aria-label="Seções da ficha de adoção">
+      <nav
+        className={styles.desktopSectionNavigation}
+        aria-label="Seções da ficha de adoção"
+      >
         <p className={styles.sectionNavigationLabel}>Seções da ficha</p>
         <ol className={styles.sectionNavigationList}>
           {ADOPTION_REVIEW_STEPS.map(({ label, icon: Icon }, index) => {
@@ -104,10 +138,17 @@ function ReviewSectionNavigation({
                   aria-current={isActive ? "step" : undefined}
                   onClick={() => onStepChange(index)}
                 >
-                  <span className={styles.sectionNavigationNumber} aria-hidden="true">
+                  <span
+                    className={styles.sectionNavigationNumber}
+                    aria-hidden="true"
+                  >
                     {String(index + 1).padStart(2, "0")}
                   </span>
-                  <Icon className={styles.sectionNavigationIcon} size={17} aria-hidden="true" />
+                  <Icon
+                    className={styles.sectionNavigationIcon}
+                    size={17}
+                    aria-hidden="true"
+                  />
                   <span>{label}</span>
                 </button>
               </li>
@@ -119,7 +160,9 @@ function ReviewSectionNavigation({
   );
 }
 
-function getExpirationPresentation(expiresAt?: string): ExpirationPresentation | null {
+function getExpirationPresentation(
+  expiresAt?: string,
+): ExpirationPresentation | null {
   if (!expiresAt) return null;
 
   const expiration = new Date(expiresAt);
@@ -147,11 +190,12 @@ function getExpirationPresentation(expiresAt?: string): ExpirationPresentation |
     expiration.getDate(),
   );
   const daysLeft = Math.max(0, Math.round((expirationDay - today) / DAY_IN_MS));
-  const label = daysLeft === 0
-    ? "Expira hoje"
-    : daysLeft === 1
-      ? "Expira amanhã"
-      : `Expira em ${daysLeft} dias`;
+  const label =
+    daysLeft === 0
+      ? "Expira hoje"
+      : daysLeft === 1
+        ? "Expira amanhã"
+        : `Expira em ${daysLeft} dias`;
 
   return {
     label,
@@ -163,7 +207,8 @@ function getExpirationPresentation(expiresAt?: string): ExpirationPresentation |
 export default function AdoptionsDashboard() {
   const [requests, setRequests] = useState<AdoptionRequestSummary[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSummary, setSelectedSummary] = useState<AdoptionRequestSummary | null>(null);
+  const [selectedSummary, setSelectedSummary] =
+    useState<AdoptionRequestSummary | null>(null);
   const [selectedReq, setSelectedReq] = useState<AdoptionRequest | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [activeReviewStep, setActiveReviewStep] = useState(0);
@@ -171,20 +216,32 @@ export default function AdoptionsDashboard() {
   const detailRequestToken = useRef(0);
   const reviewMainRef = useRef<HTMLDivElement>(null);
 
-  const [actionModal, setActionModal] = useState<{ isOpen: boolean, type: 'approved' | 'rejected', req: AdoptionRequestSummary | null }>({
-    isOpen: false, type: 'approved', req: null
+  const [actionModal, setActionModal] = useState<{
+    isOpen: boolean;
+    type: "approved" | "rejected";
+    req: AdoptionRequestSummary | null;
+  }>({
+    isOpen: false,
+    type: "approved",
+    req: null,
   });
 
-  const [successInfo, setSuccessInfo] = useState<{ isOpen: boolean, title: string, message: string }>({
-    isOpen: false, title: "", message: ""
+  const [successInfo, setSuccessInfo] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
   });
 
   useEffect(() => {
     async function fetchRequests() {
       const data = await getAdoptionApplications<AdoptionRequestSummary>();
       const sortedData = data.sort((a, b) => {
-        if (a.status === 'pending' && b.status !== 'pending') return -1;
-        if (a.status !== 'pending' && b.status === 'pending') return 1;
+        if (a.status === "pending" && b.status !== "pending") return -1;
+        if (a.status !== "pending" && b.status === "pending") return 1;
 
         const timeA = a.submittedAt ? Date.parse(a.submittedAt) : 0;
         const timeB = b.submittedAt ? Date.parse(b.submittedAt) : 0;
@@ -204,20 +261,25 @@ export default function AdoptionsDashboard() {
     try {
       await updateAdoptionStatus(id, type);
 
-      setRequests(prev => prev.map(r => r.id === id ? { ...r, status: type } : r));
+      setRequests((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, status: type } : r)),
+      );
       const cached = detailsCache.current.get(id);
       if (cached) detailsCache.current.set(id, { ...cached, status: type });
-      setSelectedReq((current) => current?.id === id ? { ...current, status: type } : current);
-      setActionModal({ isOpen: false, type: 'approved', req: null });
+      setSelectedReq((current) =>
+        current?.id === id ? { ...current, status: type } : current,
+      );
+      setActionModal({ isOpen: false, type: "approved", req: null });
 
       setSuccessInfo({
         isOpen: true,
-        title: type === 'approved' ? "Adoção Aprovada!" : "Solicitação Reprovada",
-        message: type === 'approved'
-          ? `O status de ${nome_adotante} foi alterado para Aprovado.`
-          : `O status de ${nome_adotante} foi alterado para Reprovado.`
+        title:
+          type === "approved" ? "Adoção Aprovada!" : "Solicitação Reprovada",
+        message:
+          type === "approved"
+            ? `O status de ${nome_adotante} foi alterado para Aprovado.`
+            : `O status de ${nome_adotante} foi alterado para Reprovado.`,
       });
-
     } catch (error) {
       console.error(error);
       alert("Erro ao atualizar o status. Verifique o console.");
@@ -225,16 +287,34 @@ export default function AdoptionsDashboard() {
   };
 
   const getStatusBadge = (status?: string) => {
-    if (status === 'approved') return <Badge variant="success" size="sm">Aprovado</Badge>;
-    if (status === 'rejected') return <Badge variant="danger" size="sm">Reprovado</Badge>;
-    return <Badge variant="outline" size="sm">Pendente</Badge>;
+    if (status === "approved")
+      return (
+        <Badge variant="success" size="sm">
+          Aprovado
+        </Badge>
+      );
+    if (status === "rejected")
+      return (
+        <Badge variant="danger" size="sm">
+          Reprovado
+        </Badge>
+      );
+    return (
+      <Badge variant="outline" size="sm">
+        Pendente
+      </Badge>
+    );
   };
 
   const formatDate = (timestamp?: string) => {
     if (!timestamp) return "Data desconhecida";
     try {
       return new Intl.DateTimeFormat("pt-BR", {
-        day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       }).format(new Date(timestamp));
     } catch {
       return "Data inválida";
@@ -243,14 +323,16 @@ export default function AdoptionsDashboard() {
 
   const getWhatsAppLink = (phone?: string, name?: string) => {
     if (!phone) return "";
-    const cleanPhone = phone.replace(/\D/g, '');
+    const cleanPhone = phone.replace(/\D/g, "");
 
     let finalPhone = cleanPhone;
     if (cleanPhone.length === 10 || cleanPhone.length === 11) {
       finalPhone = `55${cleanPhone}`;
     }
 
-    const message = encodeURIComponent(`Olá ${name || 'Candidato'}, sou do Abrigo do Wlad e estou entrando em contato sobre a sua solicitação de adoção.`);
+    const message = encodeURIComponent(
+      `Olá ${name || "Candidato"}, sou do Abrigo do Wlad e estou entrando em contato sobre a sua solicitação de adoção.`,
+    );
     return `https://wa.me/${finalPhone}?text=${message}`;
   };
 
@@ -268,7 +350,9 @@ export default function AdoptionsDashboard() {
     }
 
     try {
-      const detail = await getAdoptionApplication<AdoptionRequest>(requestSummary.id);
+      const detail = await getAdoptionApplication<AdoptionRequest>(
+        requestSummary.id,
+      );
       detailsCache.current.set(requestSummary.id, detail);
       if (detailRequestToken.current === requestToken) setSelectedReq(detail);
     } catch (requestError: unknown) {
@@ -302,20 +386,26 @@ export default function AdoptionsDashboard() {
     );
   };
 
-  const selectedStatus = selectedReq?.status ?? selectedSummary?.status;
-  const selectedExpiration = getExpirationPresentation(selectedSummary?.expiresAt);
+  const selectedStatus =
+    selectedReq?.status ?? selectedSummary?.status ?? "pending";
+  const selectedExpiration = getExpirationPresentation(
+    selectedSummary?.expiresAt,
+  );
   const selectedWhatsAppLink = getWhatsAppLink(
     selectedReq?.telefone ?? selectedSummary?.telefone,
     selectedReq?.nome_adotante ?? selectedSummary?.nome_adotante,
   );
-  const currentReviewStep = ADOPTION_REVIEW_STEPS[activeReviewStep] ?? ADOPTION_REVIEW_STEPS[0];
+  const currentReviewStep =
+    ADOPTION_REVIEW_STEPS[activeReviewStep] ?? ADOPTION_REVIEW_STEPS[0];
 
   return (
     <div className={styles.container}>
       <div className={styles.topBar}>
         <div>
           <h1 className={styles.title}>Solicitações de Adoção</h1>
-          <p className={styles.subtitle}>Gerencie e avalie os formulários dos candidatos a adotantes.</p>
+          <p className={styles.subtitle}>
+            Gerencie e avalie os formulários dos candidatos a adotantes.
+          </p>
         </div>
       </div>
 
@@ -330,6 +420,11 @@ export default function AdoptionsDashboard() {
         <div className={styles.listContainer}>
           {requests.map((req) => {
             const expiration = getExpirationPresentation(req.expiresAt);
+            const isPending =
+              req.status !== "approved" && req.status !== "rejected";
+            const reviewActionLabel = isPending
+              ? "Revisar solicitação"
+              : "Consultar análise";
 
             return (
               <Card key={req.id} size="sm" className={styles.card}>
@@ -355,13 +450,18 @@ export default function AdoptionsDashboard() {
                     <div className={styles.detailsRow}>
                       <div className={styles.detailItem}>
                         <Dog size={16} />
-                        <span>{req.animal_especifico || "Qualquer cãozinho"}</span>
+                        <span>
+                          {req.animal_especifico || "Qualquer cãozinho"}
+                        </span>
                       </div>
 
                       {/* Link para o whatsapp no telefone */}
                       {req.telefone ? (
                         <a
-                          href={getWhatsAppLink(req.telefone, req.nome_adotante)}
+                          href={getWhatsAppLink(
+                            req.telefone,
+                            req.nome_adotante,
+                          )}
                           target="_blank"
                           rel="noopener noreferrer"
                           className={`${styles.detailItem} ${styles.wppLink}`}
@@ -388,13 +488,15 @@ export default function AdoptionsDashboard() {
                 <CardFooter className={styles.cardActions}>
                   <div className={styles.utilityActions}>
                     <Button
-                      variant="secondary"
+                      variant={isPending ? "primary" : "secondary"}
                       size="sm"
-                      className={styles.viewButton}
-                      leftIcon={<Eye size={18} />}
+                      className={`${styles.reviewButton} ${isPending ? styles.reviewButtonPending : ""}`}
+                      leftIcon={<ClipboardCheck size={18} />}
+                      rightIcon={<ChevronUp size={16} />}
                       onClick={() => void openReview(req)}
+                      aria-label={`${reviewActionLabel} de ${req.nome_adotante || "candidato"}`}
                     >
-                      Ver ficha
+                      {reviewActionLabel}
                     </Button>
                     <Button
                       variant="outline"
@@ -408,14 +510,20 @@ export default function AdoptionsDashboard() {
                     </Button>
                   </div>
 
-                  {req.status === 'pending' && (
+                  {isPending && (
                     <div className={styles.decisionActions}>
                       <Button
                         size="sm"
                         variant="success"
                         className={`${styles.actionBtn} ${styles.approveBtn}`}
                         leftIcon={<Check size={16} />}
-                        onClick={() => setActionModal({ isOpen: true, type: 'approved', req })}
+                        onClick={() =>
+                          setActionModal({
+                            isOpen: true,
+                            type: "approved",
+                            req,
+                          })
+                        }
                       >
                         Aprovar
                       </Button>
@@ -424,7 +532,13 @@ export default function AdoptionsDashboard() {
                         variant="danger"
                         className={`${styles.actionBtn} ${styles.rejectBtn}`}
                         leftIcon={<XCircle size={16} />}
-                        onClick={() => setActionModal({ isOpen: true, type: 'rejected', req })}
+                        onClick={() =>
+                          setActionModal({
+                            isOpen: true,
+                            type: "rejected",
+                            req,
+                          })
+                        }
                       >
                         Reprovar
                       </Button>
@@ -437,7 +551,10 @@ export default function AdoptionsDashboard() {
         </div>
       )}
 
-      <Dialog open={Boolean(selectedSummary)} onOpenChange={(open) => !open && closeReview()}>
+      <Dialog
+        open={Boolean(selectedSummary)}
+        onOpenChange={(open) => !open && closeReview()}
+      >
         <DialogContent
           size="xl"
           layout="structured"
@@ -447,7 +564,9 @@ export default function AdoptionsDashboard() {
           <DialogHeader className={styles.workspaceHeader}>
             <div className={styles.workspaceHeaderMain}>
               <div className={styles.workspaceIdentity}>
-                <span className={styles.workspaceEyebrow}>Revisão da solicitação</span>
+                <span className={styles.workspaceEyebrow}>
+                  Revisão da solicitação
+                </span>
                 <div className={styles.workspaceTitleRow}>
                   <DialogTitle className={styles.workspaceTitle}>
                     {selectedSummary?.nome_adotante || "Candidato sem nome"}
@@ -473,14 +592,24 @@ export default function AdoptionsDashboard() {
               </div>
 
               {selectedSummary && (
-                <div className={styles.workspaceUtilities} role="toolbar" aria-label="Ações da ficha">
+                <div
+                  className={styles.workspaceUtilities}
+                  role="toolbar"
+                  aria-label="Ações da ficha"
+                >
                   {selectedWhatsAppLink && (
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       leftIcon={<MessageCircle size={17} />}
-                      onClick={() => window.open(selectedWhatsAppLink, "_blank", "noopener,noreferrer")}
+                      onClick={() =>
+                        window.open(
+                          selectedWhatsAppLink,
+                          "_blank",
+                          "noopener,noreferrer",
+                        )
+                      }
                       title="Conversar pelo WhatsApp"
                     >
                       WhatsApp
@@ -492,7 +621,9 @@ export default function AdoptionsDashboard() {
                       variant="ghost"
                       size="sm"
                       leftIcon={<Mail size={17} />}
-                      onClick={() => { window.location.href = `mailto:${selectedReq.email}`; }}
+                      onClick={() => {
+                        window.location.href = `mailto:${selectedReq.email}`;
+                      }}
                       title="Enviar e-mail"
                     >
                       E-mail
@@ -518,16 +649,27 @@ export default function AdoptionsDashboard() {
               <div className={styles.detailState}>
                 <Card variant="callout" tone="danger" size="sm">
                   <CardBody>
-                    <CardHeader><CardTitle>Não foi possível carregar a ficha</CardTitle></CardHeader>
-                    <CardContent><p>{detailError}</p></CardContent>
+                    <CardHeader>
+                      <CardTitle>Não foi possível carregar a ficha</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>{detailError}</p>
+                    </CardContent>
                   </CardBody>
                 </Card>
-                <Button variant="secondary" onClick={() => void openReview(selectedSummary)}>
+                <Button
+                  variant="secondary"
+                  onClick={() => void openReview(selectedSummary)}
+                >
                   Tentar novamente
                 </Button>
               </div>
             ) : !selectedReq ? (
-              <div className={styles.loadingState} role="status" aria-live="polite">
+              <div
+                className={styles.loadingState}
+                role="status"
+                aria-live="polite"
+              >
                 <span>Carregando respostas...</span>
                 <div className={styles.skeletonGrid} aria-hidden="true">
                   {[0, 1, 2, 3].map((item) => (
@@ -554,9 +696,12 @@ export default function AdoptionsDashboard() {
                   <div className={styles.workspaceSectionHeader}>
                     <div>
                       <span className={styles.workspaceSectionEyebrow}>
-                        Seção {activeReviewStep + 1} de {ADOPTION_REVIEW_STEPS.length}
+                        Seção {activeReviewStep + 1} de{" "}
+                        {ADOPTION_REVIEW_STEPS.length}
                       </span>
-                      <h3 id="active-review-section-title">{currentReviewStep.label}</h3>
+                      <h3 id="active-review-section-title">
+                        {currentReviewStep.label}
+                      </h3>
                     </div>
                     <Badge variant="outline" size="sm">
                       {currentReviewStep.fields.length} respostas
@@ -585,7 +730,9 @@ export default function AdoptionsDashboard() {
                   size="sm"
                   leftIcon={<ArrowLeft size={17} />}
                   disabled={activeReviewStep === 0}
-                  onClick={() => changeReviewStep(Math.max(0, activeReviewStep - 1))}
+                  onClick={() =>
+                    changeReviewStep(Math.max(0, activeReviewStep - 1))
+                  }
                 >
                   Anterior
                 </Button>
@@ -593,8 +740,17 @@ export default function AdoptionsDashboard() {
                   type="button"
                   size="sm"
                   rightIcon={<ArrowRight size={17} />}
-                  disabled={activeReviewStep === ADOPTION_REVIEW_STEPS.length - 1}
-                  onClick={() => changeReviewStep(Math.min(ADOPTION_REVIEW_STEPS.length - 1, activeReviewStep + 1))}
+                  disabled={
+                    activeReviewStep === ADOPTION_REVIEW_STEPS.length - 1
+                  }
+                  onClick={() =>
+                    changeReviewStep(
+                      Math.min(
+                        ADOPTION_REVIEW_STEPS.length - 1,
+                        activeReviewStep + 1,
+                      ),
+                    )
+                  }
                 >
                   Próxima
                 </Button>
@@ -607,7 +763,13 @@ export default function AdoptionsDashboard() {
                     variant="danger"
                     size="sm"
                     leftIcon={<XCircle size={16} />}
-                    onClick={() => setActionModal({ isOpen: true, type: "rejected", req: selectedSummary })}
+                    onClick={() =>
+                      setActionModal({
+                        isOpen: true,
+                        type: "rejected",
+                        req: selectedSummary,
+                      })
+                    }
                   >
                     Reprovar
                   </Button>
@@ -616,7 +778,13 @@ export default function AdoptionsDashboard() {
                     variant="success"
                     size="sm"
                     leftIcon={<Check size={16} />}
-                    onClick={() => setActionModal({ isOpen: true, type: "approved", req: selectedSummary })}
+                    onClick={() =>
+                      setActionModal({
+                        isOpen: true,
+                        type: "approved",
+                        req: selectedSummary,
+                      })
+                    }
                   >
                     Aprovar
                   </Button>
@@ -634,22 +802,35 @@ export default function AdoptionsDashboard() {
 
       <ConfirmModal
         isOpen={actionModal.isOpen}
-        onClose={() => setActionModal({ isOpen: false, type: 'approved', req: null })}
+        onClose={() =>
+          setActionModal({ isOpen: false, type: "approved", req: null })
+        }
         onConfirm={handleConfirmAction}
-        title={actionModal.type === 'approved' ? "Aprovar Solicitação" : "Reprovar Solicitação"}
-        confirmText={actionModal.type === 'approved' ? "Sim, Aprovar" : "Sim, Reprovar"}
-        isDestructive={actionModal.type === 'rejected'}
+        title={
+          actionModal.type === "approved"
+            ? "Aprovar Solicitação"
+            : "Reprovar Solicitação"
+        }
+        confirmText={
+          actionModal.type === "approved" ? "Sim, Aprovar" : "Sim, Reprovar"
+        }
+        isDestructive={actionModal.type === "rejected"}
         message={
           <>
-            Tem certeza que deseja <strong>{actionModal.type === 'approved' ? 'APROVAR' : 'REPROVAR'}</strong> a
-            solicitação de <strong>{actionModal.req?.nome_adotante}</strong>?
+            Tem certeza que deseja{" "}
+            <strong>
+              {actionModal.type === "approved" ? "APROVAR" : "REPROVAR"}
+            </strong>{" "}
+            a solicitação de <strong>{actionModal.req?.nome_adotante}</strong>?
           </>
         }
       />
 
       <SuccessModal
         isOpen={successInfo.isOpen}
-        onClose={() => setSuccessInfo({ isOpen: false, title: "", message: "" })}
+        onClose={() =>
+          setSuccessInfo({ isOpen: false, title: "", message: "" })
+        }
         title={successInfo.title}
         message={successInfo.message}
       />
