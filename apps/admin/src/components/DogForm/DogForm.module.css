@@ -108,6 +108,7 @@
 .sectionContent .dropContent p {
   margin: 1rem 0 0;
   color: var(--text-secondary);
+  text-align: center;
 }
 
 .row {

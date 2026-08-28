@@ -1,0 +1,86 @@
+@startuml
+!pragma layout smetana
+title Arquitetura do painel administrativo
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam defaultFontName Arial
+skinparam defaultFontColor #1F2937
+skinparam ArrowColor #64748B
+skinparam ArrowThickness 1.2
+skinparam packageBorderColor #CBD5E1
+skinparam packageBackgroundColor #F8FAFC
+skinparam componentBorderColor #94A3B8
+skinparam componentBackgroundColor #FFFFFF
+skinparam databaseBorderColor #94A3B8
+skinparam databaseBackgroundColor #FFFFFF
+skinparam noteBorderColor #FDBA74
+skinparam noteBackgroundColor #FFF7ED
+
+actor "Equipe do abrigo" as staff
+
+package "Cloudflare" as cloudflare {
+  component "Cloudflare Access\nMFA · política Allow" as access
+
+  package "Worker abrigo-do-wlad-admin" as admin_worker {
+    component "Entrada HTTP\nStatic Assets · /api/*" as ingress
+    component "Autenticação e RBAC\nJWT · allowlists · papéis" as auth
+    component "SPA React\nassets protegidos" as spa
+    component "API administrativa\nmesma origem · validação" as api
+
+    component "Dados administrativos\ndashboard · cães · reciclagem · candidaturas" as data_service
+    component "Configuração restrita\nchaves · avisos" as developer_service
+    component "Mídia\nvalidação · otimização · exclusão" as media_service
+    component "Trilha de auditoria\nmutações via waitUntil" as audit_service
+    component "Persistência segura\nFirestore REST · criptografia" as persistence
+  }
+
+  component "Rate Limiting\n12 uploads/min por identidade" as upload_limit
+  database "Cloudflare KV\ncatálogo público rotativo" as kv
+  component "Workers Logs\nlogs · traces" as logs
+}
+
+package "Google Cloud" as google {
+  database "Firestore\ndogs · recycle_points\nadoption_application · system/*\nadmin_audit_log" as firestore
+}
+
+package "Cloudinary" as cloudinary {
+  component "Imagens dos animais" as images
+}
+
+staff --> access : autentica com MFA
+access --> ingress : Cf-Access-Jwt-Assertion
+ingress --> auth : valida toda requisição
+auth --> spa : entrega assets autorizados
+spa --> ingress : /api/session · /api/admin/*
+auth --> api : identidade + papel
+
+api --> data_service
+api --> developer_service : somente developer
+api --> media_service
+api --> audit_service : registra mutações
+
+data_service --> persistence : CRUD + descriptografia
+developer_service --> persistence : chaves + notificações
+audit_service --> persistence : eventos sem payload sensível
+persistence --> firestore : conta de serviço
+media_service --> upload_limit : consome cota
+media_service --> images : upload assinado\nexclusão validada
+data_service --> kv : atualiza catálogo após\nmutações de cães
+
+auth ..> logs : acessos negados
+api ..> logs : erros + falhas de auditoria
+
+note right of api
+  administrator: operação cotidiana
+  developer: operação cotidiana +
+  auditoria, chaves e avisos
+end note
+
+note bottom of spa
+  O navegador não acessa Firestore ou
+  Cloudinary diretamente e não recebe secrets.
+end note
+
+@enduml
