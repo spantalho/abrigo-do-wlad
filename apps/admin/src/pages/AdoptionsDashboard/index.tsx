@@ -1,20 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Calendar,
-  Check,
-  ChevronUp,
-  ClipboardCheck,
-  Clock,
-  Dog,
-  Inbox,
-  Mail,
-  MessageCircle,
-  Phone,
-  Printer,
-  XCircle,
-} from "lucide-react";
+import * as Lucide from "lucide-react";
 import { Button } from "@jaci/ui/Button";
 import { Badge } from "@jaci/ui/Badge";
 import {
@@ -413,7 +398,7 @@ export default function AdoptionsDashboard() {
         <p style={{ color: "var(--text-muted)" }}>Buscando solicitações...</p>
       ) : requests.length === 0 ? (
         <div className={styles.emptyState}>
-          <Inbox size={48} style={{ margin: "0 auto 1rem", opacity: 0.5 }} />
+          <Lucide.Inbox size={48} style={{ margin: "0 auto 1rem", opacity: 0.5 }} />
           <p>Nenhuma solicitação de adoção pendente.</p>
         </div>
       ) : (
@@ -440,7 +425,7 @@ export default function AdoptionsDashboard() {
                           className={styles.expirationBadge}
                           variant={expiration.variant}
                           size="sm"
-                          leftIcon={<Clock size={14} />}
+                          leftIcon={<Lucide.Clock size={14} />}
                           title={expiration.title}
                         >
                           {expiration.label}
@@ -449,7 +434,7 @@ export default function AdoptionsDashboard() {
                     </div>
                     <div className={styles.detailsRow}>
                       <div className={styles.detailItem}>
-                        <Dog size={16} />
+                        <Lucide.Dog size={16} />
                         <span>
                           {req.animal_especifico || "Qualquer cãozinho"}
                         </span>
@@ -467,18 +452,18 @@ export default function AdoptionsDashboard() {
                           className={`${styles.detailItem} ${styles.wppLink}`}
                           title="Chamar no WhatsApp"
                         >
-                          <MessageCircle size={16} />
+                          <Lucide.MessageCircle size={16} />
                           <span>{req.telefone}</span>
                         </a>
                       ) : (
                         <div className={styles.detailItem}>
-                          <Phone size={16} />
+                          <Lucide.Phone size={16} />
                           <span>Sem telefone</span>
                         </div>
                       )}
 
                       <div className={styles.detailItem}>
-                        <Calendar size={16} />
+                        <Lucide.Calendar size={16} />
                         <span>{formatDate(req.submittedAt)}</span>
                       </div>
                     </div>
@@ -491,8 +476,8 @@ export default function AdoptionsDashboard() {
                       variant={isPending ? "primary" : "secondary"}
                       size="sm"
                       className={`${styles.reviewButton} ${isPending ? styles.reviewButtonPending : ""}`}
-                      leftIcon={<ClipboardCheck size={18} />}
-                      rightIcon={<ChevronUp size={16} />}
+                      leftIcon={<Lucide.ClipboardCheck size={18} />}
+                      rightIcon={<Lucide.ChevronUp size={16} />}
                       onClick={() => void openReview(req)}
                       aria-label={`${reviewActionLabel} de ${req.nome_adotante || "candidato"}`}
                     >
@@ -506,7 +491,7 @@ export default function AdoptionsDashboard() {
                       aria-label={`Imprimir ficha de ${req.nome_adotante || "candidato"}`}
                       title="Imprimir ficha"
                     >
-                      <Printer size={17} />
+                      <Lucide.Printer size={17} />
                     </Button>
                   </div>
 
@@ -516,7 +501,7 @@ export default function AdoptionsDashboard() {
                         size="sm"
                         variant="success"
                         className={`${styles.actionBtn} ${styles.approveBtn}`}
-                        leftIcon={<Check size={16} />}
+                        leftIcon={<Lucide.Check size={16} />}
                         onClick={() =>
                           setActionModal({
                             isOpen: true,
@@ -531,7 +516,7 @@ export default function AdoptionsDashboard() {
                         size="sm"
                         variant="danger"
                         className={`${styles.actionBtn} ${styles.rejectBtn}`}
-                        leftIcon={<XCircle size={16} />}
+                        leftIcon={<Lucide.XCircle size={16} />}
                         onClick={() =>
                           setActionModal({
                             isOpen: true,
@@ -575,16 +560,16 @@ export default function AdoptionsDashboard() {
                 </div>
                 <DialogDescription className={styles.workspaceMeta}>
                   <span>
-                    <Dog size={15} aria-hidden="true" />
+                    <Lucide.Dog size={15} aria-hidden="true" />
                     {selectedSummary?.animal_especifico || "Qualquer cãozinho"}
                   </span>
                   <span>
-                    <Calendar size={15} aria-hidden="true" />
+                    <Lucide.Calendar size={15} aria-hidden="true" />
                     {formatDate(selectedSummary?.submittedAt)}
                   </span>
                   {selectedExpiration && (
                     <span title={selectedExpiration.title}>
-                      <Clock size={15} aria-hidden="true" />
+                      <Lucide.Clock size={15} aria-hidden="true" />
                       {selectedExpiration.label}
                     </span>
                   )}
@@ -602,7 +587,7 @@ export default function AdoptionsDashboard() {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      leftIcon={<MessageCircle size={17} />}
+                      leftIcon={<Lucide.MessageCircle size={17} />}
                       onClick={() =>
                         window.open(
                           selectedWhatsAppLink,
@@ -620,7 +605,7 @@ export default function AdoptionsDashboard() {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      leftIcon={<Mail size={17} />}
+                      leftIcon={<Lucide.Mail size={17} />}
                       onClick={() => {
                         window.location.href = `mailto:${selectedReq.email}`;
                       }}
@@ -637,7 +622,7 @@ export default function AdoptionsDashboard() {
                     aria-label="Imprimir ficha"
                     title="Imprimir ficha"
                   >
-                    <Printer size={17} />
+                    <Lucide.Printer size={17} />
                   </Button>
                 </div>
               )}
@@ -728,7 +713,7 @@ export default function AdoptionsDashboard() {
                   type="button"
                   variant="secondary"
                   size="sm"
-                  leftIcon={<ArrowLeft size={17} />}
+                  leftIcon={<Lucide.ArrowLeft size={17} />}
                   disabled={activeReviewStep === 0}
                   onClick={() =>
                     changeReviewStep(Math.max(0, activeReviewStep - 1))
@@ -739,7 +724,7 @@ export default function AdoptionsDashboard() {
                 <Button
                   type="button"
                   size="sm"
-                  rightIcon={<ArrowRight size={17} />}
+                  rightIcon={<Lucide.ArrowRight size={17} />}
                   disabled={
                     activeReviewStep === ADOPTION_REVIEW_STEPS.length - 1
                   }
@@ -762,7 +747,7 @@ export default function AdoptionsDashboard() {
                     type="button"
                     variant="danger"
                     size="sm"
-                    leftIcon={<XCircle size={16} />}
+                    leftIcon={<Lucide.XCircle size={16} />}
                     onClick={() =>
                       setActionModal({
                         isOpen: true,
@@ -777,7 +762,7 @@ export default function AdoptionsDashboard() {
                     type="button"
                     variant="success"
                     size="sm"
-                    leftIcon={<Check size={16} />}
+                    leftIcon={<Lucide.Check size={16} />}
                     onClick={() =>
                       setActionModal({
                         isOpen: true,

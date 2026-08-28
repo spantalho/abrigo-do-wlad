@@ -68,7 +68,7 @@ com uma infraestrutura equivalente.
 
 ## Identidade visual
 
-O tema visual foi apelidado de **Jaci** (do tupi *Îasy* e do guarani *Jasy*),
+O tema visual foi apelidado de **Jaci** (do tupi _Îasy_ e do guarani _Jasy_),
 em referência à [deusa da Lua](https://pt.wikipedia.org/wiki/Jaci). Suas cores remetem à Terra, com tons inspirados no
 céu, na água, no solo e na vegetação, somando-se à identidade já existente do
 Abrigo do Wlad. A paleta e os estilos globais do site estão em
@@ -86,13 +86,14 @@ npm run dev
 
 Comandos principais:
 
-| Objetivo | Comando |
-| --- | --- |
-| Site público | `npm run dev:public` |
-| Painel administrativo | `npm run dev:admin` |
-| Build completo | `npm run build` |
-| Testes | `npm test` |
-| Verificação de qualidade | `npm run lint` |
+| Objetivo                 | Comando                 |
+| ------------------------ | ----------------------- |
+| Site público             | `npm run dev:public`    |
+| Painel administrativo    | `npm run dev:admin`     |
+| Build completo           | `npm run build`         |
+| Testes                   | `npm test`              |
+| Verificação de qualidade | `npm run lint`          |
+| Atualizar diagramas      | `npm run docs:diagrams` |
 
 ## Documentação técnica
 

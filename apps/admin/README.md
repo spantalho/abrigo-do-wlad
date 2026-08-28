@@ -13,8 +13,6 @@ Banco de dados, descriptografia e mídia passam pela API do Worker. Credenciais,
 chaves e listas de e-mails autorizados ficam apenas no runtime. O roteiro de
 configuração e publicação está em
 [`docs/security/access-and-rules-rollout.md`](../../docs/security/access-and-rules-rollout.md).
-O fluxo dos serviços está no
-[diagrama da arquitetura](../../docs/admin-architecture.svg).
 
 ```text
 apps/admin/
@@ -27,6 +25,12 @@ apps/admin/
 
 Os componentes compartilhados vêm do workspace
 [`@jaci/ui`](../../packages/ui).
+
+### Diagrama
+
+![Arquitetura do painel administrativo](../../docs/admin-architecture.svg)
+
+Fonte: [`docs/admin-architecture.puml`](../../docs/admin-architecture.puml).
 
 ## Desenvolvimento local
 
@@ -65,16 +69,16 @@ versionados.
 Todas as rotas exigem identidade válida do Cloudflare Access; mutações também
 validam origem e payload.
 
-| Recurso | Rotas | Operações |
-| --- | --- | --- |
-| Sessão | `/api/session` | Identidade e papel atuais. |
-| Dashboard | `/api/admin/dashboard` | Métricas, retenção e aviso ativo. |
-| Animais | `/api/admin/dogs[/:id]` | Consulta e CRUD. |
-| Reciclagem | `/api/admin/recycle-points[/:id]` | Consulta e CRUD. |
-| Candidaturas | `/api/admin/adoptions`, `/api/admin/adoptions/:id/status` | Consulta e atualização de status. |
-| Auditoria | `/api/admin/audit-log` | Últimos 100 eventos; somente `developer`. |
-| Mídia | `/api/admin/media/upload`, `/api/admin/media/delete` | Upload e exclusão validados. |
-| Avisos | `/api/admin/notifications` | Leitura geral; escrita e remoção somente por `developer`. |
+| Recurso      | Rotas                                                     | Operações                                                 |
+| ------------ | --------------------------------------------------------- | --------------------------------------------------------- |
+| Sessão       | `/api/session`                                            | Identidade e papel atuais.                                |
+| Dashboard    | `/api/admin/dashboard`                                    | Métricas, retenção e aviso ativo.                         |
+| Animais      | `/api/admin/dogs[/:id]`                                   | Consulta e CRUD.                                          |
+| Reciclagem   | `/api/admin/recycle-points[/:id]`                         | Consulta e CRUD.                                          |
+| Candidaturas | `/api/admin/adoptions`, `/api/admin/adoptions/:id/status` | Consulta e atualização de status.                         |
+| Auditoria    | `/api/admin/audit-log`                                    | Últimos 100 eventos; somente `developer`.                 |
+| Mídia        | `/api/admin/media/upload`, `/api/admin/media/delete`      | Upload e exclusão validados.                              |
+| Avisos       | `/api/admin/notifications`                                | Leitura geral; escrita e remoção somente por `developer`. |
 
 Uploads aceitam uma imagem JPEG, PNG ou WebP de até 20 MB e 64 megapixels. O
 Worker limita a versão persistida a 5 MB, tenta uma segunda otimização em WebP
