@@ -30,7 +30,8 @@ Os componentes compartilhados vêm do workspace
 
 ![Arquitetura do painel administrativo](../../docs/admin-architecture.svg)
 
-Fonte: [`docs/admin-architecture.puml`](../../docs/admin-architecture.puml).
+Fonte: [`docs/admin-architecture.puml`](../../docs/admin-architecture.puml). Após
+alterá-la, execute `npm run docs:diagrams` na raiz e versione o SVG gerado.
 
 ## Desenvolvimento local
 

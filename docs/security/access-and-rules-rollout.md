@@ -62,7 +62,6 @@ Os comandos de verificação e o CI não fazem deploy automaticamente.
 ```bash
 npm ci
 npm run check:secrets
-npm run check:diagrams
 npm audit --omit=dev --audit-level=high
 npm run lint
 npm run build
