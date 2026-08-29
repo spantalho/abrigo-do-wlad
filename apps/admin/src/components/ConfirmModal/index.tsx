@@ -17,14 +17,27 @@ interface ConfirmModalProps {
   title: string;
   message: React.ReactNode;
   confirmText?: string;
+  confirmingText?: string;
+  isConfirming?: boolean;
   isDestructive?: boolean;
 }
 
 export function ConfirmModal({
-  isOpen, onClose, onConfirm, title, message, confirmText = "Confirmar", isDestructive = false
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  confirmText = "Confirmar",
+  confirmingText = "Confirmando...",
+  isConfirming = false,
+  isDestructive = false,
 }: ConfirmModalProps) {
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => !open && !isConfirming && onClose()}
+    >
       <DialogContent className={styles.modal}>
         <DialogHeader className={styles.header}>
           <div className={`${styles.iconArea} ${isDestructive ? styles.iconDestructive : styles.iconConfirm}`}>
@@ -34,13 +47,16 @@ export function ConfirmModal({
         </DialogHeader>
         <DialogDescription className={styles.description}>{message}</DialogDescription>
         <DialogFooter className={styles.actions}>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button variant="outline" disabled={isConfirming} onClick={onClose}>
+            Cancelar
+          </Button>
           <Button
             variant={isDestructive ? "danger" : "success"}
             className={isDestructive ? styles.btnDestructive : styles.btnConfirm}
+            disabled={isConfirming}
             onClick={onConfirm}
           >
-            {confirmText}
+            {isConfirming ? confirmingText : confirmText}
           </Button>
         </DialogFooter>
       </DialogContent>

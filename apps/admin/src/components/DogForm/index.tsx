@@ -21,6 +21,7 @@ import {
 } from "../../services/cloudinary";
 import { SuccessModal } from "../SuccessModal";
 import { ErrorModal } from "../ErrorModal"; // <-- Importação do ErrorModal
+import { ConfirmModal } from "../ConfirmModal";
 import styles from "./DogForm.module.css";
 
 const MAX_DOG_PHOTOS = 6;
@@ -48,6 +49,7 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
   // ESTADOS PARA OS MODAIS
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorInfo, setErrorInfo] = useState({ show: false, message: "" });
+  const [photoPendingRemoval, setPhotoPendingRemoval] = useState<DogPhoto | null>(null);
 
   const localPreviewUrls = useRef(new Set<string>());
   const [photos, setPhotos] = useState<DogPhoto[]>(() =>
@@ -98,7 +100,7 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
   const onDropRejected = useCallback(() => {
     setErrorInfo({
       show: true,
-      message: "Use imagens JPEG, PNG ou WebP de até 20 MB. A otimização é automática.",
+      message: "Use imagens JPEG, PNG ou WebP de até 20 MB.",
     });
   }, []);
 
@@ -112,14 +114,23 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
   });
 
   const removePhoto = (photoToRemove: DogPhoto) => {
-    if (photoToRemove.kind === "existing" && !window.confirm("Remover esta foto do cadastro?")) {
+    if (photoToRemove.kind === "existing") {
+      setPhotoPendingRemoval(photoToRemove);
       return;
     }
+
     if (photoToRemove.kind === "local") {
       URL.revokeObjectURL(photoToRemove.previewUrl);
       localPreviewUrls.current.delete(photoToRemove.previewUrl);
     }
     setPhotos(prev => prev.filter(photo => photo.id !== photoToRemove.id));
+  };
+
+  const confirmPhotoRemoval = () => {
+    if (!photoPendingRemoval) return;
+
+    setPhotos(prev => prev.filter(photo => photo.id !== photoPendingRemoval.id));
+    setPhotoPendingRemoval(null);
   };
 
   const setCoverPhoto = (photoId: string) => {
@@ -229,6 +240,16 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
         isOpen={errorInfo.show}
         onClose={() => setErrorInfo({ show: false, message: "" })}
         message={errorInfo.message}
+      />
+
+      <ConfirmModal
+        isOpen={photoPendingRemoval !== null}
+        onClose={() => setPhotoPendingRemoval(null)}
+        onConfirm={confirmPhotoRemoval}
+        title="Remover foto?"
+        message="A foto será removida do cadastro quando você salvar as alterações."
+        confirmText="Remover foto"
+        isDestructive
       />
 
       <div className={styles.headerArea}>

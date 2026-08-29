@@ -32,7 +32,7 @@ export function ErrorModal({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <DialogDescription className={styles.description}>{message}</DialogDescription>
-        <Button variant="danger" className={styles.confirmBtn} onClick={onClose}>Tentar novamente</Button>
+        <Button variant="danger" className={styles.confirmBtn} onClick={onClose}>Fechar</Button>
       </DialogContent>
     </Dialog>
   );

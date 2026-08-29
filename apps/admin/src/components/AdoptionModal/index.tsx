@@ -14,11 +14,21 @@ interface AdoptionModalProps {
   onClose: () => void;
   onConfirm: (adoptedViaSite: boolean) => void;
   dogName: string;
+  isSubmitting?: boolean;
 }
 
-export function AdoptionModal({ isOpen, onClose, onConfirm, dogName }: AdoptionModalProps) {
+export function AdoptionModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  dogName,
+  isSubmitting = false,
+}: AdoptionModalProps) {
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => !open && !isSubmitting && onClose()}
+    >
       <DialogContent className={styles.modal}>
         <DialogHeader className={styles.header}>
           <div className={styles.iconArea}><Heart size={30} /></div>
@@ -28,10 +38,18 @@ export function AdoptionModal({ isOpen, onClose, onConfirm, dogName }: AdoptionM
           Ficamos felizes em ver um animal saindo do abrigo. Informe o que aconteceu para manter as métricas atualizadas.
         </DialogDescription>
         <div className={styles.actionButtons}>
-          <Button variant="success" onClick={() => onConfirm(true)}>
-            <Heart size={20} /> Adotado pelo site
+          <Button
+            variant="success"
+            disabled={isSubmitting}
+            onClick={() => onConfirm(true)}
+          >
+            <Heart size={20} /> {isSubmitting ? "Finalizando..." : "Adotado pelo site"}
           </Button>
-          <Button variant="outline" onClick={() => onConfirm(false)}>
+          <Button
+            variant="outline"
+            disabled={isSubmitting}
+            onClick={() => onConfirm(false)}
+          >
             <LogOut size={20} /> Adotado por fora ou outro motivo
           </Button>
         </div>
