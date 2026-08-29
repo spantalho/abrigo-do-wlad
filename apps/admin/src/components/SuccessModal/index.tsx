@@ -5,9 +5,10 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
+  DialogHeading,
+  DialogIcon,
   DialogTitle,
 } from "@jaci/ui/Dialog";
-import styles from "./SuccessModal.module.css";
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -20,19 +21,23 @@ export function SuccessModal({
   isOpen,
   onClose,
   title = "Sucesso!",
-  message = "Operação realizada com sucesso."
+  message = "Operação realizada com sucesso.",
 }: SuccessModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className={styles.modal}>
-        <DialogHeader className={styles.header}>
-          <div className={styles.iconArea}>
-            <Check size={30} />
-          </div>
-          <DialogTitle>{title}</DialogTitle>
+      <DialogContent size="sm">
+        <DialogHeader>
+          <DialogIcon tone="success">
+            <Check />
+          </DialogIcon>
+          <DialogHeading>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>{message}</DialogDescription>
+          </DialogHeading>
         </DialogHeader>
-        <DialogDescription className={styles.description}>{message}</DialogDescription>
-        <Button variant="success" onClick={onClose}>Continuar</Button>
+        <Button variant="success" onClick={onClose}>
+          Continuar
+        </Button>
       </DialogContent>
     </Dialog>
   );

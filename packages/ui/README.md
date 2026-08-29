@@ -30,6 +30,8 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
+  DialogHeading,
+  DialogIcon,
 } from "@jaci/ui/Dialog";
 ```
 
@@ -46,6 +48,7 @@ estruturado e por um tamanho oficial:
 ```
 
 Os tamanhos disponíveis são `sm`, `md`, `lg`, `xl` e `fullscreen-mobile`.
+Quando omitido, o tamanho padrão é `md`.
 O último preserva a geometria padrão ou definida pelo consumidor em telas
 maiores e ocupa a área útil do viewport em telas pequenas.
 
@@ -53,6 +56,34 @@ Quando o diálogo precisa combinar um tamanho explícito no desktop com tela
 cheia no mobile, use `mobileMode="fullscreen"`. O valor legado
 `size="fullscreen-mobile"` continua disponível para consumidores que não
 definem outra largura de desktop.
+
+### Cabeçalho semântico
+
+Diálogos semânticos, como confirmação, sucesso, alerta e erro, devem usar o
+ícone oficial. O ícone continua opcional para diálogos funcionais, como
+formulários, mapas e visualização de dados.
+
+```tsx
+<DialogContent size="sm">
+  <DialogHeader>
+    <DialogIcon tone="danger">
+      <AlertTriangle />
+    </DialogIcon>
+    <DialogHeading>
+      <DialogTitle>Excluir registro?</DialogTitle>
+      <DialogDescription>
+        Esta ação não poderá ser desfeita.
+      </DialogDescription>
+    </DialogHeading>
+  </DialogHeader>
+  <DialogFooter>...</DialogFooter>
+</DialogContent>
+```
+
+Em `sm`, ícone, título e descrição ficam empilhados e centralizados. Nos
+demais tamanhos, o ícone fica à esquerda do conjunto de título e descrição.
+Os tons disponíveis são `neutral`, `primary`, `info`, `success`, `warning` e
+`danger`. O ícone é decorativo por padrão e não substitui um título descritivo.
 
 Componentes de aplicação, como navegação e layouts de página, permanecem nos
 respectivos aplicativos. Primitivos, comportamento acessível e identidade

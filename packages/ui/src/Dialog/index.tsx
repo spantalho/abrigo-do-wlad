@@ -9,6 +9,13 @@ import { X } from "lucide-react";
 export type DialogSize = "sm" | "md" | "lg" | "xl" | "fullscreen-mobile";
 export type DialogLayout = "default" | "structured";
 export type DialogMobileMode = "default" | "fullscreen";
+export type DialogIconTone =
+  | "neutral"
+  | "primary"
+  | "info"
+  | "success"
+  | "warning"
+  | "danger";
 
 export interface DialogContentProps
   extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
@@ -23,6 +30,14 @@ const sizeClasses: Record<DialogSize, string> = {
   lg: styles.sizeLg,
   xl: styles.sizeXl,
   "fullscreen-mobile": styles.sizeFullscreenMobile,
+};
+
+const iconToneClasses: Partial<Record<DialogIconTone, string>> = {
+  primary: styles.iconPrimary,
+  info: styles.iconInfo,
+  success: styles.iconSuccess,
+  warning: styles.iconWarning,
+  danger: styles.iconDanger,
 };
 
 const Dialog = DialogPrimitive.Root;
@@ -46,19 +61,21 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 const DialogContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
   DialogContentProps
->(({ className, children, size, layout = "default", mobileMode = "default", ...props }, ref) => (
+>(({ className, children, size = "md", layout = "default", mobileMode = "default", ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
         styles.content,
-        size && sizeClasses[size],
+        sizeClasses[size],
         layout === "structured" && styles.structured,
         mobileMode === "fullscreen" && styles.mobileFullscreen,
         className,
       )}
       {...props}
+      data-size={size}
+      data-layout={layout}
     >
       {children}
     </DialogPrimitive.Content>
@@ -79,6 +96,27 @@ const DialogHeader = ({
   </div>
 );
 DialogHeader.displayName = "DialogHeader";
+
+const DialogIcon = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & { tone?: DialogIconTone }
+>(({ className, tone = "neutral", ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(styles.icon, iconToneClasses[tone], className)}
+    {...props}
+    aria-hidden={props["aria-hidden"] ?? true}
+  />
+));
+DialogIcon.displayName = "DialogIcon";
+
+const DialogHeading = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn(styles.heading, className)} {...props} />
+));
+DialogHeading.displayName = "DialogHeading";
 
 const DialogBody = React.forwardRef<
   HTMLDivElement,
@@ -129,6 +167,8 @@ export {
   DialogTrigger,
   DialogContent,
   DialogHeader,
+  DialogIcon,
+  DialogHeading,
   DialogBody,
   DialogFooter,
   DialogTitle,

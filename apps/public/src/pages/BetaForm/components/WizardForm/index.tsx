@@ -528,16 +528,20 @@ export function WizardForm({ onSubmitSuccess }: WizardFormProps) {
         open={showResumeDialog}
         onOpenChange={setShowResumeDialog}
       >
-        <DialogComponent.DialogContent>
+        <DialogComponent.DialogContent size="sm">
           <DialogComponent.DialogHeader>
-            <DialogComponent.DialogTitle>
-              <Lucide.CircleQuestionMark size={25} color="var(--primary)" />
-              Continuar preenchimento?
-            </DialogComponent.DialogTitle>
-            <DialogComponent.DialogDescription>
-              Encontramos dados salvos de um preenchimento anterior. Deseja
-              continuar de onde parou ou começar um novo formulário?
-            </DialogComponent.DialogDescription>
+            <DialogComponent.DialogIcon tone="primary">
+              <Lucide.CircleQuestionMark />
+            </DialogComponent.DialogIcon>
+            <DialogComponent.DialogHeading>
+              <DialogComponent.DialogTitle>
+                Continuar preenchimento?
+              </DialogComponent.DialogTitle>
+              <DialogComponent.DialogDescription>
+                Encontramos dados salvos de um preenchimento anterior. Deseja
+                continuar de onde parou ou começar um novo formulário?
+              </DialogComponent.DialogDescription>
+            </DialogComponent.DialogHeading>
           </DialogComponent.DialogHeader>
           <DialogComponent.DialogFooter className={styles.dialogFooter}>
             <Button variant="outline" onClick={handleRestart}>

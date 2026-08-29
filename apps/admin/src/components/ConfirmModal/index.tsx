@@ -6,6 +6,8 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogHeading,
+  DialogIcon,
   DialogTitle,
 } from "@jaci/ui/Dialog";
 import styles from "./ConfirmModal.module.css";
@@ -38,21 +40,22 @@ export function ConfirmModal({
       open={isOpen}
       onOpenChange={(open) => !open && !isConfirming && onClose()}
     >
-      <DialogContent className={styles.modal}>
-        <DialogHeader className={styles.header}>
-          <div className={`${styles.iconArea} ${isDestructive ? styles.iconDestructive : styles.iconConfirm}`}>
-            {isDestructive ? <AlertTriangle size={30} /> : <CheckCircle size={30} />}
-          </div>
-          <DialogTitle>{title}</DialogTitle>
+      <DialogContent size="sm">
+        <DialogHeader>
+          <DialogIcon tone={isDestructive ? "danger" : "success"}>
+            {isDestructive ? <AlertTriangle /> : <CheckCircle />}
+          </DialogIcon>
+          <DialogHeading>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>{message}</DialogDescription>
+          </DialogHeading>
         </DialogHeader>
-        <DialogDescription className={styles.description}>{message}</DialogDescription>
         <DialogFooter className={styles.actions}>
           <Button variant="outline" disabled={isConfirming} onClick={onClose}>
             Cancelar
           </Button>
           <Button
             variant={isDestructive ? "danger" : "success"}
-            className={isDestructive ? styles.btnDestructive : styles.btnConfirm}
             disabled={isConfirming}
             onClick={onConfirm}
           >

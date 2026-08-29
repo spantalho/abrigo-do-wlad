@@ -8,10 +8,12 @@ import { Button } from "@jaci/ui/Button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogHeading,
+  DialogIcon,
+  DialogTitle,
 } from "@jaci/ui/Dialog";
 import { getThirdPartyImage } from "@/utils/common";
 import { WizardForm } from "./components/WizardForm";
@@ -44,29 +46,31 @@ export default function BetaForm() {
           if (!open) navigate("/");
         }}
       >
-        <DialogContent>
+        <DialogContent size="md">
           <DialogHeader>
-            <DialogTitle>
-              <Lucide.CheckCircle size={25} color="var(--success)" />
-              Formulário enviado com sucesso!
-            </DialogTitle>
-            <DialogDescription>
-              {successId && (
-                <span
-                  style={{
-                    color: "var(--text-muted)",
-                    fontSize: "0.8em",
-                  }}
-                >
-                  ID da sua candidatura: {successId}
-                </span>
-              )}
-              {successWarning && (
-                <span className={styles.submissionWarning} role="status">
-                  {successWarning}
-                </span>
-              )}
-            </DialogDescription>
+            <DialogIcon tone="success">
+              <Lucide.CheckCircle />
+            </DialogIcon>
+            <DialogHeading>
+              <DialogTitle>Formulário enviado com sucesso!</DialogTitle>
+              <DialogDescription>
+                {successId && (
+                  <span
+                    style={{
+                      color: "var(--text-muted)",
+                      fontSize: "0.8em",
+                    }}
+                  >
+                    ID da sua candidatura: {successId}
+                  </span>
+                )}
+                {successWarning && (
+                  <span className={styles.submissionWarning} role="status">
+                    {successWarning}
+                  </span>
+                )}
+              </DialogDescription>
+            </DialogHeading>
           </DialogHeader>
           <div className={styles.modalContent}>
             <p>
