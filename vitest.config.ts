@@ -33,7 +33,10 @@ export default defineConfig({
         test: {
           name: "frontend",
           environment: "jsdom",
-          include: ["apps/public/src/**/*.test.tsx"],
+          include: [
+            "apps/public/src/**/*.test.tsx",
+            "apps/admin/src/**/*.test.tsx",
+          ],
           setupFiles: ["./apps/public/src/test/setup.ts"],
         },
       },

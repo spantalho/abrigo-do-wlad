@@ -19,6 +19,7 @@ interface ConfirmModalProps {
   title: string;
   message: React.ReactNode;
   confirmText?: string;
+  cancelText?: string;
   confirmingText?: string;
   isConfirming?: boolean;
   isDestructive?: boolean;
@@ -31,6 +32,7 @@ export function ConfirmModal({
   title,
   message,
   confirmText = "Confirmar",
+  cancelText = "Cancelar",
   confirmingText = "Confirmando...",
   isConfirming = false,
   isDestructive = false,
@@ -52,7 +54,7 @@ export function ConfirmModal({
         </DialogHeader>
         <DialogFooter className={styles.actions}>
           <Button variant="outline" disabled={isConfirming} onClick={onClose}>
-            Cancelar
+            {cancelText}
           </Button>
           <Button
             variant={isDestructive ? "danger" : "success"}
