@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as Lucide from "lucide-react";
 import { Link } from "react-router";
 import { type Dog, CORES_MAP } from "@/types/dogs";
@@ -17,6 +17,7 @@ import { Carousel, type CarouselAPI } from "@jaci/ui/Carousel";
 import { ScrollArea } from "@jaci/ui/ScrollArea";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { analytics } from "@/utils/analytics";
+import { shareDogProfile } from "@/utils/shareDog";
 
 interface ModalProps {
   dog: Dog | null;
@@ -29,6 +30,11 @@ export function DogModal({ dog: parentDog, isOpen, onClose }: ModalProps) {
 
   const [prevParentDog, setPrevParentDog] = useState<Dog | null>(parentDog);
   const [displayedDog, setDisplayedDog] = useState<Dog | null>(parentDog);
+  const [isSharing, setIsSharing] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState<"idle" | "copied" | "error">(
+    "idle",
+  );
+  const feedbackTimerRef = useRef<number | null>(null);
 
   if (parentDog && parentDog !== prevParentDog) {
     setPrevParentDog(parentDog);
@@ -37,6 +43,17 @@ export function DogModal({ dog: parentDog, isOpen, onClose }: ModalProps) {
 
   const dog = displayedDog;
 
+  useEffect(() => {
+    setIsSharing(false);
+    setShareFeedback("idle");
+  }, [dog?.id, isOpen]);
+
+  useEffect(() => () => {
+    if (feedbackTimerRef.current !== null) {
+      window.clearTimeout(feedbackTimerRef.current);
+    }
+  }, []);
+
   if (!dog) return null;
 
   const photos = dog.fotos || [];
@@ -44,6 +61,37 @@ export function DogModal({ dog: parentDog, isOpen, onClose }: ModalProps) {
 
   const handleClose = () => {
     onClose();
+  };
+
+  const showTemporaryShareFeedback = (feedback: "copied" | "error") => {
+    setShareFeedback(feedback);
+    if (feedbackTimerRef.current !== null) {
+      window.clearTimeout(feedbackTimerRef.current);
+    }
+    feedbackTimerRef.current = window.setTimeout(() => {
+      setShareFeedback("idle");
+      feedbackTimerRef.current = null;
+    }, 2500);
+  };
+
+  const handleShare = async () => {
+    setIsSharing(true);
+    try {
+      const result = await shareDogProfile(dog);
+      if (result === "copied") showTemporaryShareFeedback("copied");
+      if (result !== "cancelled") {
+        analytics.trackButtonClick("dog_share", {
+          dog_id: dog.id,
+          dog_name: dog.nome,
+          method: result === "shared" ? "native" : "copy",
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao compartilhar o perfil do cachorro:", error);
+      showTemporaryShareFeedback("error");
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   return (
@@ -249,20 +297,41 @@ export function DogModal({ dog: parentDog, isOpen, onClose }: ModalProps) {
               </div>
 
               <div className={styles.footer}>
-                <Link
-                  to={`/beta/formulario?pet=${encodeURIComponent(dog.nome)}`}
-                >
+                <div className={styles.footerActions}>
                   <Button
-                    leftIcon={<Lucide.Heart />}
+                    type="button"
+                    leftIcon={<Lucide.Share2 />}
                     size={`${isDesktop ? "md" : "lg"}`}
-                    variant="primary"
-                    onClick={() =>
-                      analytics.trackConversionIntent("adopt_form")
-                    }
+                    variant="outline"
+                    className={styles.actionButton}
+                    onClick={() => void handleShare()}
+                    disabled={isSharing}
                   >
-                    Tenho Interesse
+                    {isSharing ? "Compartilhando..." : "Compartilhar"}
                   </Button>
-                </Link>
+
+                  <Link
+                    to={`/beta/formulario?pet=${encodeURIComponent(dog.nome)}`}
+                    className={styles.interestLink}
+                  >
+                    <Button
+                      leftIcon={<Lucide.Heart />}
+                      size={`${isDesktop ? "md" : "lg"}`}
+                      variant="primary"
+                      className={styles.actionButton}
+                      onClick={() =>
+                        analytics.trackConversionIntent("adopt_form")
+                      }
+                    >
+                      Tenho Interesse
+                    </Button>
+                  </Link>
+                </div>
+                <p className={styles.shareFeedback} aria-live="polite">
+                  {shareFeedback === "copied" && "Link copiado!"}
+                  {shareFeedback === "error" &&
+                    "Não foi possível compartilhar. Tente novamente."}
+                </p>
               </div>
             </div>
           </div>

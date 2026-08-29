@@ -3,12 +3,13 @@ import { test, vi } from "vitest";
 
 import type { CloudflareEnv } from "../_lib/env";
 import type { DogFeed, PublicDog } from "./feed";
-import { getDogProfileResponse } from "./profile";
+import { getDogProfileBySlugResponse } from "./profile";
 import type { DogTombstone } from "./tombstone";
 
 function dog(id = "dog-1"): PublicDog {
   return {
     id,
+    publicSlug: "pacoca",
     nome: "Paçoca",
     idade: "2 anos",
     cateIdade: "adulto",
@@ -23,7 +24,7 @@ function dog(id = "dog-1"): PublicDog {
 
 function feed(dogs: PublicDog[], generatedAt = "2026-08-28T14:00:00.000Z"): DogFeed {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     version: "2026-08-28",
     generatedAt,
     dogs,
@@ -36,6 +37,7 @@ function tombstone(
   return {
     schemaVersion: 1,
     id: "dog-1",
+    publicSlug: "pacoca",
     nome: "Paçoca",
     status: "adopted",
     removedAt,
@@ -43,11 +45,19 @@ function tombstone(
 }
 
 function envWith(values: Record<string, unknown>): CloudflareEnv {
+  const allValues = {
+    "dogs-public-slug:slug:pacoca": {
+      schemaVersion: 1,
+      id: "dog-1",
+      slug: "pacoca",
+    },
+    ...values,
+  };
   return {
     NODE_ENV: "production",
     KV: {
       async get(key) {
-        const value = values[key];
+        const value = allValues[key];
         return value === undefined ? null : JSON.stringify(value);
       },
       async put() {},
@@ -57,25 +67,47 @@ function envWith(values: Record<string, unknown>): CloudflareEnv {
 
 test("returns an available dog from the current feed", async () => {
   const currentDog = dog();
-  const response = await getDogProfileResponse(
-    new Request("https://abrigo.test/api/dogs/dog-1"),
+  const response = await getDogProfileBySlugResponse(
+    new Request("https://abrigo.test/api/dogs/by-slug/pacoca"),
     envWith({ "dogs-feed:current": feed([currentDog]) }),
-    "dog-1",
+    "pacoca",
   );
 
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), { state: "available", dog: currentDog });
 });
 
+test("returns an available dog through its public slug registry", async () => {
+  const currentDog = dog();
+  const response = await getDogProfileBySlugResponse(
+    new Request("https://abrigo.test/api/dogs/by-slug/pacoca"),
+    envWith({
+      "dogs-public-slug:slug:pacoca": {
+        schemaVersion: 1,
+        id: "dog-1",
+        slug: "pacoca",
+      },
+      "dogs-feed:current": feed([currentDog]),
+    }),
+    "pacoca",
+  );
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    state: "available",
+    dog: currentDog,
+  });
+});
+
 test("a tombstone newer than the feed wins over a stale available dog", async () => {
   const removedDog = tombstone();
-  const response = await getDogProfileResponse(
-    new Request("https://abrigo.test/api/dogs/dog-1"),
+  const response = await getDogProfileBySlugResponse(
+    new Request("https://abrigo.test/api/dogs/by-slug/pacoca"),
     envWith({
       "dogs-feed:current": feed([dog()]),
       "dogs-tombstone:dog-1": removedDog,
     }),
-    "dog-1",
+    "pacoca",
   );
 
   assert.equal(response.status, 410);
@@ -87,13 +119,13 @@ test("a tombstone newer than the feed wins over a stale available dog", async ()
 
 test("a newer feed can supersede an orphan tombstone", async () => {
   const currentDog = dog();
-  const response = await getDogProfileResponse(
-    new Request("https://abrigo.test/api/dogs/dog-1"),
+  const response = await getDogProfileBySlugResponse(
+    new Request("https://abrigo.test/api/dogs/by-slug/pacoca"),
     envWith({
       "dogs-feed:current": feed([currentDog], "2026-08-28T16:00:00.000Z"),
       "dogs-tombstone:dog-1": tombstone(),
     }),
-    "dog-1",
+    "pacoca",
   );
 
   assert.equal(response.status, 200);
@@ -107,6 +139,9 @@ test("returns a tombstone even when the current feed cannot be read", async () =
     NODE_ENV: "production",
     KV: {
       async get(key) {
+        if (key === "dogs-public-slug:slug:pacoca") {
+          return JSON.stringify({ schemaVersion: 1, id: "dog-1", slug: "pacoca" });
+        }
         if (key === "dogs-tombstone:dog-1") return JSON.stringify(removedDog);
         throw new Error("feed unavailable");
       },
@@ -114,10 +149,10 @@ test("returns a tombstone even when the current feed cannot be read", async () =
     },
   };
 
-  const response = await getDogProfileResponse(
-    new Request("https://abrigo.test/api/dogs/dog-1"),
+  const response = await getDogProfileBySlugResponse(
+    new Request("https://abrigo.test/api/dogs/by-slug/pacoca"),
     env,
-    "dog-1",
+    "pacoca",
   );
 
   assert.equal(response.status, 410);
@@ -128,17 +163,17 @@ test("returns a tombstone even when the current feed cannot be read", async () =
   errorLog.mockRestore();
 });
 
-test("distinguishes unknown and invalid public dog ids", async () => {
+test("distinguishes unknown and invalid public slugs", async () => {
   const env = envWith({ "dogs-feed:current": feed([]) });
-  const missingResponse = await getDogProfileResponse(
-    new Request("https://abrigo.test/api/dogs/missing"),
+  const missingResponse = await getDogProfileBySlugResponse(
+    new Request("https://abrigo.test/api/dogs/by-slug/missing"),
     env,
     "missing",
   );
-  const invalidResponse = await getDogProfileResponse(
-    new Request("https://abrigo.test/api/dogs/invalid%2Fid"),
+  const invalidResponse = await getDogProfileBySlugResponse(
+    new Request("https://abrigo.test/api/dogs/by-slug/invalid%2Fslug"),
     env,
-    "invalid%2Fid",
+    "invalid%2Fslug",
   );
 
   assert.equal(missingResponse.status, 404);

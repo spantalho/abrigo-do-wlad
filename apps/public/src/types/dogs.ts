@@ -26,6 +26,7 @@ export type DogHealthStatus = (typeof DOG_HEALTH_STATUSES)[number];
 
 export interface Dog {
   id: string;
+  publicSlug: string;
   nome: string;
   idade: string;
   cateIdade: "filhote" | "adulto" | "idoso";
@@ -43,6 +44,7 @@ export interface Dog {
 export interface DogTombstone {
   schemaVersion: 1;
   id: string;
+  publicSlug: string;
   nome: string;
   status: "adopted" | "unavailable";
   removedAt: string;

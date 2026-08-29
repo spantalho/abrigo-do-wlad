@@ -2,8 +2,11 @@ import type { CloudflareEnv } from "../_lib/env";
 import { jsonResponse } from "../_lib/env";
 import { getCurrentDogFeed, type DogFeed, type PublicDog } from "./feed";
 import {
+  getDogPublicSlugBySlug,
+  isValidDogPublicSlug,
+} from "./public-slug";
+import {
   getDogTombstone,
-  isValidPublicDogId,
   type DogTombstone,
 } from "./tombstone";
 
@@ -56,10 +59,40 @@ export async function resolveDogProfile(
   return { state: "not_found" };
 }
 
-export async function getDogProfileResponse(
+export async function resolveDogProfileBySlug(
+  env: CloudflareEnv,
+  publicSlug: string,
+): Promise<DogProfileResolution> {
+  if (!isValidDogPublicSlug(publicSlug)) return { state: "not_found" };
+
+  const slugRecord = await getDogPublicSlugBySlug(env, publicSlug);
+  if (slugRecord) return resolveDogProfile(env, slugRecord.id);
+
+  // A stale feed is rebuilt here on first access, backfilling slug records.
+  const feed = await getCurrentDogFeed(env);
+  const dog = feed.dogs.find((item) => item.publicSlug === publicSlug);
+  return dog ? resolveDogProfile(env, dog.id) : { state: "not_found" };
+}
+
+function profileResponse(profile: DogProfileResolution): Response {
+  if (profile.state === "unavailable") {
+    return unavailableResponse(profile.tombstone);
+  }
+  if (profile.state === "available") {
+    return jsonResponse(200, {
+      state: "available",
+      dog: profile.dog,
+    } satisfies DogProfilePayload, {
+      "Cache-Control": "public, max-age=60, s-maxage=300",
+    });
+  }
+  return jsonResponse(404, { message: "Dog not found." });
+}
+
+export async function getDogProfileBySlugResponse(
   request: Request,
   env: CloudflareEnv,
-  dogId: string,
+  publicSlug: string,
 ): Promise<Response> {
   if (request.method !== "GET") {
     return new Response(null, {
@@ -67,29 +100,16 @@ export async function getDogProfileResponse(
       headers: { Allow: "GET", "Cache-Control": "no-store" },
     });
   }
-  if (!isValidPublicDogId(dogId)) {
-    return jsonResponse(400, { message: "Invalid dog ID." });
+  if (!isValidDogPublicSlug(publicSlug)) {
+    return jsonResponse(400, { message: "Invalid dog public slug." });
   }
 
   try {
-    const profile = await resolveDogProfile(env, dogId);
-    if (profile.state === "unavailable") {
-      return unavailableResponse(profile.tombstone);
-    }
-    if (profile.state === "available") {
-      return jsonResponse(200, {
-        state: "available",
-        dog: profile.dog,
-      } satisfies DogProfilePayload, {
-        "Cache-Control": "public, max-age=60, s-maxage=300",
-      });
-    }
-
-    return jsonResponse(404, { message: "Dog not found." });
+    return profileResponse(await resolveDogProfileBySlug(env, publicSlug));
   } catch (error) {
     console.error(JSON.stringify({
-      event: "dogs.profile.request.failed",
-      dogId,
+      event: "dogs.profile-by-slug.request.failed",
+      publicSlug,
       message: error instanceof Error ? error.message : "Unknown failure",
     }));
     return jsonResponse(503, { message: "Dog profile is temporarily unavailable." });

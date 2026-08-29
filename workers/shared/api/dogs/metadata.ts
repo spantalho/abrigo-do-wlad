@@ -4,6 +4,7 @@ import {
 } from "@abrigo/media/cloudinary";
 
 import type { PublicDog } from "./feed";
+import { dogProfilePath } from "./public-slug";
 import type { DogTombstone } from "./tombstone";
 
 const SITE_ORIGIN = "https://abrigodowlad.com.br";
@@ -23,23 +24,6 @@ export interface DogPageMetadata {
   robots: string;
 }
 
-export function dogSlug(nome: string): string {
-  const slug = nome
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80)
-    .replace(/-+$/g, "");
-
-  return slug || "cao";
-}
-
-export function dogProfilePath(id: string, nome: string): string {
-  return `/caes/${encodeURIComponent(id)}/${dogSlug(nome)}`;
-}
-
 function normalizeDescription(value: string): string {
   const normalized = value.replace(/\s+/g, " ").trim();
   if (normalized.length <= DESCRIPTION_MAX_LENGTH) return normalized;
@@ -50,8 +34,8 @@ function normalizeDescription(value: string): string {
   return `${truncated.trimEnd()}…`;
 }
 
-function canonicalDogUrl(id: string, nome: string): string {
-  return `${SITE_ORIGIN}${dogProfilePath(id, nome)}`;
+function canonicalDogUrl(publicSlug: string): string {
+  return `${SITE_ORIGIN}${dogProfilePath(publicSlug)}`;
 }
 
 export function availableDogMetadata(dog: PublicDog): DogPageMetadata {
@@ -76,7 +60,7 @@ export function availableDogMetadata(dog: PublicDog): DogPageMetadata {
     description: normalizeDescription(
       dog.descricaoCompleta?.trim() || fallbackDescription,
     ),
-    canonicalUrl: canonicalDogUrl(dog.id, dog.nome),
+    canonicalUrl: canonicalDogUrl(dog.publicSlug),
     imageUrl,
     imageAlt: hasShareImage
       ? `Foto de ${dog.nome}, cão disponível para adoção no Abrigo do Wlad`
@@ -99,7 +83,7 @@ export function unavailableDogMetadata(
     description: adopted
       ? `${tombstone.nome} já encontrou uma família. Conheça outros cães que aguardam uma adoção responsável no Abrigo do Wlad.`
       : `${tombstone.nome} não está mais disponível. Conheça outros cães que aguardam uma adoção responsável no Abrigo do Wlad.`,
-    canonicalUrl: canonicalDogUrl(tombstone.id, tombstone.nome),
+    canonicalUrl: canonicalDogUrl(tombstone.publicSlug),
     imageUrl: DEFAULT_IMAGE_URL,
     imageAlt: DEFAULT_IMAGE_ALT,
     imageWidth: 1600,

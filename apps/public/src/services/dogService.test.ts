@@ -5,7 +5,7 @@ import {
   DogFeedVersionError,
   DogProfileNotFoundError,
   getDogFeedPage,
-  getDogProfile,
+  getDogProfileBySlug,
 } from "./dogService";
 
 afterEach(() => {
@@ -53,9 +53,10 @@ test("getDogFeedPage identifies an expired feed version", async () => {
   );
 });
 
-test("getDogProfile loads one available dog by public id", async () => {
+test("getDogProfileBySlug loads one available dog by public slug", async () => {
   const dog = {
     id: "dog-1",
+    publicSlug: "pacoca",
     nome: "Paçoca",
     idade: "2 anos",
     cateIdade: "adulto",
@@ -72,14 +73,21 @@ test("getDogProfile loads one available dog by public id", async () => {
   }));
   vi.stubGlobal("fetch", fetchMock);
 
-  assert.deepEqual(await getDogProfile("dog-1"), { state: "available", dog });
-  assert.equal(String(fetchMock.mock.calls[0]?.[0]), "/api/dogs/dog-1");
+  assert.deepEqual(await getDogProfileBySlug("pacoca"), {
+    state: "available",
+    dog,
+  });
+  assert.equal(
+    String(fetchMock.mock.calls[0]?.[0]),
+    "/api/dogs/by-slug/pacoca",
+  );
 });
 
-test("getDogProfile accepts a 410 tombstone response", async () => {
+test("getDogProfileBySlug accepts a 410 tombstone response", async () => {
   const tombstone = {
     schemaVersion: 1,
     id: "dog-1",
+    publicSlug: "pacoca",
     nome: "Paçoca",
     status: "adopted",
     removedAt: "2026-08-28T15:00:00.000Z",
@@ -89,17 +97,20 @@ test("getDogProfile accepts a 410 tombstone response", async () => {
     tombstone,
   }, { status: 410 })));
 
-  assert.deepEqual(await getDogProfile("dog-1"), {
+  assert.deepEqual(await getDogProfileBySlug("pacoca"), {
     state: "unavailable",
     tombstone,
   });
 });
 
-test("getDogProfile distinguishes an unknown dog", async () => {
+test("getDogProfileBySlug distinguishes an unknown dog", async () => {
   vi.stubGlobal("fetch", vi.fn<typeof fetch>(async () => Response.json(
     { message: "Dog not found." },
     { status: 404 },
   )));
 
-  await assert.rejects(() => getDogProfile("missing"), DogProfileNotFoundError);
+  await assert.rejects(
+    () => getDogProfileBySlug("missing"),
+    DogProfileNotFoundError,
+  );
 });

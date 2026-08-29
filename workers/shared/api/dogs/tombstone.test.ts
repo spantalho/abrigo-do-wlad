@@ -35,20 +35,25 @@ test("saves a permanent, minimal dog tombstone under the public document id", as
   assert.deepEqual(tombstone, {
     schemaVersion: 1,
     id: "firestore-dog-123",
+    publicSlug: "pacoca",
     nome: "Paçoca",
     status: "adopted",
     removedAt: "2026-08-28T15:00:00.000Z",
   });
-  assert.equal(puts.length, 1);
-  assert.equal(puts[0]?.key, "dogs-tombstone:firestore-dog-123");
-  assert.equal(puts[0]?.options, undefined);
-  assert.deepEqual(JSON.parse(puts[0]?.value ?? "null"), tombstone);
+  assert.deepEqual(puts.map((put) => put.key), [
+    "dogs-public-slug:slug:pacoca",
+    "dogs-public-slug:id:firestore-dog-123",
+    "dogs-tombstone:firestore-dog-123",
+  ]);
+  assert.equal(puts[2]?.options, undefined);
+  assert.deepEqual(JSON.parse(puts[2]?.value ?? "null"), tombstone);
 });
 
 test("reads only valid tombstones for the requested dog", async () => {
   const valid = {
     schemaVersion: 1,
     id: "dog-valid",
+    publicSlug: "lua",
     nome: "Lua",
     status: "unavailable",
     removedAt: "2026-08-28T16:00:00.000Z",
@@ -72,7 +77,7 @@ test("rejects invalid public dog ids before accessing KV", async () => {
       status: "adopted",
       removedAt: "2026-08-28T17:00:00.000Z",
     }),
-    /Invalid dog tombstone/,
+    /Invalid dog public slug subject/,
   );
   assert.equal(puts.length, 0);
   await assert.rejects(() => getDogTombstone(env, "../unsafe"), /Invalid public dog ID/);

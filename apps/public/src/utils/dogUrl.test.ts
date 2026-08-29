@@ -1,17 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "vitest";
 
-import { dogProfilePath, dogSlug } from "./dogUrl";
+import { dogProfilePath } from "./dogUrl";
 
-test("creates stable URL-safe dog slugs", () => {
-  assert.equal(dogSlug("  Paçoca & Café  "), "pacoca-cafe");
-  assert.equal(dogSlug("LÚNA!!!"), "luna");
-  assert.equal(dogSlug("🐶"), "cao");
-});
-
-test("builds a dog profile path from the immutable id and display name", () => {
+test("builds a short dog profile path from its immutable public slug", () => {
   assert.equal(
-    dogProfilePath("firestore-dog_123", "Paçoca"),
-    "/caes/firestore-dog_123/pacoca",
+    dogProfilePath("pacoca-2"),
+    "/caes/pacoca-2",
   );
 });

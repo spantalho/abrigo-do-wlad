@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as Lucide from "lucide-react";
-import { useLocation, useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
 import { DogModal } from "./components/DogModal";
 import { DogCard } from "./components/DogCard";
@@ -18,7 +18,7 @@ import { analytics } from "@/utils/analytics";
 import { dogProfilePath } from "@/utils/dogUrl";
 import {
   DogProfileNotFoundError,
-  getDogProfile,
+  getDogProfileBySlug,
 } from "@/services/dogService";
 
 import Banner from "@/components/Banner";
@@ -178,8 +178,7 @@ function DogFiltersComponent({
 
 export default function Dogs() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { dogId } = useParams<{ dogId?: string; slug?: string }>();
+  const { publicSlug } = useParams<{ publicSlug?: string }>();
   const {
     dogs,
     loading,
@@ -203,20 +202,25 @@ export default function Dogs() {
   const heroImage = dailyDog?.fotos?.[0];
 
   React.useEffect(() => {
-    if (!dogId) {
+    if (!publicSlug) {
       setSelectedDog(null);
       setRouteNotice(null);
       return;
     }
 
-    const requestedDogId = dogId;
+    const requestedPublicSlug = publicSlug;
     const controller = new AbortController();
-    setSelectedDog((currentDog) => currentDog?.id === requestedDogId ? currentDog : null);
+    setSelectedDog((currentDog) =>
+      currentDog?.publicSlug === requestedPublicSlug ? currentDog : null
+    );
     setRouteNotice(null);
 
     async function fetchProfile() {
       try {
-        const profile = await getDogProfile(requestedDogId, controller.signal);
+        const profile = await getDogProfileBySlug(
+          requestedPublicSlug,
+          controller.signal,
+        );
         if (controller.signal.aborted) return;
         if (profile.state === "available") {
           setSelectedDog(profile.dog);
@@ -239,21 +243,7 @@ export default function Dogs() {
 
     void fetchProfile();
     return () => controller.abort();
-  }, [dogId]);
-
-  const routeDogName = selectedDog && selectedDog.id === dogId
-    ? selectedDog.nome
-    : routeNotice?.kind === "tombstone"
-      ? routeNotice.tombstone.nome
-      : null;
-
-  React.useEffect(() => {
-    if (!dogId || !routeDogName) return;
-    const canonicalPath = dogProfilePath(dogId, routeDogName);
-    if (location.pathname !== canonicalPath) {
-      void navigate(canonicalPath, { replace: true });
-    }
-  }, [dogId, location.pathname, navigate, routeDogName]);
+  }, [publicSlug]);
 
   // Pré-carregamento de imagens da página atual
   React.useEffect(() => {
@@ -299,7 +289,7 @@ export default function Dogs() {
     setLoadingDogId(dog.id);
     setRouteNotice(null);
     setSelectedDog(dog);
-    void navigate(dogProfilePath(dog.id, dog.nome));
+    void navigate(dogProfilePath(dog.publicSlug));
     try {
       if (dog.fotos && dog.fotos.length > 0) {
         await preloadDogImages(dog.fotos);

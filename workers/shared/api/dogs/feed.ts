@@ -3,11 +3,15 @@ import { createFirestoreClient } from "../_lib/firestore";
 import type { CloudflareEnv } from "../_lib/env";
 import { jsonResponse } from "../_lib/env";
 import { getKvStore } from "../_lib/kv";
+import {
+  ensureDogPublicSlug,
+  isValidDogPublicSlug,
+} from "./public-slug";
 
 const DOGS_COLLECTION = "dogs";
 const CURRENT_FEED_KEY = "dogs-feed:current";
 const FEED_KEY_PREFIX = "dogs-feed:";
-const FEED_SCHEMA_VERSION = 1;
+const FEED_SCHEMA_VERSION = 2;
 const FEED_RETENTION_SECONDS = 3 * 24 * 60 * 60;
 const DEFAULT_ITEMS_PER_PAGE = 6;
 const MAX_ITEMS_PER_PAGE = 24;
@@ -15,6 +19,7 @@ const ROTATION_TIME_ZONE = "America/Fortaleza";
 
 export interface PublicDog {
   id: string;
+  publicSlug: string;
   nome: string;
   idade: string;
   cateIdade: "filhote" | "adulto" | "idoso";
@@ -99,7 +104,7 @@ function isStringArray(value: unknown): value is string[] {
 
 function toPublicDog(
   document: FirestoreDocument<Record<string, unknown>>,
-): PublicDog | null {
+): Omit<PublicDog, "publicSlug"> | null {
   const data = document.data;
   if (
     typeof data.nome !== "string" ||
@@ -144,6 +149,8 @@ function isPublicDog(value: unknown): value is PublicDog {
   const dog = value as Record<string, unknown>;
   return (
     typeof dog.id === "string" &&
+    typeof dog.publicSlug === "string" &&
+    isValidDogPublicSlug(dog.publicSlug) &&
     typeof dog.nome === "string" &&
     typeof dog.idade === "string" &&
     ["filhote", "adulto", "idoso"].includes(String(dog.cateIdade)) &&
@@ -178,10 +185,16 @@ export async function updateDogFeed(
   const documents = await source.listDocuments<Record<string, unknown>>(
     DOGS_COLLECTION,
   );
-  const dogs = documents.flatMap((document) => {
+  const sourceDogs = documents.flatMap((document) => {
     const dog = toPublicDog(document);
     return dog ? [dog] : [];
   });
+  const dogs: PublicDog[] = [];
+  // Allocation is deliberately sequential so same-name collisions are stable.
+  for (const dog of sourceDogs) {
+    const slugRecord = await ensureDogPublicSlug(env, dog);
+    dogs.push({ ...dog, publicSlug: slugRecord.slug });
+  }
   const feed: DogFeed = {
     schemaVersion: FEED_SCHEMA_VERSION,
     version,

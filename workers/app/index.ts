@@ -3,7 +3,6 @@ import { getEnvValue, jsonResponse, type CloudflareEnv } from "../shared/api/_li
 import { getDogFeedResponse } from "../shared/api/dogs/feed";
 import {
   availableDogMetadata,
-  dogProfilePath,
   missingDogMetadata,
   rewriteDogPageMetadata,
   unavailableDogMetadata,
@@ -11,10 +10,13 @@ import {
   type DogPageMetadata,
 } from "../shared/api/dogs/metadata";
 import {
-  getDogProfileResponse,
-  resolveDogProfile,
+  getDogProfileBySlugResponse,
+  resolveDogProfileBySlug,
 } from "../shared/api/dogs/profile";
-import { isValidPublicDogId } from "../shared/api/dogs/tombstone";
+import {
+  dogProfilePath,
+  isValidDogPublicSlug,
+} from "../shared/api/dogs/public-slug";
 import { onRequest as getHeroDog } from "../shared/api/hero-dog/get";
 import { onRequest as sendDebugEmail } from "../shared/api/tests/email";
 
@@ -31,11 +33,18 @@ function secureAssetResponse(response: Response): Response {
   return secured;
 }
 
-function dogPageId(pathname: string): string | null {
+type DogPageRoute =
+  | { kind: "slug"; publicSlug: string }
+  | { kind: "invalid" };
+
+function dogPageRoute(pathname: string): DogPageRoute | null {
   if (!pathname.startsWith("/caes/")) return null;
 
-  const match = pathname.match(/^\/caes\/([^/]+)(?:\/[^/]+)?\/?$/);
-  return match?.[1] ?? "";
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.length === 2) {
+    return { kind: "slug", publicSlug: segments[1] ?? "" };
+  }
+  return { kind: "invalid" };
 }
 
 function responseWithStatus(response: Response, status: number): Response {
@@ -77,18 +86,21 @@ async function renderDogPage(
 async function handleDogPageRequest(
   request: Request,
   env: AppEnv,
-  dogId: string,
+  route: DogPageRoute,
 ): Promise<Response> {
   if (request.method !== "GET" && request.method !== "HEAD") {
     return secureAssetResponse(await env.ASSETS.fetch(request));
   }
 
-  if (!isValidPublicDogId(dogId)) {
+  if (
+    route.kind === "invalid" ||
+    (route.kind === "slug" && !isValidDogPublicSlug(route.publicSlug))
+  ) {
     return renderDogPage(request, env, missingDogMetadata(), 404);
   }
 
   try {
-    const profile = await resolveDogProfile(env, dogId);
+    const profile = await resolveDogProfileBySlug(env, route.publicSlug);
     if (profile.state === "not_found") {
       return renderDogPage(request, env, missingDogMetadata(), 404);
     }
@@ -96,7 +108,7 @@ async function handleDogPageRequest(
     const subject = profile.state === "available"
       ? profile.dog
       : profile.tombstone;
-    const canonicalPath = dogProfilePath(subject.id, subject.nome);
+    const canonicalPath = dogProfilePath(subject.publicSlug);
     const requestUrl = new URL(request.url);
     if (requestUrl.pathname !== canonicalPath) {
       requestUrl.pathname = canonicalPath;
@@ -114,7 +126,7 @@ async function handleDogPageRequest(
   } catch (error) {
     console.error(JSON.stringify({
       event: "dogs.page.request.failed",
-      dogId,
+      publicSlug: route.kind === "slug" ? route.publicSlug : "invalid",
       message: error instanceof Error ? error.message : "Unknown failure",
     }));
     return renderDogPage(request, env, unavailableServiceMetadata(), 503);
@@ -132,9 +144,13 @@ async function handleApiRequest(request: Request, env: AppEnv): Promise<Response
     return getDogFeedResponse(request, env);
   }
 
-  const dogProfileMatch = pathname.match(/^\/api\/dogs\/([^/]+)$/);
-  if (dogProfileMatch) {
-    return getDogProfileResponse(request, env, dogProfileMatch[1] ?? "");
+  const dogProfileBySlugMatch = pathname.match(/^\/api\/dogs\/by-slug\/([^/]+)$/);
+  if (dogProfileBySlugMatch) {
+    return getDogProfileBySlugResponse(
+      request,
+      env,
+      dogProfileBySlugMatch[1] ?? "",
+    );
   }
 
   if (pathname === "/api/adoption/create") {
@@ -159,9 +175,9 @@ export default {
       return handleApiRequest(request, env);
     }
 
-    const requestedDogId = dogPageId(pathname);
-    if (requestedDogId !== null) {
-      return handleDogPageRequest(request, env, requestedDogId);
+    const requestedDogRoute = dogPageRoute(pathname);
+    if (requestedDogRoute !== null) {
+      return handleDogPageRequest(request, env, requestedDogRoute);
     }
 
     return secureAssetResponse(await env.ASSETS.fetch(request));

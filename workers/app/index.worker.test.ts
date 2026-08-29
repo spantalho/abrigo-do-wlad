@@ -63,12 +63,13 @@ function createDogPageEnv(): AppEnv {
 
 function currentDogFeed() {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     version: "2026-08-28",
     generatedAt: "2026-08-28T14:00:00.000Z",
     dogs: [
       {
         id: "dog-1",
+        publicSlug: "pacoca",
         nome: "Paçoca",
         idade: "2 anos",
         cateIdade: "adulto",
@@ -84,6 +85,17 @@ function currentDogFeed() {
       },
     ],
   };
+}
+
+async function seedDogProfile(): Promise<void> {
+  const slugRecord = {
+    schemaVersion: 1,
+    id: "dog-1",
+    slug: "pacoca",
+  };
+  await env.KV.put("dogs-feed:current", JSON.stringify(currentDogFeed()));
+  await env.KV.put("dogs-public-slug:slug:pacoca", JSON.stringify(slugRecord));
+  await env.KV.put("dogs-public-slug:id:dog-1", JSON.stringify(slugRecord));
 }
 
 function adoptionRequest(
@@ -107,6 +119,8 @@ describe("Worker app runtime", () => {
     await env.KV.delete("rate-limit:203.0.113.0");
     await env.KV.delete("dogs-feed:current");
     await env.KV.delete("dogs-tombstone:dog-1");
+    await env.KV.delete("dogs-public-slug:slug:pacoca");
+    await env.KV.delete("dogs-public-slug:id:dog-1");
     blockedFetch.mockClear();
     vi.stubGlobal("fetch", blockedFetch);
   });
@@ -162,10 +176,10 @@ describe("Worker app runtime", () => {
   });
 
   it("renders dog-specific Open Graph metadata in the initial HTML", async () => {
-    await env.KV.put("dogs-feed:current", JSON.stringify(currentDogFeed()));
+    await seedDogProfile();
 
     const response = await worker.fetch(
-      new Request("https://abrigo.test/caes/dog-1/pacoca"),
+      new Request("https://abrigo.test/caes/pacoca"),
       createDogPageEnv(),
     );
 
@@ -176,7 +190,7 @@ describe("Worker app runtime", () => {
     const html = await response.text();
     expect(html).toContain("<title>Paçoca para adoção | Abrigo do Wlad</title>");
     expect(html).toContain(
-      'content="https://abrigodowlad.com.br/caes/dog-1/pacoca"',
+      'content="https://abrigodowlad.com.br/caes/pacoca"',
     );
     expect(html).toContain(
       "https://res.cloudinary.com/demo/image/upload/c_fill,w_1200,h_630,q_85,f_jpg,g_auto/v1/dogs/pacoca.png",
@@ -186,32 +200,46 @@ describe("Worker app runtime", () => {
     expect(html).toContain('content="summary_large_image"');
   });
 
-  it("redirects stale dog slugs to the canonical profile URL", async () => {
-    await env.KV.put("dogs-feed:current", JSON.stringify(currentDogFeed()));
+  it("loads a dog API profile through its public slug", async () => {
+    await seedDogProfile();
+
+    const response = await worker.fetch(
+      new Request("https://abrigo.test/api/dogs/by-slug/pacoca"),
+      createEnv(),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      state: "available",
+      dog: { id: "dog-1", publicSlug: "pacoca", nome: "Paçoca" },
+    });
+  });
+
+  it("does not expose an ID-based dog route", async () => {
+    await seedDogProfile();
 
     const response = await worker.fetch(
       new Request("https://abrigo.test/caes/dog-1/nome-antigo?origem=share"),
       createDogPageEnv(),
     );
 
-    expect(response.status).toBe(308);
-    expect(response.headers.get("Location")).toBe(
-      "https://abrigo.test/caes/dog-1/pacoca?origem=share",
-    );
+    expect(response.status).toBe(404);
+    expect(response.headers.get("X-Robots-Tag")).toBe("noindex, nofollow");
   });
 
   it("returns tombstone pages as 410 with noindex metadata", async () => {
-    await env.KV.put("dogs-feed:current", JSON.stringify(currentDogFeed()));
+    await seedDogProfile();
     await env.KV.put("dogs-tombstone:dog-1", JSON.stringify({
       schemaVersion: 1,
       id: "dog-1",
+      publicSlug: "pacoca",
       nome: "Paçoca",
       status: "adopted",
       removedAt: "2026-08-28T15:00:00.000Z",
     }));
 
     const response = await worker.fetch(
-      new Request("https://abrigo.test/caes/dog-1/pacoca"),
+      new Request("https://abrigo.test/caes/pacoca"),
       createDogPageEnv(),
     );
 

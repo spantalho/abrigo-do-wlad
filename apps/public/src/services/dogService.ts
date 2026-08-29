@@ -32,6 +32,7 @@ function isDog(value: unknown): value is Dog {
   const dog = value as Record<string, unknown>;
   return (
     typeof dog.id === "string" &&
+    typeof dog.publicSlug === "string" &&
     typeof dog.nome === "string" &&
     typeof dog.idade === "string" &&
     ["filhote", "adulto", "idoso"].includes(String(dog.cateIdade)) &&
@@ -50,6 +51,7 @@ function isDogTombstone(value: unknown): value is DogTombstone {
   return (
     tombstone.schemaVersion === 1 &&
     typeof tombstone.id === "string" &&
+    typeof tombstone.publicSlug === "string" &&
     typeof tombstone.nome === "string" &&
     (tombstone.status === "adopted" || tombstone.status === "unavailable") &&
     typeof tombstone.removedAt === "string"
@@ -70,6 +72,7 @@ function isDogFeedPage(value: unknown): value is DogFeedPage {
   const page = value as Record<string, unknown>;
   return (
     Array.isArray(page.dogs) &&
+    page.dogs.every(isDog) &&
     typeof page.totalItems === "number" &&
     typeof page.currentPage === "number" &&
     typeof page.totalPages === "number" &&
@@ -120,14 +123,17 @@ export async function getDogFeedPage(
   return payload;
 }
 
-export async function getDogProfile(
-  dogId: string,
+export async function getDogProfileBySlug(
+  publicSlug: string,
   signal?: AbortSignal,
 ): Promise<DogProfile> {
-  const response = await fetch(`/api/dogs/${encodeURIComponent(dogId)}`, {
-    headers: { Accept: "application/json" },
-    signal,
-  });
+  const response = await fetch(
+    `/api/dogs/by-slug/${encodeURIComponent(publicSlug)}`,
+    {
+      headers: { Accept: "application/json" },
+      signal,
+    },
+  );
   if (response.status === 404) throw new DogProfileNotFoundError();
 
   const payload: unknown = await response.json().catch(() => null);

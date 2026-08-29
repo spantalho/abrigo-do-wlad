@@ -95,8 +95,57 @@ os Static Assets da SPA e processa as rotas `/api/*`.
 | --- | --- | --- |
 | `GET` | `/api/hero-dog` | Retorna o animal em destaque. |
 | `GET` | `/api/dogs` | Retorna uma página filtrada do catálogo rotativo armazenado no KV. |
+| `GET` | `/api/dogs/by-slug/:publicSlug` | Retorna o perfil público de um cão pelo slug canônico. |
 | `POST` | `/api/adoption/create` | Valida e registra uma candidatura de adoção. |
 | `GET` | `/api/tests/email` | Testa o envio de e-mail apenas em desenvolvimento. |
+
+Cada cão publicado no feed possui um `publicSlug` gerado automaticamente a
+partir de `nome` (por exemplo, `Paçoca` torna-se `pacoca`). O slug é reservado
+no KV, permanece estável mesmo quando o nome é alterado e recebe um sufixo
+numérico em caso de colisão (`pacoca-2`). Não é necessário editar esse campo no
+painel administrativo.
+
+### Perfil por slug
+
+A página pública canônica usa o formato `/caes/:publicSlug`, por exemplo
+`/caes/pacoca`. O mesmo identificador é aceito pela API:
+`GET /api/dogs/by-slug/pacoca`.
+
+Em caso de sucesso, o endpoint retorna `200` com o perfil disponível:
+
+```json
+{
+  "state": "available",
+  "dog": {
+    "id": "dog-123",
+    "publicSlug": "pacoca",
+    "nome": "Paçoca"
+  }
+}
+```
+
+Quando o cão foi adotado ou removido do catálogo, o endpoint retorna `410` e
+preserva os dados mínimos do tombstone, incluindo `id`, `publicSlug`, `nome`,
+`status` e `removedAt`:
+
+```json
+{
+  "state": "unavailable",
+  "tombstone": {
+    "schemaVersion": 1,
+    "id": "dog-123",
+    "publicSlug": "pacoca",
+    "nome": "Paçoca",
+    "status": "adopted",
+    "removedAt": "2026-08-28T12:00:00.000Z"
+  }
+}
+```
+
+O endpoint retorna `400` para slugs inválidos, `404` quando não há cão nem
+tombstone correspondente e `503` quando o armazenamento está temporariamente
+indisponível. Rotas de perfil baseadas diretamente no ID não fazem parte do
+contrato público.
 
 `POST /api/adoption/create` exige um cabeçalho `Idempotency-Key` com UUID v4.
 Tentativas repetidas com a mesma chave retornam a candidatura já registrada sem

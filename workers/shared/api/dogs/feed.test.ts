@@ -15,6 +15,7 @@ import {
 function dog(id: string, overrides: Partial<PublicDog> = {}): PublicDog {
   return {
     id,
+    publicSlug: `cao-${id}`,
     nome: `Cão ${id}`,
     idade: "2 anos",
     cateIdade: "adulto",
@@ -90,10 +91,14 @@ test("updateDogFeed stores a versioned daily feed before its current pointer", a
   assert.equal(feed.version, "2026-08-24");
   assert.equal(feed.dogs.length, 2);
   assert.deepEqual(writes.map((write) => write.key), [
+    "dogs-public-slug:slug:cao-dog-1",
+    "dogs-public-slug:id:dog-1",
+    "dogs-public-slug:slug:cao-dog-2",
+    "dogs-public-slug:id:dog-2",
     "dogs-feed:2026-08-24",
     "dogs-feed:current",
   ]);
-  assert.ok(writes[0]?.expirationTtl);
+  assert.ok(writes[4]?.expirationTtl);
   assert.deepEqual(
     JSON.parse(values.get("dogs-feed:current") ?? "null"),
     feed,
@@ -102,7 +107,7 @@ test("updateDogFeed stores a versioned daily feed before its current pointer", a
 
 test("paginateDogFeed filters before slicing the requested page", () => {
   const feed: DogFeed = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     version: "2026-08-24",
     generatedAt: "2026-08-24T03:00:00.000Z",
     dogs: [
@@ -128,7 +133,7 @@ test("paginateDogFeed filters before slicing the requested page", () => {
 
 test("GET dog feed reads the requested KV version and returns only one page", async () => {
   const feed: DogFeed = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     version: "2026-08-24",
     generatedAt: "2026-08-24T03:00:00.000Z",
     dogs: [dog("1"), dog("2"), dog("3")],

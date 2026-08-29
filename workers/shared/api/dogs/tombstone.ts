@@ -1,25 +1,29 @@
 import type { CloudflareEnv } from "../_lib/env";
 import { getKvStore } from "../_lib/kv";
+import {
+  ensureDogPublicSlug,
+  isValidDogPublicSlug,
+  isValidPublicDogId,
+} from "./public-slug";
 
 const DOG_TOMBSTONE_KEY_PREFIX = "dogs-tombstone:";
 const DOG_TOMBSTONE_SCHEMA_VERSION = 1;
-const DOG_PUBLIC_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 
 export type DogTombstoneStatus = "adopted" | "unavailable";
 
 export interface DogTombstone {
   schemaVersion: typeof DOG_TOMBSTONE_SCHEMA_VERSION;
   id: string;
+  publicSlug: string;
   nome: string;
   status: DogTombstoneStatus;
   removedAt: string;
 }
 
-export type DogTombstoneInput = Omit<DogTombstone, "schemaVersion">;
-
-export function isValidPublicDogId(id: string): boolean {
-  return DOG_PUBLIC_ID_PATTERN.test(id);
-}
+export type DogTombstoneInput = Omit<
+  DogTombstone,
+  "schemaVersion" | "publicSlug"
+>;
 
 function dogTombstoneKey(id: string): string {
   if (!isValidPublicDogId(id)) {
@@ -35,6 +39,8 @@ function isDogTombstone(value: unknown): value is DogTombstone {
     tombstone.schemaVersion === DOG_TOMBSTONE_SCHEMA_VERSION &&
     typeof tombstone.id === "string" &&
     isValidPublicDogId(tombstone.id) &&
+    typeof tombstone.publicSlug === "string" &&
+    isValidDogPublicSlug(tombstone.publicSlug) &&
     typeof tombstone.nome === "string" &&
     tombstone.nome.trim().length > 0 &&
     (tombstone.status === "adopted" || tombstone.status === "unavailable") &&
@@ -47,9 +53,11 @@ export async function saveDogTombstone(
   env: CloudflareEnv,
   input: DogTombstoneInput,
 ): Promise<DogTombstone> {
+  const slugRecord = await ensureDogPublicSlug(env, input);
   const tombstone: DogTombstone = {
     schemaVersion: DOG_TOMBSTONE_SCHEMA_VERSION,
     ...input,
+    publicSlug: slugRecord.slug,
     nome: input.nome.trim(),
   };
   if (!isDogTombstone(tombstone)) {

@@ -4,14 +4,13 @@ import { test } from "vitest";
 import type { PublicDog } from "./feed";
 import {
   availableDogMetadata,
-  dogProfilePath,
-  dogSlug,
   unavailableDogMetadata,
 } from "./metadata";
 
 function dog(overrides: Partial<PublicDog> = {}): PublicDog {
   return {
     id: "dog-1",
+    publicSlug: "pacoca",
     nome: "Paçoca",
     idade: "2 anos",
     cateIdade: "adulto",
@@ -24,14 +23,6 @@ function dog(overrides: Partial<PublicDog> = {}): PublicDog {
     ...overrides,
   };
 }
-
-test("builds the same canonical dog URL used by the public app", () => {
-  assert.equal(dogSlug("  Paçoca & Café  "), "pacoca-cafe");
-  assert.equal(
-    dogProfilePath("firestore-dog_123", "Paçoca"),
-    "/caes/firestore-dog_123/pacoca",
-  );
-});
 
 test("builds indexable Open Graph metadata with an optimized share image", () => {
   const metadata = availableDogMetadata(dog({
@@ -48,7 +39,7 @@ test("builds indexable Open Graph metadata with an optimized share image", () =>
   );
   assert.equal(
     metadata.canonicalUrl,
-    "https://abrigodowlad.com.br/caes/dog-1/pacoca",
+    "https://abrigodowlad.com.br/caes/pacoca",
   );
   assert.equal(
     metadata.imageUrl,
@@ -63,6 +54,7 @@ test("uses generic artwork and noindex metadata for a removed dog", () => {
   const metadata = unavailableDogMetadata({
     schemaVersion: 1,
     id: "dog-1",
+    publicSlug: "pacoca",
     nome: "Paçoca",
     status: "adopted",
     removedAt: "2026-08-28T15:00:00.000Z",
