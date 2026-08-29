@@ -18,6 +18,8 @@ import { ScrollArea } from "@jaci/ui/ScrollArea";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { analytics } from "@/utils/analytics";
 import { shareDogProfile } from "@/utils/shareDog";
+import { getOptimizedImageUrl } from "@abrigo/media/cloudinary";
+import { preloadDogImages } from "@/utils/common";
 
 interface ModalProps {
   dog: Dog | null;
@@ -58,6 +60,15 @@ export function DogModal({ dog: parentDog, isOpen, onClose }: ModalProps) {
 
   const photos = dog.fotos || [];
   const hasMultipleImages = photos.length > 1;
+  const optimizedPhotos = photos.map((photo) =>
+    getOptimizedImageUrl(photo, {
+      width: 1400,
+      height: 1400,
+      quality: "auto",
+      format: "auto",
+      crop: "limit",
+    })
+  );
 
   const handleClose = () => {
     onClose();
@@ -172,12 +183,20 @@ export function DogModal({ dog: parentDog, isOpen, onClose }: ModalProps) {
                   </div>
                 )}
               >
-                {photos.map((photo, index) => (
+                {optimizedPhotos.map((photo, index) => (
                   <img
                     key={index}
                     src={photo}
                     alt={`${dog.nome} - foto ${index + 1}`}
                     className={styles.carouselImage}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                    onLoad={() => {
+                      const nextPhoto = optimizedPhotos[index + 1];
+                      if (nextPhoto) {
+                        void preloadDogImages([nextPhoto]).catch(() => undefined);
+                      }
+                    }}
                   />
                 ))}
               </Carousel>

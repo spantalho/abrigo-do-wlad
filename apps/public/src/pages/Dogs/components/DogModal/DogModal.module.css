@@ -16,6 +16,7 @@
   align-items: center;
   justify-content: center;
   overflow: visible;
+  border-radius: var(--radius-lg);
   background-color: rgba(0, 0, 0, 0.435);
 }
 

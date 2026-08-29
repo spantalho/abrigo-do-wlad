@@ -196,7 +196,6 @@ export default function Dogs() {
 
   const [selectedDog, setSelectedDog] = React.useState<Dog | null>(null);
   const [routeNotice, setRouteNotice] = React.useState<DogRouteNotice | null>(null);
-  const [loadingDogId, setLoadingDogId] = React.useState<string | null>(null);
   const trackedFiltersRef = React.useRef<string>("");
 
   const heroImage = dailyDog?.fotos?.[0];
@@ -285,20 +284,10 @@ export default function Dogs() {
     }
   }, [loading, dogs.length, filters]);
 
-  const handleDogClick = async (dog: Dog) => {
-    setLoadingDogId(dog.id);
+  const handleDogClick = (dog: Dog) => {
     setRouteNotice(null);
     setSelectedDog(dog);
     void navigate(dogProfilePath(dog.publicSlug));
-    try {
-      if (dog.fotos && dog.fotos.length > 0) {
-        await preloadDogImages(dog.fotos);
-      }
-    } catch (error) {
-      console.error("Erro no preload:", error);
-    } finally {
-      setLoadingDogId(null);
-    }
   };
 
   const handleRouteClose = () => {
@@ -350,7 +339,6 @@ export default function Dogs() {
                     key={dog.id}
                     data={dog}
                     onClick={() => handleDogClick(dog)}
-                    isLoading={loadingDogId === dog.id}
                   />
                 ))
               ) : (
