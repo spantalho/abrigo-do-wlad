@@ -28,7 +28,7 @@ export default function PixModal() {
     <Dialog.DialogContent size="fullscreen-mobile">
       <Dialog.DialogHeader>
         <Dialog.DialogTitle>
-          Faça uma doação via Pix. Qualquer valor é bem-vindo! :{")"}
+          Faça uma doação via Pix. Qualquer valor é bem-vindo!
         </Dialog.DialogTitle>
         <Dialog.DialogDescription>
           Para doar, escaneie o QR Code com o app do seu banco ou copie a chave
