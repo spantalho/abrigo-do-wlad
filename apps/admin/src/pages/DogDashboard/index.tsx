@@ -1,12 +1,13 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import { Plus, Dog, Search } from "lucide-react";
+import { CircleAlert, Plus, Dog, Search } from "lucide-react";
 import { Badge } from "@jaci/ui/Badge";
 import { Button } from "@jaci/ui/Button";
 import { Input } from "@jaci/ui/Field";
 import { getDogs, removeDogAndTrack } from "../../services/dogs";
 import { DogCard } from "../../components/DogCard";
 import { AdoptionModal } from "../../components/AdoptionModal";
+import { ErrorModal } from "../../components/ErrorModal";
 import { SuccessModal } from "../../components/SuccessModal";
 import { Pagination } from "../../components/Pagination";
 import type { DogProps } from "../../types/dogs";
@@ -19,10 +20,14 @@ export default function DogDashboard() {
 
   const [dogs, setDogs] = useState<DogProps[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [dogToProcess, setDogToProcess] = useState<{id: number, nome: string} | null>(null);
+  const [isProcessingDog, setIsProcessingDog] = useState(false);
+  const [operationError, setOperationError] = useState<string | null>(null);
 
   // Controla a exibicão do SuccessModal
   const [successInfo, setSuccessInfo] = useState<{isOpen: boolean, title: string, message: string}>({
@@ -33,15 +38,19 @@ export default function DogDashboard() {
 
   useEffect(() => {
     let active = true;
+
     getDogs()
       .then((data) => {
-        if (active) setDogs(data.sort((a, b) => b.id - a.id));
+        if (active) setDogs([...data].sort((a, b) => b.id - a.id));
+      })
+      .catch(() => {
+        if (active) setLoadError("Não foi possível carregar os cachorros.");
       })
       .finally(() => {
         if (active) setLoading(false);
       });
     return () => { active = false; };
-  }, []);
+  }, [reloadToken]);
 
   const filteredDogs = useMemo(() => {
     return dogs.filter(dog =>
@@ -50,9 +59,10 @@ export default function DogDashboard() {
   }, [dogs, searchTerm]);
 
   const totalPages = Math.ceil(filteredDogs.length / ITEMS_PER_PAGE);
+  const visiblePage = Math.min(currentPage, Math.max(totalPages, 1));
   const currentDogs = filteredDogs.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (visiblePage - 1) * ITEMS_PER_PAGE,
+    visiblePage * ITEMS_PER_PAGE
   );
 
   function openAdoptionModal(id: number, nome: string) {
@@ -60,11 +70,14 @@ export default function DogDashboard() {
   }
 
   async function confirmRemoval(adoptedViaSite: boolean) {
-    if (!dogToProcess) return;
-    try {
-      await removeDogAndTrack(dogToProcess.id, adoptedViaSite);
+    if (!dogToProcess || isProcessingDog) return;
+    const selectedDog = dogToProcess;
+    setIsProcessingDog(true);
 
-      setDogs(prev => prev.filter(dog => dog.id !== dogToProcess.id));
+    try {
+      await removeDogAndTrack(selectedDog.id, adoptedViaSite);
+
+      setDogs(prev => prev.filter(dog => dog.id !== selectedDog.id));
 
       setDogToProcess(null);
 
@@ -82,9 +95,11 @@ export default function DogDashboard() {
         });
       }
 
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao finalizar jornada do animal.");
+    } catch {
+      setDogToProcess(null);
+      setOperationError("Não foi possível finalizar a jornada do animal.");
+    } finally {
+      setIsProcessingDog(false);
     }
   }
 
@@ -128,7 +143,25 @@ export default function DogDashboard() {
         </div>
       )}
 
-      {!loading && filteredDogs.length === 0 && (
+      {!loading && loadError && (
+        <div className={styles.emptyState} role="alert">
+          <CircleAlert size={48} color="var(--error)" />
+          <p>{loadError}</p>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              setLoading(true);
+              setLoadError(null);
+              setReloadToken(token => token + 1);
+            }}
+          >
+            Tentar novamente
+          </Button>
+        </div>
+      )}
+
+      {!loading && !loadError && filteredDogs.length === 0 && (
         <div className={styles.emptyState}>
           <Dog size={48} color="var(--border)" />
           <p>
@@ -142,7 +175,7 @@ export default function DogDashboard() {
         </div>
       )}
 
-      {!loading && currentDogs.length > 0 && (
+      {!loading && !loadError && currentDogs.length > 0 && (
         <>
           <div className={styles.grid}>
             {currentDogs.map((dog, index) => (
@@ -156,7 +189,7 @@ export default function DogDashboard() {
           </div>
 
           <Pagination
-            currentPage={currentPage}
+            currentPage={visiblePage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
           />
@@ -168,6 +201,13 @@ export default function DogDashboard() {
         onClose={() => setDogToProcess(null)}
         onConfirm={confirmRemoval}
         dogName={dogToProcess?.nome || ""}
+        isSubmitting={isProcessingDog}
+      />
+
+      <ErrorModal
+        isOpen={operationError !== null}
+        onClose={() => setOperationError(null)}
+        message={operationError ?? undefined}
       />
 
       <SuccessModal

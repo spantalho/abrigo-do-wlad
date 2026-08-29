@@ -61,24 +61,31 @@ export default function Dashboard() {
   const [expiringAdoptions, setExpiringAdoptions] = useState<ExpiringAlert[]>([]);
   const [notification, setNotification] = useState<AdminNotification | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
+    let active = true;
+
     async function fetchMetrics() {
       try {
         const data = await apiRequest<DashboardResponse>("/api/admin/dashboard");
+        if (!active) return;
         setMetrics(data.metrics);
         setExpiringAdoptions(data.expiringAdoptions);
         setNotification(data.notification);
-
-      } catch (error) {
-        console.error("Erro ao buscar métricas principais:", error);
+      } catch {
+        if (active) setLoadError("Não foi possível carregar a visão geral.");
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     }
 
-    fetchMetrics();
-  }, []);
+    void fetchMetrics();
+    return () => {
+      active = false;
+    };
+  }, [reloadToken]);
 
   const notificationStyle = notification
     ? notificationPresentation[notification.type]
@@ -91,6 +98,25 @@ export default function Dashboard() {
 
       {loading ? (
         <p style={{ color: "var(--text-muted)" }}>Carregando dados...</p>
+      ) : loadError ? (
+        <Card variant="callout" tone="danger" size="sm" role="alert">
+          <CardBody>
+            <CardContent>
+              <p>{loadError}</p>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setLoading(true);
+                  setLoadError(null);
+                  setReloadToken(token => token + 1);
+                }}
+              >
+                Tentar novamente
+              </Button>
+            </CardContent>
+          </CardBody>
+        </Card>
       ) : (
         <div className={styles.metricsGrid}>
           <Card variant="default" size="sm" className={styles.metricCard}>
@@ -193,7 +219,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className={styles.recentSection}>
+      {!loading && !loadError && <div className={styles.recentSection}>
         <div className={styles.recentHeader}>
           <h3>Avisos e Pendências</h3>
         </div>
@@ -252,7 +278,7 @@ export default function Dashboard() {
         ) : (
           <p className={styles.emptyRecent}>Nenhum aviso no momento. Tudo em ordem!</p>
         )}
-      </div>
+      </div>}
     </div>
   );
 }

@@ -15,7 +15,7 @@ test("cron runs hero rotation and LGPD cleanup in delete mode", async () => {
     async updateDogFeed() {
       calls.push("dogs-feed");
       return {
-        schemaVersion: 1,
+        schemaVersion: 2,
         version: "2026-08-21",
         generatedAt: "2026-08-21T03:00:00.000Z",
         dogs: [],
@@ -51,7 +51,7 @@ test("cron leaves destructive cleanup disabled by default", async () => {
   const dependencies: CronDependencies = {
     async updateDogFeed() {
       return {
-        schemaVersion: 1,
+        schemaVersion: 2,
         version: "2026-08-21",
         generatedAt: "2026-08-21T03:00:00.000Z",
         dogs: [],

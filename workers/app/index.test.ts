@@ -45,12 +45,13 @@ test("the legacy /api/hero-dog/get route is not exposed", async () => {
 
 test("GET /api/dogs returns a filtered page from the KV feed", async () => {
   const feed = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     version: "2026-08-24",
     generatedAt: "2026-08-24T03:00:00.000Z",
     dogs: [
       {
         id: "dog-1",
+        publicSlug: "bidu",
         nome: "Bidu",
         idade: "2 anos",
         cateIdade: "adulto",
@@ -87,6 +88,54 @@ test("GET /api/dogs returns a filtered page from the KV feed", async () => {
     totalPages: 1,
     itemsPerPage: 6,
     version: "2026-08-24",
+  });
+});
+
+test("GET /api/dogs/by-slug/:slug returns one dog independently from pagination", async () => {
+  const currentDog = {
+    id: "dog-1",
+    publicSlug: "bidu",
+    nome: "Bidu",
+    idade: "2 anos",
+    cateIdade: "adulto",
+    sexo: "Macho",
+    temperamento: "Dócil",
+    tags: ["docil"],
+    status: "Vacinado e Castrado",
+    fotos: [],
+    cor: "caramelo",
+  };
+  const dogEnv: AppEnv = {
+    ...createEnv(),
+    KV: {
+      async get(key): Promise<string | null> {
+        if (key === "dogs-public-slug:slug:bidu") {
+          return JSON.stringify({ schemaVersion: 1, id: "dog-1", slug: "bidu" });
+        }
+        if (key === "dogs-tombstone:dog-1") return null;
+        if (key === "dogs-feed:current") {
+          return JSON.stringify({
+            schemaVersion: 2,
+            version: "2026-08-28",
+            generatedAt: "2026-08-28T03:00:00.000Z",
+            dogs: [currentDog],
+          });
+        }
+        return null;
+      },
+      async put(): Promise<void> {},
+    },
+  };
+
+  const response = await worker.fetch(
+    new Request("https://example.com/api/dogs/by-slug/bidu"),
+    dogEnv,
+  );
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    state: "available",
+    dog: currentDog,
   });
 });
 

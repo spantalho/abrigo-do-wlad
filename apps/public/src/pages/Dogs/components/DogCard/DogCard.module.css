@@ -21,8 +21,8 @@
 .dogName {
   font-family: var(--font-dog-voice);
   font-size: 1.4em;
-  font-weight: 400;
-  line-height: 1.15;
+  font-weight: 600;
+  line-height: 1.72;
 }
 
 .cardContainer {

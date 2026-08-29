@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import { Plus, Search, MapPin, Pencil, Trash2, Map } from "lucide-react";
+import { CircleAlert, Plus, Search, MapPin, Pencil, Trash2, Map } from "lucide-react";
 import { Badge } from "@jaci/ui/Badge";
 import { Button } from "@jaci/ui/Button";
 import { Card, CardBody, CardContent, CardFooter } from "@jaci/ui/Card";
@@ -8,6 +8,7 @@ import { Input } from "@jaci/ui/Field";
 import { getRecyclePoints, deleteRecyclePoint } from "../../services/recycle";
 import type { RecyclePoint } from "../../types/recycle";
 import { DeleteModal } from "../../components/DeleteModal";
+import { ErrorModal } from "../../components/ErrorModal";
 import { Pagination } from "../../components/Pagination";
 import styles from "./RecycleDashboard.module.css";
 
@@ -18,25 +19,35 @@ export default function RecycleDashboard() {
 
   const [points, setPoints] = useState<RecyclePoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pointToDelete, setPointToDelete] = useState<{id: string, name: string} | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [operationError, setOperationError] = useState<string | null>(null);
 
   // Carregar dados
   useEffect(() => {
     let active = true;
+
     getRecyclePoints()
       .then((data) => {
         if (active) {
-          setPoints(data.sort((a, b) => a.zone.localeCompare(b.zone) || a.neighborhood.localeCompare(b.neighborhood)));
+          setPoints([...data].sort((a, b) =>
+            a.zone.localeCompare(b.zone) || a.neighborhood.localeCompare(b.neighborhood)
+          ));
         }
+      })
+      .catch(() => {
+        if (active) setLoadError("Não foi possível carregar os pontos de coleta.");
       })
       .finally(() => {
         if (active) setLoading(false);
       });
     return () => { active = false; };
-  }, []);
+  }, [reloadToken]);
 
   // Filtragem
   const filteredPoints = useMemo(() => {
@@ -50,9 +61,10 @@ export default function RecycleDashboard() {
 
   // Paginação
   const totalPages = Math.ceil(filteredPoints.length / ITEMS_PER_PAGE);
+  const visiblePage = Math.min(currentPage, Math.max(totalPages, 1));
   const currentPoints = filteredPoints.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (visiblePage - 1) * ITEMS_PER_PAGE,
+    visiblePage * ITEMS_PER_PAGE
   );
 
   function openDeleteModal(id: string, name: string) {
@@ -60,14 +72,19 @@ export default function RecycleDashboard() {
   }
 
   async function confirmDelete() {
-    if (!pointToDelete) return;
+    if (!pointToDelete || isDeleting) return;
+    const selectedPoint = pointToDelete;
+    setIsDeleting(true);
+
     try {
-      await deleteRecyclePoint(pointToDelete.id);
-      setPoints(prev => prev.filter(p => p.id !== pointToDelete.id));
+      await deleteRecyclePoint(selectedPoint.id);
+      setPoints(prev => prev.filter(p => p.id !== selectedPoint.id));
       setPointToDelete(null);
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao excluir ponto de coleta.");
+    } catch {
+      setPointToDelete(null);
+      setOperationError("Não foi possível excluir o ponto de coleta.");
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -111,7 +128,25 @@ export default function RecycleDashboard() {
         </div>
       )}
 
-      {!loading && filteredPoints.length === 0 && (
+      {!loading && loadError && (
+        <div className={styles.emptyState} role="alert">
+          <CircleAlert size={48} color="var(--error)" />
+          <p>{loadError}</p>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              setLoading(true);
+              setLoadError(null);
+              setReloadToken(token => token + 1);
+            }}
+          >
+            Tentar novamente
+          </Button>
+        </div>
+      )}
+
+      {!loading && !loadError && filteredPoints.length === 0 && (
         <div className={styles.emptyState}>
           <MapPin size={48} color="var(--border)" />
           <p>
@@ -126,7 +161,7 @@ export default function RecycleDashboard() {
       )}
 
       {/* Lista de Pontos */}
-      {!loading && currentPoints.length > 0 && (
+      {!loading && !loadError && currentPoints.length > 0 && (
         <>
           <div className={styles.listContainer}>
             {currentPoints.map((point) => (
@@ -183,7 +218,7 @@ export default function RecycleDashboard() {
           </div>
 
           <Pagination
-            currentPage={currentPage}
+            currentPage={visiblePage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
           />
@@ -195,6 +230,13 @@ export default function RecycleDashboard() {
         onClose={() => setPointToDelete(null)}
         onConfirm={confirmDelete}
         dogName={pointToDelete?.name || "este ponto de coleta"}
+        isDeleting={isDeleting}
+      />
+
+      <ErrorModal
+        isOpen={operationError !== null}
+        onClose={() => setOperationError(null)}
+        message={operationError ?? undefined}
       />
     </div>
   );

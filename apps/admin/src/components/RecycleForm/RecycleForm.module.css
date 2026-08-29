@@ -161,7 +161,14 @@
   }
 
   .sectionHeader {
-    align-items: flex-start;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .sectionHeading {
+    width: 100%;
+    text-align: center;
   }
 
   .title {

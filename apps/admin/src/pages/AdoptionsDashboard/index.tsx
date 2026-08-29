@@ -39,6 +39,7 @@ import {
   updateAdoptionStatus,
 } from "../../services/adoptions";
 import { ConfirmModal } from "../../components/ConfirmModal";
+import { ErrorModal } from "../../components/ErrorModal";
 import { SuccessModal } from "../../components/SuccessModal";
 import type {
   AdoptionRequest,
@@ -192,6 +193,8 @@ function getExpirationPresentation(
 export default function AdoptionsDashboard() {
   const [requests, setRequests] = useState<AdoptionRequestSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
   const [selectedSummary, setSelectedSummary] =
     useState<AdoptionRequestSummary | null>(null);
   const [selectedReq, setSelectedReq] = useState<AdoptionRequest | null>(null);
@@ -220,28 +223,42 @@ export default function AdoptionsDashboard() {
     title: "",
     message: "",
   });
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [operationError, setOperationError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchRequests() {
-      const data = await getAdoptionApplications<AdoptionRequestSummary>();
-      const sortedData = data.sort((a, b) => {
-        if (a.status === "pending" && b.status !== "pending") return -1;
-        if (a.status !== "pending" && b.status === "pending") return 1;
+    let active = true;
 
-        const timeA = a.submittedAt ? Date.parse(a.submittedAt) : 0;
-        const timeB = b.submittedAt ? Date.parse(b.submittedAt) : 0;
-        return timeB - timeA;
-      });
-      setRequests(sortedData);
-      setLoading(false);
+    async function fetchRequests() {
+      try {
+        const data = await getAdoptionApplications<AdoptionRequestSummary>();
+        const sortedData = [...data].sort((a, b) => {
+          if (a.status === "pending" && b.status !== "pending") return -1;
+          if (a.status !== "pending" && b.status === "pending") return 1;
+
+          const timeA = a.submittedAt ? Date.parse(a.submittedAt) : 0;
+          const timeB = b.submittedAt ? Date.parse(b.submittedAt) : 0;
+          return timeB - timeA;
+        });
+        if (active) setRequests(sortedData);
+      } catch {
+        if (active) setListError("Não foi possível carregar as solicitações.");
+      } finally {
+        if (active) setLoading(false);
+      }
     }
-    fetchRequests();
-  }, []);
+
+    void fetchRequests();
+    return () => {
+      active = false;
+    };
+  }, [reloadToken]);
 
   const handleConfirmAction = async () => {
-    if (!actionModal.req || !actionModal.req.id) return;
+    if (!actionModal.req?.id || isUpdatingStatus) return;
     const { id, nome_adotante } = actionModal.req;
     const { type } = actionModal;
+    setIsUpdatingStatus(true);
 
     try {
       await updateAdoptionStatus(id, type);
@@ -265,9 +282,11 @@ export default function AdoptionsDashboard() {
             ? `O status de ${nome_adotante} foi alterado para Aprovado.`
             : `O status de ${nome_adotante} foi alterado para Reprovado.`,
       });
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao atualizar o status. Verifique o console.");
+    } catch {
+      setActionModal({ isOpen: false, type: "approved", req: null });
+      setOperationError("Não foi possível atualizar o status da solicitação.");
+    } finally {
+      setIsUpdatingStatus(false);
     }
   };
 
@@ -396,6 +415,22 @@ export default function AdoptionsDashboard() {
 
       {loading ? (
         <p style={{ color: "var(--text-muted)" }}>Buscando solicitações...</p>
+      ) : listError ? (
+        <div className={styles.emptyState} role="alert">
+          <Lucide.CircleAlert size={48} />
+          <p>{listError}</p>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              setLoading(true);
+              setListError(null);
+              setReloadToken(token => token + 1);
+            }}
+          >
+            Tentar novamente
+          </Button>
+        </div>
       ) : requests.length === 0 ? (
         <div className={styles.emptyState}>
           <Lucide.Inbox size={48} style={{ margin: "0 auto 1rem", opacity: 0.5 }} />
@@ -799,6 +834,8 @@ export default function AdoptionsDashboard() {
         confirmText={
           actionModal.type === "approved" ? "Sim, Aprovar" : "Sim, Reprovar"
         }
+        confirmingText="Atualizando..."
+        isConfirming={isUpdatingStatus}
         isDestructive={actionModal.type === "rejected"}
         message={
           <>
@@ -809,6 +846,12 @@ export default function AdoptionsDashboard() {
             a solicitação de <strong>{actionModal.req?.nome_adotante}</strong>?
           </>
         }
+      />
+
+      <ErrorModal
+        isOpen={operationError !== null}
+        onClose={() => setOperationError(null)}
+        message={operationError ?? undefined}
       />
 
       <SuccessModal

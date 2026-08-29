@@ -16,6 +16,7 @@
   align-items: center;
   justify-content: center;
   overflow: visible;
+  border-radius: var(--radius-lg);
   background-color: rgba(0, 0, 0, 0.435);
 }
 
@@ -200,8 +201,27 @@
   margin-top: auto;
   display: flex;
   width: 100%;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.footerActions {
+  display: flex;
   justify-content: flex-end;
-  align-items: center;
+  gap: 0.75rem;
+}
+
+.interestLink {
+  display: flex;
+  text-decoration: none;
+}
+
+.shareFeedback {
+  min-height: 1.25rem;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
 }
 
 /* media query */
@@ -253,7 +273,17 @@
   }
 
   .footer {
-    justify-content: center;
+    align-items: center;
+  }
+
+  .footerActions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .interestLink,
+  .actionButton {
+    width: 100%;
   }
 
   .title {

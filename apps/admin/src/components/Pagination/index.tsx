@@ -18,8 +18,8 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         variant="outline"
         size="icon"
         aria-label="Página anterior"
-        disabled={currentPage === 1}
-        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage <= 1}
+        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
         className={styles.navBtn}
       >
         <ChevronLeft size={20} />
@@ -34,8 +34,8 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         variant="outline"
         size="icon"
         aria-label="Próxima página"
-        disabled={currentPage === totalPages}
-        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage >= totalPages}
+        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
         className={styles.navBtn}
       >
         <ChevronRight size={20} />

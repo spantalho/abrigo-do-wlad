@@ -7,6 +7,11 @@ import {
   type FirestoreDocument,
 } from "../../../workers/shared/api/_lib/firestore";
 import { updateDogFeed } from "../../../workers/shared/api/dogs/feed";
+import {
+  saveDogTombstone,
+  type DogTombstone,
+  type DogTombstoneInput,
+} from "../../../workers/shared/api/dogs/tombstone";
 import type { AccessIdentity } from "./access";
 import {
   listAdminAuditEvents,
@@ -168,6 +173,7 @@ export interface AdminApiDependencies {
   listAdminAuditEvents(env: Env): Promise<AdminAuditEvent[]>;
   recordAdminAuditEvent(env: Env, input: AdminAuditEventInput): Promise<void>;
   uploadCloudinaryImage(request: Request, env: Env): Promise<UploadedDogImage>;
+  saveDogTombstone(env: Env, input: DogTombstoneInput): Promise<DogTombstone>;
 }
 
 async function consumeUploadRateLimit(
@@ -196,6 +202,7 @@ const productionDependencies: AdminApiDependencies = {
   listAdminAuditEvents,
   recordAdminAuditEvent,
   uploadCloudinaryImage,
+  saveDogTombstone,
 };
 
 interface AuditDescriptor {
@@ -429,6 +436,7 @@ async function handleDogs(
   env: Env,
   pathId?: string,
   executionContext?: Pick<ExecutionContext, "waitUntil">,
+  persistDogTombstone: AdminApiDependencies["saveDogTombstone"] = saveDogTombstone,
 ): Promise<Response> {
   const firestore = createFirestoreClient(env);
   if (!pathId) {
@@ -449,7 +457,10 @@ async function handleDogs(
   const parsedUpdate = request.method === "PATCH"
     ? dogUpdateSchema.parse(await parseJson(request))
     : null;
-  const document = await firestore.findFirstDocumentByField<{ fotos?: unknown }>("dogs", "id", id);
+  const document = await firestore.findFirstDocumentByField<{
+    fotos?: unknown;
+    nome?: unknown;
+  }>("dogs", "id", id);
   if (!document) throw new ApiError(404, "Dog not found.");
 
   if (request.method === "GET") return jsonResponse(200, { id, ...document.data });
@@ -477,6 +488,15 @@ async function handleDogs(
     const photos = Array.isArray(document.data.fotos)
       ? document.data.fotos.filter((photo): photo is string => typeof photo === "string")
       : [];
+    await persistDogTombstone(env, {
+      id: document.id,
+      nome:
+        typeof document.data.nome === "string" && document.data.nome.trim()
+          ? document.data.nome
+          : "Cão",
+      status: adoptedViaSite ? "adopted" : "unavailable",
+      removedAt: new Date().toISOString(),
+    });
     if (adoptedViaSite) {
       await firestore.deleteDocumentAndIncrementField(
         document.name,
@@ -648,7 +668,13 @@ async function routeAdminApi(
       return jsonResponse(200, { ok: true });
     }
     if (segments[2] === "dogs" && segments.length <= 4) {
-      return await handleDogs(request, env, segments[3], executionContext);
+      return await handleDogs(
+        request,
+        env,
+        segments[3],
+        executionContext,
+        dependencies.saveDogTombstone,
+      );
     }
     if (segments[2] === "recycle-points" && segments.length <= 4) {
       return handleRecycle(request, env, segments[3]);

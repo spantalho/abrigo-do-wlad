@@ -62,6 +62,11 @@ function keyDependencies(
       url: "https://res.cloudinary.com/test-cloud/image/upload/v1/abrigo-do-wlad/dogs/image-id.jpg",
       width: 1_200,
     }),
+    saveDogTombstone: async (_env, input) => ({
+      schemaVersion: 1,
+      publicSlug: "test-dog",
+      ...input,
+    }),
     ...overrides,
   };
 }
