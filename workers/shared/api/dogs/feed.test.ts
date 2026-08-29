@@ -105,6 +105,39 @@ test("updateDogFeed stores a versioned daily feed before its current pointer", a
   );
 });
 
+test("updateDogFeed preserves legacy temperament longer than 80 characters", async () => {
+  const { env } = kvEnv();
+  const legacyTemperament = "Temperamento legado ".repeat(5);
+
+  const feed = await updateDogFeed(env, {
+    now: new Date("2026-08-24T12:00:00.000Z"),
+    source: {
+      async listDocuments() {
+        return [document(dog("legacy", { temperamento: legacyTemperament }))];
+      },
+    },
+  });
+
+  assert.ok(legacyTemperament.length > 80);
+  assert.equal(feed.dogs[0]?.temperamento, legacyTemperament);
+});
+
+test("updateDogFeed preserves a legacy free-form age", async () => {
+  const { env } = kvEnv();
+  const legacyAge = "aproximadamente dois anos";
+
+  const feed = await updateDogFeed(env, {
+    now: new Date("2026-08-24T12:00:00.000Z"),
+    source: {
+      async listDocuments() {
+        return [document(dog("legacy-age", { idade: legacyAge }))];
+      },
+    },
+  });
+
+  assert.equal(feed.dogs[0]?.idade, legacyAge);
+});
+
 test("paginateDogFeed filters before slicing the requested page", () => {
   const feed: DogFeed = {
     schemaVersion: 2,

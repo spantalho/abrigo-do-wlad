@@ -7,14 +7,26 @@ import { Input } from "@jaci/ui/Field";
 import * as SelectComponent from "@jaci/ui/Select";
 import { SuccessModal } from "../SuccessModal";
 import { ErrorModal } from "../ErrorModal";
-import type { RecyclePoint } from "../../types/recycle";
+import type { RecyclePoint, RecyclePointInput } from "../../types/recycle";
+import { recyclePointInputSchema } from "../../../shared/entities";
 import styles from "./RecycleForm.module.css";
 
 interface RecycleFormProps {
-  initialData?: Partial<RecyclePoint>;
-  onSubmit: (data: Omit<RecyclePoint, "id">) => Promise<void>;
+  initialData?: RecyclePoint;
+  onSubmit: (data: RecyclePointInput) => Promise<void>;
   title: string;
   buttonLabel: string;
+}
+
+function createRecyclePointInput(initialData?: RecyclePoint): RecyclePointInput {
+  return {
+    zone: initialData?.zone ?? "ZONA SUL",
+    neighborhood: initialData?.neighborhood ?? "",
+    name: initialData?.name ?? "",
+    address: initialData?.address ?? "",
+    latitude: initialData?.latitude ?? "",
+    longitude: initialData?.longitude ?? "",
+  };
 }
 
 export function RecycleForm({ initialData, onSubmit, title, buttonLabel }: RecycleFormProps) {
@@ -23,22 +35,27 @@ export function RecycleForm({ initialData, onSubmit, title, buttonLabel }: Recyc
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorInfo, setErrorInfo] = useState({ show: false, message: "" });
 
-  const [formData, setFormData] = useState<Partial<RecyclePoint>>({
-    zone: "ZONA SUL",
-    neighborhood: "",
-    name: "",
-    address: "",
-    latitude: "",
-    longitude: "",
-    ...initialData
-  });
+  const [formData, setFormData] = useState<RecyclePointInput>(() =>
+    createRecyclePointInput(initialData)
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const validatedData = recyclePointInputSchema.safeParse(formData);
+    if (!validatedData.success) {
+      setErrorInfo({
+        show: true,
+        message: validatedData.error.issues[0]?.message
+          ?? "Revise os dados do ponto de coleta antes de continuar.",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      await onSubmit(formData as Omit<RecyclePoint, "id">);
+      await onSubmit(validatedData.data);
       setShowSuccess(true);
     } catch (error: unknown) {
       console.error(error);
@@ -111,8 +128,9 @@ export function RecycleForm({ initialData, onSubmit, title, buttonLabel }: Recyc
             </div>
 
             <div className={styles.inputGroup}>
-              <label>Bairro</label>
+              <label htmlFor="recycle-neighborhood">Bairro</label>
               <Input
+                id="recycle-neighborhood"
                 required
                 maxLength={120}
                 placeholder="Ex: Vila Mariana"
@@ -123,8 +141,10 @@ export function RecycleForm({ initialData, onSubmit, title, buttonLabel }: Recyc
               </div>
 
               <div className={styles.inputGroup}>
-            <label>Nome do Local (Opcional)</label>
+            <label htmlFor="recycle-name">Nome do Local (Opcional)</label>
             <Input
+              id="recycle-name"
+              maxLength={160}
               placeholder="Ex: PetShop Latmia"
               value={formData.name}
               onChange={e => setFormData({...formData, name: e.target.value})}
@@ -132,9 +152,11 @@ export function RecycleForm({ initialData, onSubmit, title, buttonLabel }: Recyc
               </div>
 
               <div className={styles.inputGroup}>
-            <label>Endereço Completo e Horário</label>
+            <label htmlFor="recycle-address">Endereço Completo e Horário</label>
             <Input
+              id="recycle-address"
               required
+              maxLength={300}
               placeholder="Ex: Rua Antônio de Macedo Soares, 1350 (Seg a Sex das 8h às 20h)"
               value={formData.address}
               onChange={e => setFormData({...formData, address: e.target.value})}
@@ -143,8 +165,11 @@ export function RecycleForm({ initialData, onSubmit, title, buttonLabel }: Recyc
 
               <div className={styles.row}>
             <div className={styles.inputGroup}>
-              <label>Latitude (Opcional)</label>
+              <label htmlFor="recycle-latitude">Latitude (Opcional)</label>
               <Input
+                id="recycle-latitude"
+                inputMode="decimal"
+                maxLength={40}
                 placeholder="Ex: -23.5505"
                 value={formData.latitude || ""}
                 onChange={e => setFormData({...formData, latitude: e.target.value})}
@@ -152,8 +177,11 @@ export function RecycleForm({ initialData, onSubmit, title, buttonLabel }: Recyc
             </div>
 
             <div className={styles.inputGroup}>
-              <label>Longitude (Opcional)</label>
+              <label htmlFor="recycle-longitude">Longitude (Opcional)</label>
               <Input
+                id="recycle-longitude"
+                inputMode="decimal"
+                maxLength={40}
                 placeholder="Ex: -46.6333"
                 value={formData.longitude || ""}
                 onChange={e => setFormData({...formData, longitude: e.target.value})}

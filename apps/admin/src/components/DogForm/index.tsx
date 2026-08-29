@@ -10,9 +10,23 @@ import {
   CORES_MAP,
   DOG_HEALTH_STATUSES,
   DOG_TAGS,
+  MAX_DOG_PHOTOS,
   MAX_DOG_TAGS,
+  MAX_DOG_TEMPERAMENT_LENGTH,
+  type DogDetailsInput,
+  type DogAgeUnit,
+  type DogInput,
   type DogProps,
 } from "../../types/dogs";
+import {
+  dogAgeCategorySchema,
+  dogDetailsSchema,
+  dogHealthStatusSchema,
+  dogInputSchema,
+  dogSexSchema,
+  formatDogAge,
+  parseDogAge,
+} from "../../../shared/entities";
 import {
   deleteUploadedCloudinaryImage,
   DOG_IMAGE_ACCEPT,
@@ -24,27 +38,49 @@ import { ErrorModal } from "../ErrorModal"; // <-- Importação do ErrorModal
 import { ConfirmModal } from "../ConfirmModal";
 import styles from "./DogForm.module.css";
 
-const MAX_DOG_PHOTOS = 6;
 type DogPhoto =
   | { id: string; kind: "existing"; url: string }
   | { id: string; kind: "local"; file: File; previewUrl: string };
 
 interface DogFormProps {
-  initialData?: Partial<DogProps>;
-  onSubmit: (data: Omit<DogProps, "id">) => Promise<void>;
+  initialData?: DogProps;
+  onSubmit: (data: DogInput) => Promise<void>;
   title: string;
   buttonLabel: string;
 }
 
+function createDogDetailsInput(initialData?: DogProps): DogDetailsInput {
+  return {
+    nome: initialData?.nome ?? "",
+    idade: initialData?.idade ?? "",
+    cateIdade: initialData?.cateIdade ?? "adulto",
+    sexo: initialData?.sexo ?? "Macho",
+    temperamento: initialData?.temperamento ?? "",
+    tags: initialData?.tags ?? [],
+    status: initialData?.status ?? DOG_HEALTH_STATUSES[0],
+    cor: initialData?.cor ?? "caramelo",
+    instaLink: initialData?.instaLink ?? "",
+    descricaoCompleta: initialData?.descricaoCompleta ?? "",
+  };
+}
+
+function sanitizeAgeRange(value: string): string {
+  const sanitized = value.replace(/[^\d-]/g, "");
+  const separatorIndex = sanitized.indexOf("-");
+  if (separatorIndex === -1) return sanitized.slice(0, 3);
+
+  const minimum = sanitized.slice(0, separatorIndex).slice(0, 3);
+  const maximum = sanitized.slice(separatorIndex + 1).replaceAll("-", "").slice(0, 3);
+  return `${minimum}-${maximum}`;
+}
+
 export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormProps) {
   const navigate = useNavigate();
+  const initialAge = parseDogAge(initialData?.idade ?? "");
+  const [ageRange, setAgeRange] = useState(initialAge?.range ?? "");
+  const [ageUnit, setAgeUnit] = useState<DogAgeUnit>(initialAge?.unit ?? "anos");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
-  const initialStatus = initialData?.status;
-  const normalizedInitialStatus = initialStatus !== undefined
-    && DOG_HEALTH_STATUSES.includes(initialStatus)
-    ? initialStatus
-    : DOG_HEALTH_STATUSES[0];
 
   // ESTADOS PARA OS MODAIS
   const [showSuccess, setShowSuccess] = useState(false);
@@ -60,25 +96,43 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
     })),
   );
 
-  const [formData, setFormData] = useState<Partial<DogProps>>({
-    nome: "",
-    idade: "",
-    cateIdade: "adulto",
-    sexo: "Macho",
-    temperamento: "",
-    tags: [],
-    fotos: [],
-    cor: "caramelo",
-    instaLink: "",
-    descricaoCompleta: "",
-    ...initialData,
-    status: normalizedInitialStatus,
-  });
+  const [formData, setFormData] = useState<DogDetailsInput>(() =>
+    createDogDetailsInput(initialData)
+  );
 
   const photoLimitReached = photos.length >= MAX_DOG_PHOTOS;
   const remainingPhotoSlots = Math.max(0, MAX_DOG_PHOTOS - photos.length);
-  const selectedTags = formData.tags || [];
+  const selectedTags = formData.tags;
   const tagLimitReached = selectedTags.length >= MAX_DOG_TAGS;
+  const legacyAge = initialData?.idade
+    && !initialAge
+    && !parseDogAge(formData.idade)
+    ? initialData.idade
+    : null;
+
+  const updateAge = (range: string, unit: DogAgeUnit) => {
+    setFormData(prev => ({ ...prev, idade: formatDogAge(range, unit) }));
+  };
+
+  const handleAgeRangeChange = (value: string) => {
+    const range = sanitizeAgeRange(value);
+    setAgeRange(range);
+    updateAge(range, ageUnit);
+  };
+
+  const handleAgeUnitChange = (value: string) => {
+    if (value !== "anos" && value !== "meses") return;
+    setAgeUnit(value);
+    updateAge(ageRange, value);
+  };
+
+  const normalizeAgeRange = () => {
+    const [minimum, maximum] = ageRange.split("-");
+    if (minimum && maximum === minimum) {
+      setAgeRange(minimum);
+      updateAge(minimum, ageUnit);
+    }
+  };
 
   useEffect(() => () => {
     localPreviewUrls.current.forEach(url => URL.revokeObjectURL(url));
@@ -144,7 +198,7 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
 
   const toggleTag = (tag: string) => {
     setFormData(prev => {
-      const tags = prev.tags || [];
+      const tags = prev.tags;
       if (tags.includes(tag)) {
         return { ...prev, tags: tags.filter(t => t !== tag) };
       }
@@ -160,10 +214,12 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (selectedTags.length > MAX_DOG_TAGS) {
+    const validatedDetails = dogDetailsSchema.safeParse(formData);
+    if (!validatedDetails.success) {
       setErrorInfo({
         show: true,
-        message: `Selecione no máximo ${MAX_DOG_TAGS} tags para o cachorro.`,
+        message: validatedDetails.error.issues[0]?.message
+          ?? "Revise os dados do cachorro antes de continuar.",
       });
       return;
     }
@@ -193,13 +249,13 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
         }
       }
 
-      const finalData = {
-        ...formData,
-        fotos: finalPhotos
-      };
+      const finalData = dogInputSchema.parse({
+        ...validatedDetails.data,
+        fotos: finalPhotos,
+      });
 
       setUploadProgress("Salvando dados...");
-      await onSubmit(finalData as Omit<DogProps, "id">);
+      await onSubmit(finalData);
 
       setShowSuccess(true);
 
@@ -273,22 +329,77 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
             <CardContent className={styles.sectionContent}>
               <div className={styles.row}>
             <div className={styles.inputGroup}>
-              <label>Nome</label>
-              <Input required value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})} />
+              <label htmlFor="dog-name">Nome</label>
+              <Input
+                id="dog-name"
+                required
+                maxLength={120}
+                value={formData.nome}
+                onChange={e => setFormData({...formData, nome: e.target.value})}
+              />
             </div>
             <div className={styles.inputGroup}>
-              <label>Idade (ex: "2 anos")</label>
-              <Input required value={formData.idade} onChange={e => setFormData({...formData, idade: e.target.value})} />
+              <label htmlFor="dog-age">Idade ou faixa estimada</label>
+              <div className={styles.ageControl}>
+                <Input
+                  id="dog-age"
+                  required
+                  pattern="[0-9]+(?:-[0-9]+)?"
+                  maxLength={7}
+                  aria-describedby="dog-age-help"
+                  className={styles.ageValueInput}
+                  placeholder="Ex: 2 ou 2-3"
+                  value={ageRange}
+                  onBlur={normalizeAgeRange}
+                  onChange={event => handleAgeRangeChange(event.target.value)}
+                />
+                <SelectComponent.Select
+                  value={ageUnit}
+                  onValueChange={handleAgeUnitChange}
+                >
+                  <SelectComponent.SelectTrigger
+                    aria-label="Unidade da idade"
+                    className={styles.ageUnitTrigger}
+                  >
+                    <SelectComponent.SelectValue>
+                      {ageUnit === "anos"
+                        ? ageRange === "1" ? "ano" : "anos"
+                        : ageRange === "1" ? "mês" : "meses"}
+                    </SelectComponent.SelectValue>
+                  </SelectComponent.SelectTrigger>
+                  <SelectComponent.SelectContent className={styles.ageUnitContent}>
+                    <SelectComponent.SelectItem value="anos">
+                      {ageRange === "1" ? "ano" : "anos"}
+                    </SelectComponent.SelectItem>
+                    <SelectComponent.SelectItem value="meses">
+                      {ageRange === "1" ? "mês" : "meses"}
+                    </SelectComponent.SelectItem>
+                  </SelectComponent.SelectContent>
+                </SelectComponent.Select>
+              </div>
+              <p id="dog-age-help" className={styles.fieldDescription}>
+                Digite somente um número ou uma faixa com hífen.
+              </p>
+              {legacyAge && (
+                <p className={styles.legacyValue} role="status">
+                  Valor anterior: “{legacyAge}”. Informe a idade no novo formato para salvar.
+                </p>
+              )}
             </div>
               </div>
               <div className={styles.row}>
             <div className={styles.inputGroup}>
-              <label>Categoria</label>
+              <label htmlFor="dog-age-category">Categoria</label>
               <SelectComponent.Select
                 value={formData.cateIdade}
-                onValueChange={value => setFormData({...formData, cateIdade: value as DogProps["cateIdade"]})}
+                onValueChange={value => {
+                  const category = dogAgeCategorySchema.safeParse(value);
+                  if (category.success) {
+                    setFormData({ ...formData, cateIdade: category.data });
+                  }
+                }}
               >
-                <SelectComponent.SelectTrigger>
+                <SelectComponent.SelectTrigger id="dog-age-category">
                   <SelectComponent.SelectValue placeholder="Selecione a categoria" />
                 </SelectComponent.SelectTrigger>
                 <SelectComponent.SelectContent>
@@ -299,12 +410,17 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
               </SelectComponent.Select>
             </div>
             <div className={styles.inputGroup}>
-              <label>Sexo</label>
+              <label htmlFor="dog-sex">Sexo</label>
               <SelectComponent.Select
                 value={formData.sexo}
-                onValueChange={value => setFormData({...formData, sexo: value as DogProps["sexo"]})}
+                onValueChange={value => {
+                  const sex = dogSexSchema.safeParse(value);
+                  if (sex.success) {
+                    setFormData({ ...formData, sexo: sex.data });
+                  }
+                }}
               >
-                <SelectComponent.SelectTrigger>
+                <SelectComponent.SelectTrigger id="dog-sex">
                   <SelectComponent.SelectValue placeholder="Selecione o sexo" />
                 </SelectComponent.SelectTrigger>
                 <SelectComponent.SelectContent>
@@ -398,12 +514,12 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
             <CardContent className={styles.sectionContent}>
               <div className={styles.row}>
             <div className={styles.inputGroup}>
-              <label>Cor</label>
+              <label htmlFor="dog-color">Cor</label>
               <SelectComponent.Select
                 value={formData.cor}
                 onValueChange={value => setFormData({...formData, cor: value})}
               >
-                <SelectComponent.SelectTrigger>
+                <SelectComponent.SelectTrigger id="dog-color">
                   <SelectComponent.SelectValue placeholder="Selecione a cor" />
                 </SelectComponent.SelectTrigger>
                 <SelectComponent.SelectContent>
@@ -416,8 +532,22 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
               </SelectComponent.Select>
             </div>
             <div className={styles.inputGroup}>
-              <label>Temperamento</label>
-              <Input value={formData.temperamento} onChange={e => setFormData({...formData, temperamento: e.target.value})} />
+              <label htmlFor="dog-temperament">Temperamento</label>
+              <Input
+                id="dog-temperament"
+                required
+                maxLength={MAX_DOG_TEMPERAMENT_LENGTH}
+                aria-describedby="dog-temperament-help"
+                placeholder="Ex: Dócil, tranquilo e sociável"
+                value={formData.temperamento}
+                onChange={e => setFormData({...formData, temperamento: e.target.value})}
+              />
+              <p id="dog-temperament-help" className={styles.fieldDescription}>
+                Use um resumo curto exibido no card público.
+                <span className={styles.selectionCount}>
+                  {formData.temperamento.length}/{MAX_DOG_TEMPERAMENT_LENGTH}
+                </span>
+              </p>
             </div>
               </div>
 
@@ -451,34 +581,45 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
               </div>
 
               <div className={styles.inputGroup}>
-            <label>Link Instagram</label>
-            <Input value={formData.instaLink} onChange={e => setFormData({...formData, instaLink: e.target.value})} />
+            <label htmlFor="dog-instagram">Link Instagram</label>
+            <Input
+              id="dog-instagram"
+              type="url"
+              maxLength={2_048}
+              placeholder="https://instagram.com/..."
+              value={formData.instaLink}
+              onChange={e => setFormData({...formData, instaLink: e.target.value})}
+            />
               </div>
 
               <div className={styles.inputGroup}>
-            <label>Descrição</label>
+            <label htmlFor="dog-description">Descrição</label>
             <p id="dog-description-help" className={styles.fieldDescription}>
               Descreva a personalidade do cão, seu comportamento e outras particularidades.
             </p>
             <Textarea
+              id="dog-description"
               aria-describedby="dog-description-help"
               rows={5}
+              maxLength={5_000}
               value={formData.descricaoCompleta}
               onChange={e => setFormData({...formData, descricaoCompleta: e.target.value})}
             />
               </div>
 
               <div className={styles.inputGroup}>
-            <label>Status</label>
+            <label htmlFor="dog-status">Status</label>
             <SelectComponent.Select
               required
               value={formData.status}
-              onValueChange={value => setFormData({
-                ...formData,
-                status: value as DogProps["status"],
-              })}
+              onValueChange={value => {
+                const status = dogHealthStatusSchema.safeParse(value);
+                if (status.success) {
+                  setFormData({ ...formData, status: status.data });
+                }
+              }}
             >
-              <SelectComponent.SelectTrigger>
+              <SelectComponent.SelectTrigger id="dog-status">
                 <SelectComponent.SelectValue placeholder="Selecione o status" />
               </SelectComponent.SelectTrigger>
               <SelectComponent.SelectContent>

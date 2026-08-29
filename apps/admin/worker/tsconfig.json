@@ -6,6 +6,7 @@
   },
   "include": [
     "../worker-configuration.d.ts",
+    "../shared/**/*.ts",
     "./**/*.ts"
   ]
 }

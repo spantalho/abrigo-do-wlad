@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import { Button } from "@jaci/ui/Button";
 import { DogForm } from "../../components/DogForm";
 import { getDogById, updateDog } from "../../services/dogs";
-import type { DogProps } from "../../types/dogs";
+import type { DogInput, DogProps } from "../../types/dogs";
 
 export default function EditDog() {
   const { id } = useParams();
@@ -44,7 +44,7 @@ export default function EditDog() {
     };
   }, [dogId, id]);
 
-  const handleUpdate = async (finalData: Omit<DogProps, "id">) => {
+  const handleUpdate = async (finalData: DogInput) => {
     await updateDog(dogId, finalData);
   };
 

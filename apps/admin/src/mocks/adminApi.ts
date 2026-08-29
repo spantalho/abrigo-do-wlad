@@ -6,6 +6,12 @@ import type {
 } from "../types/notifications";
 import type { RecyclePoint } from "../types/recycle";
 import type { SystemKey } from "../types/systemKeys";
+import {
+  dogInputSchema,
+  dogUpdateSchema,
+  recyclePointInputSchema,
+  recyclePointUpdateSchema,
+} from "../../shared/entities";
 
 type AdoptionStatus = "pending" | "approved" | "rejected";
 
@@ -299,6 +305,10 @@ function methodNotAllowed(allowed: string[]): Response {
   return new Response(null, { status: 405, headers: { Allow: allowed.join(", ") } });
 }
 
+function validationErrorResponse(message: string): Response {
+  return jsonResponse({ error: message }, 400);
+}
+
 async function readJson<T>(request: Request): Promise<T> {
   try {
     return await request.json() as T;
@@ -330,7 +340,13 @@ async function handleDogs(request: Request, idSegment?: string): Promise<Respons
     if (request.method === "GET") return jsonResponse(state.dogs);
     if (request.method !== "POST") return methodNotAllowed(["GET", "POST"]);
 
-    const input = await readJson<Omit<DogProps, "id">>(request);
+    const parsedInput = dogInputSchema.safeParse(await readJson<unknown>(request));
+    if (!parsedInput.success) {
+      return validationErrorResponse(
+        parsedInput.error.issues[0]?.message ?? "Dados do cachorro inválidos.",
+      );
+    }
+    const input = parsedInput.data;
     const dog = { ...input, id: state.nextDogId++ };
     state.dogs.push(dog);
     recordMutation(request, `dogs/${dog.id}`);
@@ -343,8 +359,13 @@ async function handleDogs(request: Request, idSegment?: string): Promise<Respons
 
   if (request.method === "GET") return jsonResponse(state.dogs[index]);
   if (request.method === "PATCH") {
-    const update = await readJson<Partial<DogProps>>(request);
-    state.dogs[index] = { ...state.dogs[index], ...update, id } as DogProps;
+    const parsedUpdate = dogUpdateSchema.safeParse(await readJson<unknown>(request));
+    if (!parsedUpdate.success) {
+      return validationErrorResponse(
+        parsedUpdate.error.issues[0]?.message ?? "Atualização do cachorro inválida.",
+      );
+    }
+    state.dogs[index] = { ...state.dogs[index], ...parsedUpdate.data, id };
     recordMutation(request, `dogs/${id}`);
     return jsonResponse({ ok: true });
   }
@@ -364,7 +385,13 @@ async function handleRecyclePoints(request: Request, idSegment?: string): Promis
     if (request.method === "GET") return jsonResponse(state.recyclePoints);
     if (request.method !== "POST") return methodNotAllowed(["GET", "POST"]);
 
-    const input = await readJson<Omit<RecyclePoint, "id">>(request);
+    const parsedInput = recyclePointInputSchema.safeParse(await readJson<unknown>(request));
+    if (!parsedInput.success) {
+      return validationErrorResponse(
+        parsedInput.error.issues[0]?.message ?? "Dados do ponto de coleta inválidos.",
+      );
+    }
+    const input = parsedInput.data;
     const point = { ...input, id: `mock-recycle-${state.nextRecycleId++}` };
     state.recyclePoints.push(point);
     recordMutation(request, `recycle_points/${point.id}`);
@@ -377,8 +404,13 @@ async function handleRecyclePoints(request: Request, idSegment?: string): Promis
 
   if (request.method === "GET") return jsonResponse(state.recyclePoints[index]);
   if (request.method === "PATCH") {
-    const update = await readJson<Partial<RecyclePoint>>(request);
-    state.recyclePoints[index] = { ...state.recyclePoints[index], ...update, id };
+    const parsedUpdate = recyclePointUpdateSchema.safeParse(await readJson<unknown>(request));
+    if (!parsedUpdate.success) {
+      return validationErrorResponse(
+        parsedUpdate.error.issues[0]?.message ?? "Atualização do ponto de coleta inválida.",
+      );
+    }
+    state.recyclePoints[index] = { ...state.recyclePoints[index], ...parsedUpdate.data, id };
     recordMutation(request, `recycle_points/${id}`);
     return jsonResponse({ ok: true });
   }

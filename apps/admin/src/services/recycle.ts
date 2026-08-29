@@ -1,7 +1,12 @@
-import type { RecyclePoint } from "../types/recycle";
+import {
+  recyclePointEntitySchema,
+  type RecyclePoint,
+  type RecyclePointInput,
+  type RecyclePointUpdate,
+} from "../../shared/entities";
 import { ApiError, apiRequest } from "./api";
 
-export async function addRecyclePoint(data: Omit<RecyclePoint, "id">) {
+export async function addRecyclePoint(data: RecyclePointInput) {
   return (await apiRequest<{ id: string }>("/api/admin/recycle-points", {
     method: "POST",
     body: JSON.stringify(data),
@@ -9,7 +14,9 @@ export async function addRecyclePoint(data: Omit<RecyclePoint, "id">) {
 }
 
 export async function getRecyclePoints(): Promise<RecyclePoint[]> {
-  return apiRequest<RecyclePoint[]>("/api/admin/recycle-points");
+  return recyclePointEntitySchema.array().parse(
+    await apiRequest<unknown>("/api/admin/recycle-points"),
+  );
 }
 
 export async function deleteRecyclePoint(id: string) {
@@ -21,8 +28,8 @@ export async function deleteRecyclePoint(id: string) {
 
 export async function getRecyclePointById(id: string): Promise<RecyclePoint | null> {
   try {
-    return await apiRequest<RecyclePoint>(
-      `/api/admin/recycle-points/${encodeURIComponent(id)}`,
+    return recyclePointEntitySchema.parse(
+      await apiRequest<unknown>(`/api/admin/recycle-points/${encodeURIComponent(id)}`),
     );
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) return null;
@@ -30,12 +37,10 @@ export async function getRecyclePointById(id: string): Promise<RecyclePoint | nu
   }
 }
 
-export async function updateRecyclePoint(id: string, data: Partial<RecyclePoint>) {
-  const update = { ...data };
-  delete update.id;
+export async function updateRecyclePoint(id: string, data: RecyclePointUpdate) {
   await apiRequest(`/api/admin/recycle-points/${encodeURIComponent(id)}`, {
     method: "PATCH",
-    body: JSON.stringify(update),
+    body: JSON.stringify(data),
   });
   return true;
 }

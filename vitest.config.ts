@@ -19,6 +19,7 @@ export default defineConfig({
           include: [
             "apps/public/src/**/*.test.ts",
             "apps/admin/*.test.ts",
+            "apps/admin/shared/**/*.test.ts",
             "apps/admin/src/**/*.test.ts",
             "apps/admin/worker/**/*.test.ts",
             "packages/**/*.test.ts",

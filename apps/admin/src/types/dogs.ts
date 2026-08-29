@@ -1,3 +1,21 @@
+export {
+  DOG_HEALTH_STATUSES,
+  MAX_DOG_AGE_MONTHS,
+  MAX_DOG_AGE_YEARS,
+  MAX_DOG_PHOTOS,
+  MAX_DOG_TAGS,
+  MAX_DOG_TEMPERAMENT_LENGTH,
+} from "../../shared/entities";
+export type {
+  Dog as DogProps,
+  DogDetailsInput,
+  DogHealthStatus,
+  DogAgeParts,
+  DogAgeUnit,
+  DogInput,
+  DogUpdate,
+} from "../../shared/entities";
+
 export const CORES_MAP: Record<string, string> = {
   caramelo: "Caramelo (Patrimônio Nacional)",
   pretinho: "Pretinho (Nada Básico)",
@@ -5,12 +23,6 @@ export const CORES_MAP: Record<string, string> = {
   peludinhos: "Peludinhos",
   BrasilEgito: "Mistura do Brasil com Egito",
 };
-
-export const DOG_HEALTH_STATUSES = [
-  "Vacinado e Castrado",
-  "Apenas Castrado",
-  "Em Protocolo Vacinal",
-] as const;
 
 export const DOG_TAGS = [
   "Dócil",
@@ -29,22 +41,3 @@ export const DOG_TAGS = [
   "Companheiro",
   "Adaptável",
 ] as const;
-
-export const MAX_DOG_TAGS = 5;
-
-export type DogHealthStatus = (typeof DOG_HEALTH_STATUSES)[number];
-
-export interface DogProps {
-  id: number;
-  nome: string;
-  idade: string;
-  cateIdade: "filhote" | "adulto" | "idoso";
-  sexo: 'Macho' | 'Fêmea';
-  temperamento: string;
-  tags: string[];
-  status: DogHealthStatus;
-  fotos: string[];
-  cor: string;
-  instaLink?: string;
-  descricaoCompleta?: string;
-}
