@@ -270,7 +270,7 @@ export default function Recycle() {
                                   rel="noopener noreferrer"
                                   className={styles.mapLink}
                                 >
-                                  <Lucide.Map size={16} /> Abrir no Google Maps
+                                  <Lucide.MapPinHouse size={16} /> Abrir no Google Maps
                                   <Lucide.ArrowUpRight size={16} />
                                 </a>
                               </CardComponent.CardFooter>

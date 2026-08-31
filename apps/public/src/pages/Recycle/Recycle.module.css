@@ -142,7 +142,6 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.5rem 0.8rem;
-  border: 1px solid var(--control-border);
   border-radius: var(--radius-sm);
   background: var(--surface-water);
   color: var(--primary);
