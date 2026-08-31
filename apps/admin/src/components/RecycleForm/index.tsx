@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { MapPin } from "lucide-react";
-import { Input } from "@jaci/ui/Field";
+import { Field, Input } from "@jaci/ui/Field";
 import * as SelectComponent from "@jaci/ui/Select";
 import { SuccessModal } from "../SuccessModal";
 import { ErrorModal } from "../ErrorModal";
 import {
-  FormField,
   FormRow,
   FormSection,
   FormShell,
@@ -105,8 +104,7 @@ export function RecycleForm({ initialData, onSubmit, title, buttonLabel }: Recyc
           description="Endereço e coordenadas exibidos no mapa público."
         >
           <FormRow>
-            <FormField>
-              <label htmlFor="recycle-zone">Zona da Cidade</label>
+            <Field controlId="recycle-zone" label="Zona da cidade" required>
               <SelectComponent.Select
                 value={formData.zone}
                 onValueChange={zone => setFormData({...formData, zone})}
@@ -123,68 +121,68 @@ export function RecycleForm({ initialData, onSubmit, title, buttonLabel }: Recyc
                   <SelectComponent.SelectItem value="CENTRO">CENTRO</SelectComponent.SelectItem>
                 </SelectComponent.SelectContent>
               </SelectComponent.Select>
-            </FormField>
+            </Field>
 
-            <FormField>
-              <label htmlFor="recycle-neighborhood">Bairro</label>
+            <Field controlId="recycle-neighborhood" label="Bairro" required>
               <Input
-                id="recycle-neighborhood"
-                required
                 maxLength={120}
                 placeholder="Ex: Vila Mariana"
                 value={formData.neighborhood}
                 onChange={e => setFormData({...formData, neighborhood: e.target.value})}
               />
-            </FormField>
+            </Field>
           </FormRow>
 
-          <FormField>
-            <label htmlFor="recycle-name">Nome do Local (Opcional)</label>
+          <Field controlId="recycle-name" label="Nome do local (opcional)">
             <Input
-              id="recycle-name"
               maxLength={160}
               placeholder="Ex: PetShop Latmia"
               value={formData.name}
               onChange={e => setFormData({...formData, name: e.target.value})}
             />
-          </FormField>
+          </Field>
 
-          <FormField>
-            <label htmlFor="recycle-address">Endereço Completo e Horário</label>
+          <Field
+            controlId="recycle-address"
+            label="Endereço completo e horário"
+            required
+          >
             <Input
-              id="recycle-address"
-              required
               maxLength={300}
               placeholder="Ex: Rua Antônio de Macedo Soares, 1350 (Seg a Sex das 8h às 20h)"
               value={formData.address}
               onChange={e => setFormData({...formData, address: e.target.value})}
             />
-          </FormField>
+          </Field>
 
           <FormRow>
-            <FormField>
-              <label htmlFor="recycle-latitude">Latitude (Opcional)</label>
+            <Field
+              controlId="recycle-latitude"
+              label="Latitude (opcional)"
+              description="Use graus decimais, com ponto como separador."
+            >
               <Input
-                id="recycle-latitude"
                 inputMode="decimal"
                 maxLength={40}
                 placeholder="Ex: -23.5505"
                 value={formData.latitude || ""}
                 onChange={e => setFormData({...formData, latitude: e.target.value})}
               />
-            </FormField>
+            </Field>
 
-            <FormField>
-              <label htmlFor="recycle-longitude">Longitude (Opcional)</label>
+            <Field
+              controlId="recycle-longitude"
+              label="Longitude (opcional)"
+              description="Use graus decimais, com ponto como separador."
+            >
               <Input
-                id="recycle-longitude"
                 inputMode="decimal"
                 maxLength={40}
                 placeholder="Ex: -46.6333"
                 value={formData.longitude || ""}
                 onChange={e => setFormData({...formData, longitude: e.target.value})}
               />
-            </FormField>
+            </Field>
           </FormRow>
         </FormSection>
       </FormShell>

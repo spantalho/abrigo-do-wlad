@@ -168,7 +168,3 @@ export function FormSection({ icon, title, description, children }: FormSectionP
 export function FormRow({ children }: FormLayoutProps) {
   return <div className={styles.row}>{children}</div>;
 }
-
-export function FormField({ children }: FormLayoutProps) {
-  return <div className={styles.field}>{children}</div>;
-}

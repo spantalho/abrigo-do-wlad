@@ -1,12 +1,54 @@
+.field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field > button[role="combobox"] {
+  width: 100%;
+}
+
+.label {
+  margin-left: 2px;
+  color: var(--text-primary);
+  font-size: 0.925rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.required {
+  margin-left: 0.2rem;
+  color: var(--error);
+}
+
+.description {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.35rem 1rem;
+  margin: -0.15rem 2px 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.error {
+  margin: -0.15rem 2px 0;
+  color: var(--error);
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 .control {
   width: 100%;
-  padding: 0.75rem 0.9rem;
-  border: 1px solid var(--control-border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   outline: none;
-  background: var(--surface-elevated);
+  background: var(--surface-card);
   color: var(--text-primary);
-  font: inherit;
+  line-height: 1.25;
   transition: var(--transition);
 }
 
@@ -14,14 +56,24 @@
   color: var(--text-muted);
 }
 
-.control:focus {
+.control:hover:not(:disabled) {
+  border-color: var(--control-border);
+}
+
+.control:focus,
+.control:focus-visible {
   border-color: var(--primary);
+  outline: none;
   box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
-.control:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
+.control[aria-invalid="true"] {
+  border-color: var(--error);
+}
+
+.control[aria-invalid="true"]:focus,
+.control[aria-invalid="true"]:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 18%, transparent);
 }
 
 .control:disabled {
@@ -29,11 +81,41 @@
   opacity: 0.6;
 }
 
+.sm {
+  height: 2.25rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.md {
+  height: 2.5rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.95rem;
+}
+
+.lg {
+  height: 3rem;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+}
+
 .select {
   cursor: pointer;
 }
 
 .textarea {
-  min-height: 7.5rem;
+  height: auto;
   resize: vertical;
+}
+
+.textarea.sm {
+  min-height: 5rem;
+}
+
+.textarea.md {
+  min-height: 7.5rem;
+}
+
+.textarea.lg {
+  min-height: 10rem;
 }

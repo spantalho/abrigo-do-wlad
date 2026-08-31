@@ -1,7 +1,10 @@
 # Jaci UI
 
 Design system compartilhado pelos aplicativos público e administrativo do
-Abrigo do Wlad. O pacote npm do workspace é `@jaci/ui`.
+Abrigo do Wlad. O pacote npm do workspace é `@jaci/ui`. Alguns componentes
+interativos são construídos sobre [Radix Primitives](https://www.radix-ui.com/primitives),
+que fornece a base de comportamento e acessibilidade. O Jaci UI define a API de
+uso, a composição, os estilos e a identidade visual aplicada sobre essa base.
 
 ## Fundação visual
 
@@ -23,7 +26,7 @@ Os componentes são exportados por subcaminho:
 
 ```tsx
 import { Button } from "@jaci/ui/Button";
-import { Input, NativeSelect, Textarea } from "@jaci/ui/Field";
+import { Field, Input, NativeSelect, Textarea } from "@jaci/ui/Field";
 import {
   Dialog,
   DialogBody,
@@ -34,6 +37,42 @@ import {
   DialogIcon,
 } from "@jaci/ui/Dialog";
 ```
+
+### Campos de formulário
+
+`Field` reúne label, controle, descrição, obrigatoriedade e erro. `Input`,
+`NativeSelect` e `Textarea` herdam o tamanho e os atributos acessíveis do campo:
+
+```tsx
+<Field
+  controlId="dog-temperament"
+  label="Temperamento"
+  description={(
+    <>
+      <span>Use um resumo curto exibido no card público.</span>
+      <span>{temperament.length}/120</span>
+    </>
+  )}
+  required
+>
+  <Input
+    value={temperament}
+    onChange={event => setTemperament(event.target.value)}
+  />
+</Field>
+```
+
+Os tamanhos disponíveis são `sm`, `md` e `lg`; `md` é o padrão. O tamanho pode
+ser definido no `Field` para todos os seus controles ou diretamente no controle
+para sobrescrever o valor herdado. A descrição é opcional, aparece abaixo do
+controle com a cor `--text-muted` e é ligada ao controle por
+`aria-describedby`. `error` usa o mesmo mecanismo, aplica o estado inválido e
+anuncia a mensagem como alerta.
+
+### Diálogos
+
+Baseado em `@radix-ui/react-dialog`, com composição e identidade visual
+definidas pelo Jaci UI.
 
 Diálogos simples continuam usando o layout padrão. Superfícies maiores, com
 cabeçalho, conteúdo rolável e ações persistentes, devem optar pelo layout
@@ -57,7 +96,7 @@ cheia no mobile, use `mobileMode="fullscreen"`. O valor legado
 `size="fullscreen-mobile"` continua disponível para consumidores que não
 definem outra largura de desktop.
 
-### Cabeçalho semântico
+#### Cabeçalho semântico
 
 Diálogos semânticos, como confirmação, sucesso, alerta e erro, devem usar o
 ícone oficial. O ícone continua opcional para diálogos funcionais, como

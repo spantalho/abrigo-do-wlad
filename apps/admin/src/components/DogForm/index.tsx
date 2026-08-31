@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { useDropzone } from "react-dropzone";
 import { Images, PawPrint, Tags, UploadCloud, X } from "lucide-react";
 import { Button } from "@jaci/ui/Button";
-import { Input, Textarea } from "@jaci/ui/Field";
+import { Field, Input, Textarea } from "@jaci/ui/Field";
 import * as SelectComponent from "@jaci/ui/Select";
 import {
   CORES_MAP,
@@ -291,7 +291,6 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
   return (
     <>
 
-      {/* Modal de Sucesso */}
       <SuccessModal
         isOpen={showSuccess}
         onClose={handleCloseSuccess}
@@ -299,7 +298,6 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
         message="Os dados do cachorro foram salvos com sucesso."
       />
 
-      {/* Modal de Erro */}
       <ErrorModal
         isOpen={errorInfo.show}
         onClose={() => setErrorInfo({ show: false, message: "" })}
@@ -330,26 +328,33 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
           title="Dados principais"
           description="Identificação e perfil básico do animal."
         >
-              <div className={styles.row}>
-            <div className={styles.inputGroup}>
-              <label htmlFor="dog-name">Nome</label>
+          <div className={styles.row}>
+            <Field controlId="dog-name" label="Nome" required>
               <Input
-                id="dog-name"
-                required
                 maxLength={120}
                 value={formData.nome}
                 onChange={e => setFormData({...formData, nome: e.target.value})}
               />
-            </div>
-            <div className={styles.inputGroup}>
-              <label htmlFor="dog-age">Idade ou faixa estimada</label>
+            </Field>
+            <Field
+              controlId="dog-age"
+              label="Idade ou faixa estimada"
+              required
+              description={(
+                <>
+                  <span>Digite somente um número ou uma faixa com hífen.</span>
+                  {legacyAge && (
+                    <span className={styles.legacyValue} role="status">
+                      Valor anterior: “{legacyAge}”. Informe a idade no novo formato para salvar.
+                    </span>
+                  )}
+                </>
+              )}
+            >
               <div className={styles.ageControl}>
                 <Input
-                  id="dog-age"
-                  required
                   pattern="[0-9]+(?:-[0-9]+)?"
                   maxLength={7}
-                  aria-describedby="dog-age-help"
                   className={styles.ageValueInput}
                   placeholder="Ex: 2 ou 2-3"
                   value={ageRange}
@@ -380,19 +385,10 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
                   </SelectComponent.SelectContent>
                 </SelectComponent.Select>
               </div>
-              <p id="dog-age-help" className={styles.fieldDescription}>
-                Digite somente um número ou uma faixa com hífen.
-              </p>
-              {legacyAge && (
-                <p className={styles.legacyValue} role="status">
-                  Valor anterior: “{legacyAge}”. Informe a idade no novo formato para salvar.
-                </p>
-              )}
-            </div>
-              </div>
-              <div className={styles.row}>
-            <div className={styles.inputGroup}>
-              <label htmlFor="dog-age-category">Categoria</label>
+            </Field>
+          </div>
+          <div className={styles.row}>
+            <Field controlId="dog-age-category" label="Categoria">
               <SelectComponent.Select
                 value={formData.cateIdade}
                 onValueChange={value => {
@@ -411,9 +407,8 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
                   <SelectComponent.SelectItem value="idoso">Idoso</SelectComponent.SelectItem>
                 </SelectComponent.SelectContent>
               </SelectComponent.Select>
-            </div>
-            <div className={styles.inputGroup}>
-              <label htmlFor="dog-sex">Sexo</label>
+            </Field>
+            <Field controlId="dog-sex" label="Sexo">
               <SelectComponent.Select
                 value={formData.sexo}
                 onValueChange={value => {
@@ -431,8 +426,8 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
                   <SelectComponent.SelectItem value="Fêmea">Fêmea</SelectComponent.SelectItem>
                 </SelectComponent.SelectContent>
               </SelectComponent.Select>
-            </div>
-              </div>
+            </Field>
+          </div>
         </FormSection>
 
         <FormSection
@@ -441,7 +436,7 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
           description="Organize a capa e as imagens exibidas no perfil do animal."
         >
           {photos.length > 0 && (
-            <div style={{ marginBottom: '1.5rem' }}>
+            <div>
               <label style={{display:'block', marginBottom:'0.5rem', fontWeight:600, color:'var(--text-secondary)'}}>
                 Clique em uma foto para defini-la como capa
               </label>
@@ -501,9 +496,8 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
           title="Detalhes"
           description="Características usadas na busca e na apresentação pública."
         >
-              <div className={styles.row}>
-            <div className={styles.inputGroup}>
-              <label htmlFor="dog-color">Cor</label>
+          <div className={styles.row}>
+            <Field controlId="dog-color" label="Cor">
               <SelectComponent.Select
                 value={formData.cor}
                 onValueChange={value => setFormData({...formData, cor: value})}
@@ -519,28 +513,30 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
                   ))}
                 </SelectComponent.SelectContent>
               </SelectComponent.Select>
-            </div>
-            <div className={styles.inputGroup}>
-              <label htmlFor="dog-temperament">Temperamento</label>
+            </Field>
+            <Field
+              controlId="dog-temperament"
+              label="Temperamento"
+              required
+              description={(
+                <>
+                  <span>Use um resumo curto exibido no card público.</span>
+                  <span className={styles.selectionCount}>
+                    {formData.temperamento.length}/{MAX_DOG_TEMPERAMENT_LENGTH}
+                  </span>
+                </>
+              )}
+            >
               <Input
-                id="dog-temperament"
-                required
                 maxLength={MAX_DOG_TEMPERAMENT_LENGTH}
-                aria-describedby="dog-temperament-help"
                 placeholder="Ex: Dócil, tranquilo e sociável"
                 value={formData.temperamento}
                 onChange={e => setFormData({...formData, temperamento: e.target.value})}
               />
-              <p id="dog-temperament-help" className={styles.fieldDescription}>
-                Use um resumo curto exibido no card público.
-                <span className={styles.selectionCount}>
-                  {formData.temperamento.length}/{MAX_DOG_TEMPERAMENT_LENGTH}
-                </span>
-              </p>
-            </div>
-              </div>
+            </Field>
+          </div>
 
-              <div className={styles.inputGroup}>
+          <div className={styles.inputGroup}>
             <label>Tags</label>
             <p id="tags-description" className={styles.fieldDescription}>
               Características curtas e úteis para busca e apresentação. Selecione até {MAX_DOG_TAGS}.
@@ -567,37 +563,32 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
                 );
               })}
             </div>
-              </div>
+          </div>
 
-              <div className={styles.inputGroup}>
-            <label htmlFor="dog-instagram">Link Instagram</label>
+          <Field controlId="dog-instagram" label="Link do Instagram">
             <Input
-              id="dog-instagram"
               type="url"
               maxLength={2_048}
               placeholder="https://instagram.com/..."
               value={formData.instaLink}
               onChange={e => setFormData({...formData, instaLink: e.target.value})}
             />
-              </div>
+          </Field>
 
-              <div className={styles.inputGroup}>
-            <label htmlFor="dog-description">Descrição</label>
-            <p id="dog-description-help" className={styles.fieldDescription}>
-              Descreva a personalidade do cão, seu comportamento e outras particularidades.
-            </p>
+          <Field
+            controlId="dog-description"
+            label="Descrição"
+            description="Descreva a personalidade do cão, seu comportamento e outras particularidades."
+          >
             <Textarea
-              id="dog-description"
-              aria-describedby="dog-description-help"
               rows={5}
               maxLength={5_000}
               value={formData.descricaoCompleta}
               onChange={e => setFormData({...formData, descricaoCompleta: e.target.value})}
             />
-              </div>
+          </Field>
 
-              <div className={styles.inputGroup}>
-            <label htmlFor="dog-status">Status</label>
+          <Field controlId="dog-status" label="Status" required>
             <SelectComponent.Select
               required
               value={formData.status}
@@ -619,7 +610,7 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
                 ))}
               </SelectComponent.SelectContent>
             </SelectComponent.Select>
-              </div>
+          </Field>
         </FormSection>
       </FormShell>
     </>

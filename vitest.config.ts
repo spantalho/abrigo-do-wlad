@@ -36,6 +36,7 @@ export default defineConfig({
           include: [
             "apps/public/src/**/*.test.tsx",
             "apps/admin/src/**/*.test.tsx",
+            "packages/**/*.test.tsx",
           ],
           setupFiles: ["./apps/public/src/test/setup.ts"],
         },

@@ -95,7 +95,10 @@
 }
 
 .sectionContent {
+  display: flex;
   min-width: 0;
+  flex-direction: column;
+  gap: 1.5rem;
   color: var(--text-secondary);
 }
 
@@ -103,29 +106,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.row .field {
-  margin-bottom: 0;
-}
-
-.field label {
-  margin-left: 2px;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.field > button[role="combobox"] {
-  width: 100%;
 }
 
 .submitButton {

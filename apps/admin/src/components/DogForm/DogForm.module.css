@@ -2,7 +2,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
-  margin-bottom: 1.5rem;
 }
 
 .inputGroup {
@@ -138,6 +137,7 @@
 .dropContent p {
   font-weight: 600;
   color: var(--text-secondary);
+  text-align: center;
   margin-top: 1rem;
   font-size: 1.1rem;
 }
