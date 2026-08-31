@@ -19,7 +19,7 @@ import {
   getOrCreateIdempotencyKey,
   type AdoptionSubmissionResult,
 } from "./submission";
-import { ADOPTION_RECAPTCHA_ACTION } from "./recaptcha";
+import { ADOPTION_RECAPTCHA_ACTION, loadRecaptcha } from "./recaptcha";
 import { WIZARD_STORAGE_KEYS } from "./wizardStorage";
 
 import styles from "./WizardForm.module.css";
@@ -165,15 +165,8 @@ export function WizardForm({ onSubmitSuccess }: WizardFormProps) {
   } = useWizardForm();
 
   React.useEffect(() => {
-    const scriptId = "recaptcha-v3-script";
-    if (!document.getElementById(scriptId)) {
-      const script = document.createElement("script");
-      script.id = scriptId;
-
-      const siteKey = import.meta.env.VITE_RECAPTCHA_PUBLIC_KEY as string;
-      script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
-      document.body.appendChild(script);
-    }
+    const siteKey = import.meta.env.VITE_RECAPTCHA_PUBLIC_KEY as string;
+    return loadRecaptcha(siteKey);
   }, []);
 
   const handleResume = () => {

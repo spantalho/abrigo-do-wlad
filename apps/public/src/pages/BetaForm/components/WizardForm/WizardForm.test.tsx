@@ -6,7 +6,10 @@ import { MemoryRouter, Route, Routes } from "react-router";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 
 import { VALID_ADOPTION_APPLICATION } from "../../../../test/fixtures/adoption";
-import { ADOPTION_RECAPTCHA_ACTION } from "./recaptcha";
+import {
+  ADOPTION_RECAPTCHA_ACTION,
+  RECAPTCHA_SCRIPT_ID,
+} from "./recaptcha";
 import { ADOPTION_IDEMPOTENCY_STORAGE_KEY } from "./submission";
 import { WizardForm } from ".";
 import { WIZARD_STORAGE_KEYS } from "./wizardStorage";
@@ -19,7 +22,7 @@ function renderWizard(
   initialEntry = "/beta/formulario/step/1",
   onSubmitSuccess = vi.fn(),
 ) {
-  render(
+  const view = render(
     <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
         <Route
@@ -30,7 +33,7 @@ function renderWizard(
     </MemoryRouter>,
   );
 
-  return { onSubmitSuccess };
+  return { ...view, onSubmitSuccess };
 }
 
 function installRecaptcha(token = "captcha-token") {
@@ -58,7 +61,32 @@ describe("WizardForm", () => {
   });
 
   afterEach(() => {
-    document.getElementById("recaptcha-v3-script")?.remove();
+    document.getElementById(RECAPTCHA_SCRIPT_ID)?.remove();
+  });
+
+  it("remove o reCAPTCHA ao sair do wizard e o recarrega ao voltar", () => {
+    const firstView = renderWizard();
+    const badge = document.createElement("div");
+    badge.className = "grecaptcha-badge";
+    document.body.appendChild(badge);
+
+    const runtimeScript = document.createElement("script");
+    runtimeScript.src =
+      "https://www.gstatic.com/recaptcha/releases/test/recaptcha__pt_br.js";
+    document.head.appendChild(runtimeScript);
+
+    expect(document.getElementById(RECAPTCHA_SCRIPT_ID)).toBeInTheDocument();
+    expect(document.querySelector(".grecaptcha-badge")).toBeInTheDocument();
+
+    firstView.unmount();
+
+    expect(document.getElementById(RECAPTCHA_SCRIPT_ID)).not.toBeInTheDocument();
+    expect(document.querySelector(".grecaptcha-badge")).not.toBeInTheDocument();
+    expect(runtimeScript).not.toBeInTheDocument();
+
+    const secondView = renderWizard();
+    expect(document.getElementById(RECAPTCHA_SCRIPT_ID)).toBeInTheDocument();
+    secondView.unmount();
   });
 
   it("exibe os quatro avisos iniciais e persiste a decisão de prosseguir", async () => {
