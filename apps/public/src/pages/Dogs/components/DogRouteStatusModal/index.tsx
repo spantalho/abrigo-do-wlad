@@ -8,6 +8,8 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogHeading,
+  DialogIcon,
   DialogTitle,
 } from "@jaci/ui/Dialog";
 import styles from "./DogRouteStatusModal.module.css";
@@ -26,7 +28,8 @@ function noticeContent(notice: DogRouteNotice) {
   if (notice.kind === "tombstone") {
     const adopted = notice.tombstone.status === "adopted";
     return {
-      icon: adopted ? <Lucide.HeartHandshake size={36} /> : <Lucide.PawPrint size={36} />,
+      icon: adopted ? <Lucide.HeartHandshake /> : <Lucide.PawPrint />,
+      tone: adopted ? "success" as const : "info" as const,
       title: adopted
         ? `${notice.tombstone.nome} encontrou uma família!`
         : `${notice.tombstone.nome} não está mais disponível`,
@@ -37,13 +40,15 @@ function noticeContent(notice: DogRouteNotice) {
   }
   if (notice.kind === "not-found") {
     return {
-      icon: <Lucide.SearchX size={36} />,
+      icon: <Lucide.SearchX />,
+      tone: "warning" as const,
       title: "Doguinho não encontrado",
       description: "Este endereço não corresponde a um cão disponível no momento.",
     };
   }
   return {
-    icon: <Lucide.WifiOff size={36} />,
+    icon: <Lucide.WifiOff />,
+    tone: "danger" as const,
     title: "Não conseguimos carregar este perfil",
     description: "Tente novamente em alguns instantes ou conheça os doguinhos exibidos nesta página.",
   };
@@ -55,11 +60,13 @@ export function DogRouteStatusModal({ notice, onClose }: DogRouteStatusModalProp
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent size="sm" className={styles.modal}>
+      <DialogContent size="sm">
         <DialogHeader>
-          <div className={styles.icon}>{content.icon}</div>
-          <DialogTitle>{content.title}</DialogTitle>
-          <DialogDescription>{content.description}</DialogDescription>
+          <DialogIcon tone={content.tone}>{content.icon}</DialogIcon>
+          <DialogHeading>
+            <DialogTitle>{content.title}</DialogTitle>
+            <DialogDescription>{content.description}</DialogDescription>
+          </DialogHeading>
         </DialogHeader>
         <DialogFooter className={styles.footer}>
           <Button variant="primary" onClick={onClose}>

@@ -3,7 +3,7 @@ import React from "react";
 type VLibrasWindow = Window &
   typeof globalThis & {
     VLibras?: {
-      Widget: new (options: { rootPath: string; position: string }) => unknown;
+      Widget: new (options: { rootPath: string; position: "L" | "R" }) => unknown;
     };
   };
 
@@ -24,8 +24,23 @@ export const VLibrasWidget = () => {
 
       new VLibras.Widget({
         rootPath: "https://vlibras.gov.br/app",
-        position: "BL",
+        position: "L",
       });
+
+      requestAnimationFrame(() => {
+        const wrapper = document.querySelector("#vlibras-access-wrapper");
+        const accessButton = wrapper?.shadowRoot?.querySelector<HTMLElement>("#vlibras-access");
+
+        if (!accessButton) {
+          return;
+        }
+
+        accessButton.style.setProperty("top", "auto");
+        accessButton.style.setProperty("bottom", "16px");
+        accessButton.style.setProperty("left", "16px");
+        accessButton.style.setProperty("right", "auto");
+      });
+
       vlibrasInitialized = true;
     };
 

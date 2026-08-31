@@ -1,18 +1,31 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { useDropzone } from "react-dropzone";
-import { ArrowLeft, Images, PawPrint, Save, Tags, UploadCloud, X } from "lucide-react";
+import { Images, PawPrint, Tags, UploadCloud, X } from "lucide-react";
 import { Button } from "@jaci/ui/Button";
-import { Card, CardBody, CardContent, CardHeader, CardIcon } from "@jaci/ui/Card";
-import { Input, Textarea } from "@jaci/ui/Field";
+import { Field, Input, Textarea } from "@jaci/ui/Field";
 import * as SelectComponent from "@jaci/ui/Select";
 import {
   CORES_MAP,
   DOG_HEALTH_STATUSES,
   DOG_TAGS,
+  MAX_DOG_PHOTOS,
   MAX_DOG_TAGS,
+  MAX_DOG_TEMPERAMENT_LENGTH,
+  type DogDetailsInput,
+  type DogAgeUnit,
+  type DogInput,
   type DogProps,
 } from "../../types/dogs";
+import {
+  dogAgeCategorySchema,
+  dogDetailsSchema,
+  dogHealthStatusSchema,
+  dogInputSchema,
+  dogSexSchema,
+  formatDogAge,
+  parseDogAge,
+} from "../../../shared/entities";
 import {
   deleteUploadedCloudinaryImage,
   DOG_IMAGE_ACCEPT,
@@ -22,29 +35,53 @@ import {
 import { SuccessModal } from "../SuccessModal";
 import { ErrorModal } from "../ErrorModal"; // <-- Importação do ErrorModal
 import { ConfirmModal } from "../ConfirmModal";
+import { FormSection, FormShell } from "../FormShell";
+import { areFormValuesEqual } from "../FormShell/changes";
 import styles from "./DogForm.module.css";
 
-const MAX_DOG_PHOTOS = 6;
 type DogPhoto =
   | { id: string; kind: "existing"; url: string }
   | { id: string; kind: "local"; file: File; previewUrl: string };
 
 interface DogFormProps {
-  initialData?: Partial<DogProps>;
-  onSubmit: (data: Omit<DogProps, "id">) => Promise<void>;
+  initialData?: DogProps;
+  onSubmit: (data: DogInput) => Promise<void>;
   title: string;
   buttonLabel: string;
 }
 
+function createDogDetailsInput(initialData?: DogProps): DogDetailsInput {
+  return {
+    nome: initialData?.nome ?? "",
+    idade: initialData?.idade ?? "",
+    cateIdade: initialData?.cateIdade ?? "adulto",
+    sexo: initialData?.sexo ?? "Macho",
+    temperamento: initialData?.temperamento ?? "",
+    tags: initialData?.tags ?? [],
+    status: initialData?.status ?? DOG_HEALTH_STATUSES[0],
+    cor: initialData?.cor ?? "caramelo",
+    instaLink: initialData?.instaLink ?? "",
+    descricaoCompleta: initialData?.descricaoCompleta ?? "",
+  };
+}
+
+function sanitizeAgeRange(value: string): string {
+  const sanitized = value.replace(/[^\d-]/g, "");
+  const separatorIndex = sanitized.indexOf("-");
+  if (separatorIndex === -1) return sanitized.slice(0, 3);
+
+  const minimum = sanitized.slice(0, separatorIndex).slice(0, 3);
+  const maximum = sanitized.slice(separatorIndex + 1).replaceAll("-", "").slice(0, 3);
+  return `${minimum}-${maximum}`;
+}
+
 export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormProps) {
   const navigate = useNavigate();
+  const initialAge = parseDogAge(initialData?.idade ?? "");
+  const [ageRange, setAgeRange] = useState(initialAge?.range ?? "");
+  const [ageUnit, setAgeUnit] = useState<DogAgeUnit>(initialAge?.unit ?? "anos");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
-  const initialStatus = initialData?.status;
-  const normalizedInitialStatus = initialStatus !== undefined
-    && DOG_HEALTH_STATUSES.includes(initialStatus)
-    ? initialStatus
-    : DOG_HEALTH_STATUSES[0];
 
   // ESTADOS PARA OS MODAIS
   const [showSuccess, setShowSuccess] = useState(false);
@@ -60,25 +97,50 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
     })),
   );
 
-  const [formData, setFormData] = useState<Partial<DogProps>>({
-    nome: "",
-    idade: "",
-    cateIdade: "adulto",
-    sexo: "Macho",
-    temperamento: "",
-    tags: [],
-    fotos: [],
-    cor: "caramelo",
-    instaLink: "",
-    descricaoCompleta: "",
-    ...initialData,
-    status: normalizedInitialStatus,
-  });
+  const [formData, setFormData] = useState<DogDetailsInput>(() =>
+    createDogDetailsInput(initialData)
+  );
 
   const photoLimitReached = photos.length >= MAX_DOG_PHOTOS;
   const remainingPhotoSlots = Math.max(0, MAX_DOG_PHOTOS - photos.length);
-  const selectedTags = formData.tags || [];
+  const selectedTags = formData.tags;
   const tagLimitReached = selectedTags.length >= MAX_DOG_TAGS;
+  const initialPhotoUrls = initialData?.fotos ?? [];
+  const currentExistingPhotoUrls = photos.flatMap(photo =>
+    photo.kind === "existing" ? [photo.url] : []
+  );
+  const isDirty = !areFormValuesEqual(createDogDetailsInput(initialData), formData)
+    || photos.some(photo => photo.kind === "local")
+    || !areFormValuesEqual(initialPhotoUrls, currentExistingPhotoUrls);
+  const legacyAge = initialData?.idade
+    && !initialAge
+    && !parseDogAge(formData.idade)
+    ? initialData.idade
+    : null;
+
+  const updateAge = (range: string, unit: DogAgeUnit) => {
+    setFormData(prev => ({ ...prev, idade: formatDogAge(range, unit) }));
+  };
+
+  const handleAgeRangeChange = (value: string) => {
+    const range = sanitizeAgeRange(value);
+    setAgeRange(range);
+    updateAge(range, ageUnit);
+  };
+
+  const handleAgeUnitChange = (value: string) => {
+    if (value !== "anos" && value !== "meses") return;
+    setAgeUnit(value);
+    updateAge(ageRange, value);
+  };
+
+  const normalizeAgeRange = () => {
+    const [minimum, maximum] = ageRange.split("-");
+    if (minimum && maximum === minimum) {
+      setAgeRange(minimum);
+      updateAge(minimum, ageUnit);
+    }
+  };
 
   useEffect(() => () => {
     localPreviewUrls.current.forEach(url => URL.revokeObjectURL(url));
@@ -144,7 +206,7 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
 
   const toggleTag = (tag: string) => {
     setFormData(prev => {
-      const tags = prev.tags || [];
+      const tags = prev.tags;
       if (tags.includes(tag)) {
         return { ...prev, tags: tags.filter(t => t !== tag) };
       }
@@ -160,10 +222,12 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (selectedTags.length > MAX_DOG_TAGS) {
+    const validatedDetails = dogDetailsSchema.safeParse(formData);
+    if (!validatedDetails.success) {
       setErrorInfo({
         show: true,
-        message: `Selecione no máximo ${MAX_DOG_TAGS} tags para o cachorro.`,
+        message: validatedDetails.error.issues[0]?.message
+          ?? "Revise os dados do cachorro antes de continuar.",
       });
       return;
     }
@@ -193,13 +257,13 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
         }
       }
 
-      const finalData = {
-        ...formData,
-        fotos: finalPhotos
-      };
+      const finalData = dogInputSchema.parse({
+        ...validatedDetails.data,
+        fotos: finalPhotos,
+      });
 
       setUploadProgress("Salvando dados...");
-      await onSubmit(finalData as Omit<DogProps, "id">);
+      await onSubmit(finalData);
 
       setShowSuccess(true);
 
@@ -225,9 +289,8 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
   };
 
   return (
-    <div className={styles.container}>
+    <>
 
-      {/* Modal de Sucesso */}
       <SuccessModal
         isOpen={showSuccess}
         onClose={handleCloseSuccess}
@@ -235,7 +298,6 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
         message="Os dados do cachorro foram salvos com sucesso."
       />
 
-      {/* Modal de Erro */}
       <ErrorModal
         isOpen={errorInfo.show}
         onClose={() => setErrorInfo({ show: false, message: "" })}
@@ -252,43 +314,91 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
         isDestructive
       />
 
-      <div className={styles.headerArea}>
-        <Button type="button" variant="text" leftIcon={<ArrowLeft size={20} />} onClick={() => navigate("/admin/dog")} className={styles.backButton}>
-          Voltar
-        </Button>
-        <h1 className={styles.title}>{title}</h1>
-      </div>
-
-      <form onSubmit={handleSubmit} className={styles.formGrid}>
-
-        <Card className={styles.section} tone="muted" size="sm">
-          <CardBody className={styles.sectionBody}>
-            <CardHeader className={styles.sectionHeader}>
-              <CardIcon className={styles.sectionIcon}><PawPrint size={24} /></CardIcon>
-              <div className={styles.sectionHeading}>
-                <h2>Dados principais</h2>
-                <p>Identificação e perfil básico do animal.</p>
+      <FormShell
+        title={title}
+        backTo="/admin/dog"
+        isDirty={isDirty && !showSuccess}
+        isSubmitting={isSubmitting}
+        submitLabel={buttonLabel}
+        submittingLabel={uploadProgress || "Salvando..."}
+        onSubmit={handleSubmit}
+      >
+        <FormSection
+          icon={<PawPrint size={24} />}
+          title="Dados principais"
+          description="Identificação e perfil básico do animal."
+        >
+          <div className={styles.row}>
+            <Field controlId="dog-name" label="Nome" required>
+              <Input
+                maxLength={120}
+                value={formData.nome}
+                onChange={e => setFormData({...formData, nome: e.target.value})}
+              />
+            </Field>
+            <Field
+              controlId="dog-age"
+              label="Idade ou faixa estimada"
+              required
+              description={(
+                <>
+                  <span>Digite somente um número ou uma faixa com hífen.</span>
+                  {legacyAge && (
+                    <span className={styles.legacyValue} role="status">
+                      Valor anterior: “{legacyAge}”. Informe a idade no novo formato para salvar.
+                    </span>
+                  )}
+                </>
+              )}
+            >
+              <div className={styles.ageControl}>
+                <Input
+                  pattern="[0-9]+(?:-[0-9]+)?"
+                  maxLength={7}
+                  className={styles.ageValueInput}
+                  placeholder="Ex: 2 ou 2-3"
+                  value={ageRange}
+                  onBlur={normalizeAgeRange}
+                  onChange={event => handleAgeRangeChange(event.target.value)}
+                />
+                <SelectComponent.Select
+                  value={ageUnit}
+                  onValueChange={handleAgeUnitChange}
+                >
+                  <SelectComponent.SelectTrigger
+                    aria-label="Unidade da idade"
+                    className={styles.ageUnitTrigger}
+                  >
+                    <SelectComponent.SelectValue>
+                      {ageUnit === "anos"
+                        ? ageRange === "1" ? "ano" : "anos"
+                        : ageRange === "1" ? "mês" : "meses"}
+                    </SelectComponent.SelectValue>
+                  </SelectComponent.SelectTrigger>
+                  <SelectComponent.SelectContent className={styles.ageUnitContent}>
+                    <SelectComponent.SelectItem value="anos">
+                      {ageRange === "1" ? "ano" : "anos"}
+                    </SelectComponent.SelectItem>
+                    <SelectComponent.SelectItem value="meses">
+                      {ageRange === "1" ? "mês" : "meses"}
+                    </SelectComponent.SelectItem>
+                  </SelectComponent.SelectContent>
+                </SelectComponent.Select>
               </div>
-            </CardHeader>
-            <CardContent className={styles.sectionContent}>
-              <div className={styles.row}>
-            <div className={styles.inputGroup}>
-              <label>Nome</label>
-              <Input required value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})} />
-            </div>
-            <div className={styles.inputGroup}>
-              <label>Idade (ex: "2 anos")</label>
-              <Input required value={formData.idade} onChange={e => setFormData({...formData, idade: e.target.value})} />
-            </div>
-              </div>
-              <div className={styles.row}>
-            <div className={styles.inputGroup}>
-              <label>Categoria</label>
+            </Field>
+          </div>
+          <div className={styles.row}>
+            <Field controlId="dog-age-category" label="Categoria">
               <SelectComponent.Select
                 value={formData.cateIdade}
-                onValueChange={value => setFormData({...formData, cateIdade: value as DogProps["cateIdade"]})}
+                onValueChange={value => {
+                  const category = dogAgeCategorySchema.safeParse(value);
+                  if (category.success) {
+                    setFormData({ ...formData, cateIdade: category.data });
+                  }
+                }}
               >
-                <SelectComponent.SelectTrigger>
+                <SelectComponent.SelectTrigger id="dog-age-category">
                   <SelectComponent.SelectValue placeholder="Selecione a categoria" />
                 </SelectComponent.SelectTrigger>
                 <SelectComponent.SelectContent>
@@ -297,14 +407,18 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
                   <SelectComponent.SelectItem value="idoso">Idoso</SelectComponent.SelectItem>
                 </SelectComponent.SelectContent>
               </SelectComponent.Select>
-            </div>
-            <div className={styles.inputGroup}>
-              <label>Sexo</label>
+            </Field>
+            <Field controlId="dog-sex" label="Sexo">
               <SelectComponent.Select
                 value={formData.sexo}
-                onValueChange={value => setFormData({...formData, sexo: value as DogProps["sexo"]})}
+                onValueChange={value => {
+                  const sex = dogSexSchema.safeParse(value);
+                  if (sex.success) {
+                    setFormData({ ...formData, sexo: sex.data });
+                  }
+                }}
               >
-                <SelectComponent.SelectTrigger>
+                <SelectComponent.SelectTrigger id="dog-sex">
                   <SelectComponent.SelectValue placeholder="Selecione o sexo" />
                 </SelectComponent.SelectTrigger>
                 <SelectComponent.SelectContent>
@@ -312,24 +426,17 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
                   <SelectComponent.SelectItem value="Fêmea">Fêmea</SelectComponent.SelectItem>
                 </SelectComponent.SelectContent>
               </SelectComponent.Select>
-            </div>
-              </div>
-            </CardContent>
-          </CardBody>
-        </Card>
+            </Field>
+          </div>
+        </FormSection>
 
-        <Card className={styles.section} tone="muted" size="sm">
-          <CardBody className={styles.sectionBody}>
-            <CardHeader className={styles.sectionHeader}>
-              <CardIcon className={styles.sectionIcon}><Images size={24} /></CardIcon>
-              <div className={styles.sectionHeading}>
-                <h2>Fotos ({photos.length}/{MAX_DOG_PHOTOS})</h2>
-                <p>Organize a capa e as imagens exibidas no perfil do animal.</p>
-              </div>
-            </CardHeader>
-            <CardContent className={styles.sectionContent}>
+        <FormSection
+          icon={<Images size={24} />}
+          title={`Fotos (${photos.length}/${MAX_DOG_PHOTOS})`}
+          description="Organize a capa e as imagens exibidas no perfil do animal."
+        >
           {photos.length > 0 && (
-            <div style={{ marginBottom: '1.5rem' }}>
+            <div>
               <label style={{display:'block', marginBottom:'0.5rem', fontWeight:600, color:'var(--text-secondary)'}}>
                 Clique em uma foto para defini-la como capa
               </label>
@@ -382,28 +489,20 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
               )}
             </div>
               </div>
-            </CardContent>
-          </CardBody>
-        </Card>
+        </FormSection>
 
-        <Card className={styles.section} tone="muted" size="sm">
-          <CardBody className={styles.sectionBody}>
-            <CardHeader className={styles.sectionHeader}>
-              <CardIcon className={styles.sectionIcon}><Tags size={24} /></CardIcon>
-              <div className={styles.sectionHeading}>
-                <h2>Detalhes</h2>
-                <p>Características usadas na busca e na apresentação pública.</p>
-              </div>
-            </CardHeader>
-            <CardContent className={styles.sectionContent}>
-              <div className={styles.row}>
-            <div className={styles.inputGroup}>
-              <label>Cor</label>
+        <FormSection
+          icon={<Tags size={24} />}
+          title="Detalhes"
+          description="Características usadas na busca e na apresentação pública."
+        >
+          <div className={styles.row}>
+            <Field controlId="dog-color" label="Cor">
               <SelectComponent.Select
                 value={formData.cor}
                 onValueChange={value => setFormData({...formData, cor: value})}
               >
-                <SelectComponent.SelectTrigger>
+                <SelectComponent.SelectTrigger id="dog-color">
                   <SelectComponent.SelectValue placeholder="Selecione a cor" />
                 </SelectComponent.SelectTrigger>
                 <SelectComponent.SelectContent>
@@ -414,14 +513,30 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
                   ))}
                 </SelectComponent.SelectContent>
               </SelectComponent.Select>
-            </div>
-            <div className={styles.inputGroup}>
-              <label>Temperamento</label>
-              <Input value={formData.temperamento} onChange={e => setFormData({...formData, temperamento: e.target.value})} />
-            </div>
-              </div>
+            </Field>
+            <Field
+              controlId="dog-temperament"
+              label="Temperamento"
+              required
+              description={(
+                <>
+                  <span>Use um resumo curto exibido no card público.</span>
+                  <span className={styles.selectionCount}>
+                    {formData.temperamento.length}/{MAX_DOG_TEMPERAMENT_LENGTH}
+                  </span>
+                </>
+              )}
+            >
+              <Input
+                maxLength={MAX_DOG_TEMPERAMENT_LENGTH}
+                placeholder="Ex: Dócil, tranquilo e sociável"
+                value={formData.temperamento}
+                onChange={e => setFormData({...formData, temperamento: e.target.value})}
+              />
+            </Field>
+          </div>
 
-              <div className={styles.inputGroup}>
+          <div className={styles.inputGroup}>
             <label>Tags</label>
             <p id="tags-description" className={styles.fieldDescription}>
               Características curtas e úteis para busca e apresentação. Selecione até {MAX_DOG_TAGS}.
@@ -448,37 +563,43 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
                 );
               })}
             </div>
-              </div>
+          </div>
 
-              <div className={styles.inputGroup}>
-            <label>Link Instagram</label>
-            <Input value={formData.instaLink} onChange={e => setFormData({...formData, instaLink: e.target.value})} />
-              </div>
+          <Field controlId="dog-instagram" label="Link do Instagram">
+            <Input
+              type="url"
+              maxLength={2_048}
+              placeholder="https://instagram.com/..."
+              value={formData.instaLink}
+              onChange={e => setFormData({...formData, instaLink: e.target.value})}
+            />
+          </Field>
 
-              <div className={styles.inputGroup}>
-            <label>Descrição</label>
-            <p id="dog-description-help" className={styles.fieldDescription}>
-              Descreva a personalidade do cão, seu comportamento e outras particularidades.
-            </p>
+          <Field
+            controlId="dog-description"
+            label="Descrição"
+            description="Descreva a personalidade do cão, seu comportamento e outras particularidades."
+          >
             <Textarea
-              aria-describedby="dog-description-help"
               rows={5}
+              maxLength={5_000}
               value={formData.descricaoCompleta}
               onChange={e => setFormData({...formData, descricaoCompleta: e.target.value})}
             />
-              </div>
+          </Field>
 
-              <div className={styles.inputGroup}>
-            <label>Status</label>
+          <Field controlId="dog-status" label="Status" required>
             <SelectComponent.Select
               required
               value={formData.status}
-              onValueChange={value => setFormData({
-                ...formData,
-                status: value as DogProps["status"],
-              })}
+              onValueChange={value => {
+                const status = dogHealthStatusSchema.safeParse(value);
+                if (status.success) {
+                  setFormData({ ...formData, status: status.data });
+                }
+              }}
             >
-              <SelectComponent.SelectTrigger>
+              <SelectComponent.SelectTrigger id="dog-status">
                 <SelectComponent.SelectValue placeholder="Selecione o status" />
               </SelectComponent.SelectTrigger>
               <SelectComponent.SelectContent>
@@ -489,21 +610,9 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
                 ))}
               </SelectComponent.SelectContent>
             </SelectComponent.Select>
-              </div>
-            </CardContent>
-          </CardBody>
-        </Card>
-
-        <Button
-          type="submit"
-          size="lg"
-          className={styles.submitButton}
-          leftIcon={isSubmitting ? undefined : <Save size={20} />}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? uploadProgress : buttonLabel}
-        </Button>
-      </form>
-    </div>
+          </Field>
+        </FormSection>
+      </FormShell>
+    </>
   );
 }

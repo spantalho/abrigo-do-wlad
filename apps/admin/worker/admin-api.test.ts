@@ -248,6 +248,48 @@ test("dog updates reject more than five tags before accessing Firestore", async 
   );
 });
 
+test("dog updates reject temperament longer than 80 characters before accessing Firestore", async () => {
+  const response = await handleAdminApi(
+    new Request("https://admin.example.test/api/admin/dogs/123", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Origin: "https://admin.example.test",
+      },
+      body: JSON.stringify({ temperamento: "a".repeat(81) }),
+    }),
+    env,
+    identity,
+  );
+
+  assert.equal(response.status, 400);
+  assert.equal(
+    (await response.json() as { error: string }).error,
+    "O temperamento deve ter no máximo 80 caracteres.",
+  );
+});
+
+test("dog updates reject free-form ages before accessing Firestore", async () => {
+  const response = await handleAdminApi(
+    new Request("https://admin.example.test/api/admin/dogs/123", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Origin: "https://admin.example.test",
+      },
+      body: JSON.stringify({ idade: "aaaaaaaaaaaaaaaa" }),
+    }),
+    env,
+    identity,
+  );
+
+  assert.equal(response.status, 400);
+  assert.equal(
+    (await response.json() as { error: string }).error,
+    "Informe uma idade válida, como 1 ano, 8 meses ou 2-3 anos.",
+  );
+});
+
 test("dog updates reject removed health statuses before accessing Firestore", async () => {
   for (const status of ["Adotado", "Em tratamento", "Vacinado", "Castrado"]) {
     const response = await handleAdminApi(

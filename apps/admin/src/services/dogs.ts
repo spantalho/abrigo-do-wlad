@@ -1,7 +1,12 @@
-import type { DogProps } from "../types/dogs";
+import {
+  dogEntitySchema,
+  type Dog,
+  type DogInput,
+  type DogUpdate,
+} from "../../shared/entities";
 import { ApiError, apiRequest } from "./api";
 
-export async function addDog(dogData: Omit<DogProps, "id">) {
+export async function addDog(dogData: DogInput) {
   await apiRequest<{ id: number }>("/api/admin/dogs", {
     method: "POST",
     body: JSON.stringify(dogData),
@@ -9,8 +14,8 @@ export async function addDog(dogData: Omit<DogProps, "id">) {
   return true;
 }
 
-export async function getDogs(): Promise<DogProps[]> {
-  return apiRequest<DogProps[]>("/api/admin/dogs");
+export async function getDogs(): Promise<Dog[]> {
+  return dogEntitySchema.array().parse(await apiRequest<unknown>("/api/admin/dogs"));
 }
 
 export async function removeDogAndTrack(id: number, adoptedViaSite: boolean) {
@@ -21,21 +26,21 @@ export async function removeDogAndTrack(id: number, adoptedViaSite: boolean) {
   return true;
 }
 
-export async function getDogById(id: number): Promise<DogProps | null> {
+export async function getDogById(id: number): Promise<Dog | null> {
   try {
-    return await apiRequest<DogProps>(`/api/admin/dogs/${encodeURIComponent(id)}`);
+    return dogEntitySchema.parse(
+      await apiRequest<unknown>(`/api/admin/dogs/${encodeURIComponent(id)}`),
+    );
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) return null;
     throw error;
   }
 }
 
-export async function updateDog(id: number, data: Partial<DogProps>) {
-  const update = { ...data };
-  delete update.id;
+export async function updateDog(id: number, data: DogUpdate) {
   await apiRequest(`/api/admin/dogs/${encodeURIComponent(id)}`, {
     method: "PATCH",
-    body: JSON.stringify(update),
+    body: JSON.stringify(data),
   });
   return true;
 }

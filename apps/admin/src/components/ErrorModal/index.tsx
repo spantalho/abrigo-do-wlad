@@ -5,9 +5,10 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
+  DialogHeading,
+  DialogIcon,
   DialogTitle,
 } from "@jaci/ui/Dialog";
-import styles from "./ErrorModal.module.css";
 
 interface ErrorModalProps {
   isOpen: boolean;
@@ -20,19 +21,23 @@ export function ErrorModal({
   isOpen,
   onClose,
   title = "Ops! Algo deu errado",
-  message = "Ocorreu um erro inesperado. Tente novamente."
+  message = "Ocorreu um erro inesperado. Tente novamente.",
 }: ErrorModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className={styles.modal}>
-        <DialogHeader className={styles.header}>
-          <div className={styles.iconArea}>
-            <AlertOctagon size={30} />
-          </div>
-          <DialogTitle>{title}</DialogTitle>
+      <DialogContent size="sm">
+        <DialogHeader>
+          <DialogIcon tone="danger">
+            <AlertOctagon />
+          </DialogIcon>
+          <DialogHeading>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>{message}</DialogDescription>
+          </DialogHeading>
         </DialogHeader>
-        <DialogDescription className={styles.description}>{message}</DialogDescription>
-        <Button variant="danger" className={styles.confirmBtn} onClick={onClose}>Fechar</Button>
+        <Button variant="danger" onClick={onClose}>
+          Fechar
+        </Button>
       </DialogContent>
     </Dialog>
   );

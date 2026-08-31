@@ -19,7 +19,7 @@ import {
   getOrCreateIdempotencyKey,
   type AdoptionSubmissionResult,
 } from "./submission";
-import { ADOPTION_RECAPTCHA_ACTION } from "./recaptcha";
+import { ADOPTION_RECAPTCHA_ACTION, loadRecaptcha } from "./recaptcha";
 import { WIZARD_STORAGE_KEYS } from "./wizardStorage";
 
 import styles from "./WizardForm.module.css";
@@ -165,15 +165,8 @@ export function WizardForm({ onSubmitSuccess }: WizardFormProps) {
   } = useWizardForm();
 
   React.useEffect(() => {
-    const scriptId = "recaptcha-v3-script";
-    if (!document.getElementById(scriptId)) {
-      const script = document.createElement("script");
-      script.id = scriptId;
-
-      const siteKey = import.meta.env.VITE_RECAPTCHA_PUBLIC_KEY as string;
-      script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
-      document.body.appendChild(script);
-    }
+    const siteKey = import.meta.env.VITE_RECAPTCHA_PUBLIC_KEY as string;
+    return loadRecaptcha(siteKey);
   }, []);
 
   const handleResume = () => {
@@ -528,16 +521,20 @@ export function WizardForm({ onSubmitSuccess }: WizardFormProps) {
         open={showResumeDialog}
         onOpenChange={setShowResumeDialog}
       >
-        <DialogComponent.DialogContent>
+        <DialogComponent.DialogContent size="sm">
           <DialogComponent.DialogHeader>
-            <DialogComponent.DialogTitle>
-              <Lucide.CircleQuestionMark size={25} color="var(--primary)" />
-              Continuar preenchimento?
-            </DialogComponent.DialogTitle>
-            <DialogComponent.DialogDescription>
-              Encontramos dados salvos de um preenchimento anterior. Deseja
-              continuar de onde parou ou começar um novo formulário?
-            </DialogComponent.DialogDescription>
+            <DialogComponent.DialogIcon tone="primary">
+              <Lucide.CircleQuestionMark />
+            </DialogComponent.DialogIcon>
+            <DialogComponent.DialogHeading>
+              <DialogComponent.DialogTitle>
+                Continuar preenchimento?
+              </DialogComponent.DialogTitle>
+              <DialogComponent.DialogDescription>
+                Encontramos dados salvos de um preenchimento anterior. Deseja
+                continuar de onde parou ou começar um novo formulário?
+              </DialogComponent.DialogDescription>
+            </DialogComponent.DialogHeading>
           </DialogComponent.DialogHeader>
           <DialogComponent.DialogFooter className={styles.dialogFooter}>
             <Button variant="outline" onClick={handleRestart}>

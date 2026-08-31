@@ -11,32 +11,30 @@
 }
 
 .backButton {
-  background: none;
-  color: var(--text-muted);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  font-weight: 600;
   margin-bottom: 0.5rem;
   padding: 0.5rem 0;
-  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
   transition: transform 0.2s, color 0.2s;
-  border: none;
 }
 
-.backButton:hover {
+.backButton:hover:not(:disabled) {
   color: var(--primary);
   transform: translateX(-4px);
 }
 
 .title {
+  margin: 0;
+  color: var(--text-primary);
   font-size: 2rem;
   font-weight: 800;
-  color: var(--text-primary);
   letter-spacing: -0.02em;
-  margin: 0;
   line-height: 1.1;
+}
+
+.formGrid {
+  min-width: 0;
 }
 
 .section {
@@ -91,66 +89,31 @@
   line-height: 1.45;
 }
 
-.sectionContent {
-  min-width: 0;
-  color: var(--text-secondary);
+.sectionContent,
+.sectionContent p {
   text-align: left;
+}
+
+.sectionContent {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1.5rem;
+  color: var(--text-secondary);
 }
 
 .row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.inputGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.inputGroup label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-left: 2px;
-}
-
-.selectTrigger {
-  width: 100%;
-}
-
-.inputGroup input {
-  width: 100%;
-  padding: 0.875rem 1rem;
-  border: 1px solid var(--control-border);
-  border-radius: var(--radius-sm);
-  background-color: var(--bg-body);
-  font-size: 1rem;
-  color: var(--text-primary);
-  transition: all 0.2s ease-in-out;
-  outline: none;
-}
-
-.inputGroup input:focus {
-  background-color: var(--surface-elevated);
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--focus-ring);
-}
-
-.inputGroup input:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
 }
 
 .submitButton {
   width: 100%;
   gap: 0.75rem;
+  margin-top: 1rem;
 }
 
-/* Responsividade para telas menores (Mobile) */
 @media (max-width: 600px) {
   .container {
     padding: 1.5rem 1rem;

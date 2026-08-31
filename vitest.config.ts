@@ -19,6 +19,7 @@ export default defineConfig({
           include: [
             "apps/public/src/**/*.test.ts",
             "apps/admin/*.test.ts",
+            "apps/admin/shared/**/*.test.ts",
             "apps/admin/src/**/*.test.ts",
             "apps/admin/worker/**/*.test.ts",
             "packages/**/*.test.ts",
@@ -32,7 +33,11 @@ export default defineConfig({
         test: {
           name: "frontend",
           environment: "jsdom",
-          include: ["apps/public/src/**/*.test.tsx"],
+          include: [
+            "apps/public/src/**/*.test.tsx",
+            "apps/admin/src/**/*.test.tsx",
+            "packages/**/*.test.tsx",
+          ],
           setupFiles: ["./apps/public/src/test/setup.ts"],
         },
       },

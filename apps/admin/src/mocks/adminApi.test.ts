@@ -46,6 +46,32 @@ describe("mock admin API", () => {
     expect(dashboard.metrics.dogs).toBe(4);
   });
 
+  test("rejects dog temperament longer than 80 characters", async () => {
+    const response = await handleMockAdminRequest(request("/api/admin/dogs/103", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ temperamento: "a".repeat(81) }),
+    }));
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "O temperamento deve ter no máximo 80 caracteres.",
+    });
+  });
+
+  test("rejects free-form dog ages", async () => {
+    const response = await handleMockAdminRequest(request("/api/admin/dogs/103", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idade: "aaaaaaaaaaaaaaaa" }),
+    }));
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "Informe uma idade válida, como 1 ano, 8 meses ou 2-3 anos.",
+    });
+  });
+
   test("updates an adoption status without external storage", async () => {
     const updateResponse = await handleMockAdminRequest(request(
       "/api/admin/adoptions/adoption-livia/status",

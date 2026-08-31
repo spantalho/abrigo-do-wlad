@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import * as CardComponent from "@jaci/ui/Card";
 import Banner from "@/components/Banner";
-import { Button } from "@jaci/ui/Button";
-import * as Dialog from "@jaci/ui/Dialog";
 import { ScrollIndicators } from "@/components/ScrollIndicators";
 import {
   Accordion,
@@ -20,23 +18,11 @@ import { getRecyclePoints } from "../../services/recycleService";
 import type { RecyclePoint } from "../../types/recycle";
 
 import styles from "./Recycle.module.css";
-import { Badge } from "@jaci/ui/Badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@jaci/ui/Tooltip";
 import { PageFeedback } from "@/components/PageFeedback";
 
 interface GroupedPoints {
   zone: string;
   locations: RecyclePoint[];
-}
-
-interface MapModalState {
-  isOpen: boolean;
-  location: RecyclePoint | null;
 }
 
 export default function Recycle() {
@@ -48,10 +34,6 @@ export default function Recycle() {
 
   const [collectionPoints, setCollectionPoints] = useState<GroupedPoints[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mapModal, setMapModal] = useState<MapModalState>({
-    isOpen: false,
-    location: null,
-  });
 
   // Busca na base de dados quando a página carrega
   useEffect(() => {
@@ -278,19 +260,19 @@ export default function Recycle() {
                                 </div>
                               </CardComponent.CardContent>
                             </CardComponent.CardBody>
-                            {location.latitude && location.longitude && (
+                            {location.googleMapsUrl && (
                               <CardComponent.CardFooter
                                 className={styles.cardFooter}
                               >
-                                <Button
-                                  size="sm"
-                                  variant="secondary"
-                                  onClick={() =>
-                                    setMapModal({ isOpen: true, location })
-                                  }
+                                <a
+                                  href={location.googleMapsUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={styles.mapLink}
                                 >
-                                  <Lucide.Map size={16} /> Mapa
-                                </Button>
+                                  <Lucide.Map size={16} /> Abrir no Google Maps
+                                  <Lucide.ArrowUpRight size={16} />
+                                </a>
                               </CardComponent.CardFooter>
                             )}
                           </CardComponent.Card>
@@ -306,112 +288,6 @@ export default function Recycle() {
         </section>
       </div>
 
-      <Dialog.Dialog
-        open={
-          mapModal.isOpen &&
-          !!(mapModal.location?.latitude && mapModal.location?.longitude)
-        }
-        onOpenChange={(isOpen) =>
-          setMapModal((prev) => ({
-            ...prev,
-            isOpen:
-              isOpen &&
-              !!(mapModal.location?.latitude && mapModal.location?.longitude),
-          }))
-        }
-      >
-        <Dialog.DialogContent
-          style={{ width: "90vw", maxWidth: "600px", padding: "1.5rem" }}
-        >
-          <Dialog.DialogHeader>
-            <Dialog.DialogTitle>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "0.85rem",
-                  alignItems: "center",
-                }}
-              >
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Badge variant="danger">BETA</Badge>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <strong>Recurso em fase experimental</strong>
-                      <p>
-                        A localização exibida pode apresentar imprecisões.
-                        Consulte-nos para mais informações.
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                {mapModal.location?.name || "Localização no mapa"}
-              </div>
-            </Dialog.DialogTitle>
-            <Dialog.DialogDescription>
-              {mapModal.location?.address}
-            </Dialog.DialogDescription>
-          </Dialog.DialogHeader>
-          <div
-            style={{
-              marginTop: "1rem",
-              height: "400px",
-              width: "100%",
-              borderRadius: "8px",
-              overflow: "hidden",
-            }}
-          >
-            {mapModal.isOpen &&
-              mapModal.location?.latitude &&
-              mapModal.location?.longitude && (
-                <iframe
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  title="Google Maps"
-                  allowFullScreen
-                  src={`https://www.google.com/maps?q=${mapModal.location.latitude},${mapModal.location.longitude}&output=embed`}
-                />
-              )}
-          </div>
-          <Dialog.DialogFooter style={{ marginTop: "1rem" }}>
-            <div
-              style={{
-                display: "flex",
-                gap: "1rem",
-                justifyContent: "flex-end",
-                width: "100%",
-              }}
-            >
-              <Button
-                variant="outline"
-                size="md"
-                onClick={() =>
-                  setMapModal((prev) => ({ ...prev, isOpen: false }))
-                }
-              >
-                Fechar
-              </Button>
-              <Button
-                size="md"
-                rightIcon={<Lucide.ArrowUpRight size={18} />}
-                onClick={() => {
-                  if (mapModal.location?.address) {
-                    window.open(
-                      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapModal.location.address)}`,
-                      "_blank",
-                    );
-                  }
-                }}
-              >
-                Ver no Google Maps
-              </Button>
-            </div>
-          </Dialog.DialogFooter>
-        </Dialog.DialogContent>
-      </Dialog.Dialog>
     </>
   );
 }

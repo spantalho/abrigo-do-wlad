@@ -1,9 +1,9 @@
 import { RecycleForm } from "../../components/RecycleForm";
 import { addRecyclePoint } from "../../services/recycle";
-import type { RecyclePoint } from "../../types/recycle";
+import type { RecyclePointInput } from "../../types/recycle";
 
 export default function NewRecycle() {
-  const handleCreate = async (finalData: Omit<RecyclePoint, "id">) => {
+  const handleCreate = async (finalData: RecyclePointInput) => {
     await addRecyclePoint(finalData);
   };
 

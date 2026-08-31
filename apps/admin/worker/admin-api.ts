@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+import {
+  dogInputSchema as dogSchema,
+  dogUpdateSchema,
+  recyclePointInputSchema as recycleSchema,
+  recyclePointUpdateSchema as recycleUpdateSchema,
+} from "../shared/entities";
 import { decryptDataBatch } from "../../../workers/shared/api/_lib/encryption";
 import {
   createFirestoreClient,
@@ -42,8 +48,6 @@ import {
 } from "./notifications";
 
 const MAX_BODY_BYTES = 256 * 1024;
-const MAX_DOG_PHOTOS = 6;
-const MAX_DOG_TAGS = 5;
 const MANAGED_COLLECTIONS = {
   adoptions: "adoption_application",
   dogs: "dogs",
@@ -51,42 +55,6 @@ const MANAGED_COLLECTIONS = {
 } as const;
 
 const httpsUrl = z.string().url().refine((value) => value.startsWith("https://"));
-const dogHealthStatusSchema = z.enum([
-  "Vacinado e Castrado",
-  "Apenas Castrado",
-  "Em Protocolo Vacinal",
-]);
-const dogSchema = z.object({
-  nome: z.string().trim().min(1).max(120),
-  idade: z.string().trim().min(1).max(80),
-  cateIdade: z.enum(["filhote", "adulto", "idoso"]),
-  sexo: z.enum(["Macho", "Fêmea"]),
-  temperamento: z.string().trim().min(1).max(240),
-  tags: z
-    .array(z.string().trim().min(1).max(60))
-    .max(MAX_DOG_TAGS, "Um cachorro pode ter no máximo 5 tags."),
-  status: dogHealthStatusSchema,
-  fotos: z.array(httpsUrl).max(MAX_DOG_PHOTOS, "Um cachorro pode ter no máximo 6 fotos."),
-  cor: z.string().trim().min(1).max(80),
-  instaLink: httpsUrl.optional().or(z.literal("")),
-  descricaoCompleta: z.string().trim().max(5_000).optional(),
-});
-const dogUpdateSchema = dogSchema.partial().refine(
-  (value) => Object.keys(value).length > 0,
-  "At least one dog field is required.",
-);
-const recycleSchema = z.object({
-  zone: z.string().trim().min(1).max(80),
-  neighborhood: z.string().trim().min(1).max(120),
-  name: z.string().trim().max(160).optional().or(z.literal("")),
-  address: z.string().trim().min(1).max(300),
-  latitude: z.string().trim().max(40).optional().or(z.literal("")),
-  longitude: z.string().trim().max(40).optional().or(z.literal("")),
-});
-const recycleUpdateSchema = recycleSchema.partial().refine(
-  (value) => Object.keys(value).length > 0,
-  "At least one recycle point field is required.",
-);
 const adoptionStatusSchema = z.object({ status: z.enum(["approved", "rejected"]) });
 const imageDeleteSchema = z.object({ imageUrl: httpsUrl });
 
@@ -708,7 +676,9 @@ async function routeAdminApi(
           && issue.code === "too_big",
       );
       return jsonResponse(400, {
-        error: dogCollectionLimitIssue?.message ?? "Invalid request",
+        error: dogCollectionLimitIssue?.message
+          ?? error.issues[0]?.message
+          ?? "Invalid request",
         issues: error.issues,
       });
     }

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import { Button } from "@jaci/ui/Button";
 import { RecycleForm } from "../../components/RecycleForm";
 import { getRecyclePointById, updateRecyclePoint } from "../../services/recycle";
-import type { RecyclePoint } from "../../types/recycle";
+import type { RecyclePoint, RecyclePointInput } from "../../types/recycle";
 
 export default function EditRecycle() {
   const { id } = useParams();
@@ -44,7 +44,7 @@ export default function EditRecycle() {
     };
   }, [pointId]);
 
-  const handleUpdate = async (finalData: Omit<RecyclePoint, "id">) => {
+  const handleUpdate = async (finalData: RecyclePointInput) => {
     await updateRecyclePoint(pointId, finalData);
   };
 
