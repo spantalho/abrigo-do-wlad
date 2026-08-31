@@ -31,8 +31,7 @@ const validRecyclePointInput = {
   neighborhood: "Aldeota",
   name: "Mercado local",
   address: "Rua Exemplo, 123",
-  latitude: "-3.7319",
-  longitude: "-38.5267",
+  googleMapsUrl: "https://maps.app.goo.gl/abc123",
 };
 
 describe("admin entity contracts", () => {
@@ -101,35 +100,48 @@ describe("admin entity contracts", () => {
     expect(dogUpdateSchema.safeParse({}).success).toBe(false);
   });
 
-  test("requires latitude and longitude together on complete inputs", () => {
-    const result = recyclePointInputSchema.safeParse({
+  test.each([
+    "https://maps.app.goo.gl/abc123",
+    "https://www.google.com/maps/place/Aldeota",
+    "https://www.google.com.br/maps/place/Aldeota",
+    "https://maps.google.com/?q=Aldeota",
+    "https://goo.gl/maps/abc123",
+  ])("accepts the Google Maps URL %s", (googleMapsUrl) => {
+    expect(recyclePointInputSchema.safeParse({
       ...validRecyclePointInput,
-      longitude: "",
-    });
-
-    expect(result.success).toBe(false);
+      googleMapsUrl,
+    }).success).toBe(true);
   });
 
-  test("rejects coordinates outside their geographic ranges", () => {
-    const result = recyclePointInputSchema.safeParse({
+  test.each([
+    "http://www.google.com/maps/place/Aldeota",
+    "https://www.google.com/search?q=Aldeota",
+    "https://maps.app.goo.gl.example.com/abc123",
+    "https://example.com/maps/place/Aldeota",
+  ])("rejects the non-Google Maps URL %s", (googleMapsUrl) => {
+    expect(recyclePointInputSchema.safeParse({
       ...validRecyclePointInput,
-      latitude: "-91",
-    });
-
-    expect(result.success).toBe(false);
+      googleMapsUrl,
+    }).success).toBe(false);
   });
 
-  test("allows a partial update to change only one coordinate", () => {
-    expect(recyclePointUpdateSchema.safeParse({ latitude: "-3.7" }).success).toBe(true);
+  test("allows a point without a Google Maps URL", () => {
+    expect(recyclePointInputSchema.safeParse({
+      ...validRecyclePointInput,
+      googleMapsUrl: "",
+    }).success).toBe(true);
   });
 
-  test("keeps reads tolerant to legacy free-form coordinates", () => {
-    const result = recyclePointEntitySchema.safeParse({
+  test("allows a partial update to change the Google Maps URL", () => {
+    expect(recyclePointUpdateSchema.safeParse({
+      googleMapsUrl: "https://maps.app.goo.gl/new-link",
+    }).success).toBe(true);
+  });
+
+  test("parses a stored point with a Google Maps URL", () => {
+    expect(recyclePointEntitySchema.safeParse({
       ...validRecyclePointInput,
       id: "point-1",
-      latitude: "coordenada legada",
-    });
-
-    expect(result.success).toBe(true);
+    }).success).toBe(true);
   });
 });

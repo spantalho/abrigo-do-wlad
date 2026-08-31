@@ -27,8 +27,7 @@ function createRecyclePointInput(initialData?: RecyclePoint): RecyclePointInput 
     neighborhood: initialData?.neighborhood ?? "",
     name: initialData?.name ?? "",
     address: initialData?.address ?? "",
-    latitude: initialData?.latitude ?? "",
-    longitude: initialData?.longitude ?? "",
+    googleMapsUrl: initialData?.googleMapsUrl ?? "",
   };
 }
 
@@ -101,7 +100,7 @@ export function RecycleForm({ initialData, onSubmit, title, buttonLabel }: Recyc
         <FormSection
           icon={<MapPin size={24} />}
           title="Informações do local"
-          description="Endereço e coordenadas exibidos no mapa público."
+          description="Endereço e link do local exibidos no site público."
         >
           <FormRow>
             <Field controlId="recycle-zone" label="Zona da cidade" required>
@@ -155,35 +154,23 @@ export function RecycleForm({ initialData, onSubmit, title, buttonLabel }: Recyc
             />
           </Field>
 
-          <FormRow>
-            <Field
-              controlId="recycle-latitude"
-              label="Latitude (opcional)"
-              description="Use graus decimais, com ponto como separador."
-            >
-              <Input
-                inputMode="decimal"
-                maxLength={40}
-                placeholder="Ex: -23.5505"
-                value={formData.latitude || ""}
-                onChange={e => setFormData({...formData, latitude: e.target.value})}
-              />
-            </Field>
-
-            <Field
-              controlId="recycle-longitude"
-              label="Longitude (opcional)"
-              description="Use graus decimais, com ponto como separador."
-            >
-              <Input
-                inputMode="decimal"
-                maxLength={40}
-                placeholder="Ex: -46.6333"
-                value={formData.longitude || ""}
-                onChange={e => setFormData({...formData, longitude: e.target.value})}
-              />
-            </Field>
-          </FormRow>
+          <Field
+            controlId="recycle-google-maps-url"
+            label="Link do Google Maps (opcional)"
+            description="No Google Maps, abra o local, selecione Compartilhar e copie o link."
+          >
+            <Input
+              type="url"
+              inputMode="url"
+              maxLength={2_048}
+              placeholder="Ex: https://maps.app.goo.gl/..."
+              value={formData.googleMapsUrl}
+              onChange={e => setFormData({...formData, googleMapsUrl: e.target.value})}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+            />
+          </Field>
         </FormSection>
       </FormShell>
     </>

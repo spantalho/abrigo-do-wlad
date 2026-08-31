@@ -175,14 +175,13 @@ export default function RecycleDashboard() {
                     {point.name && <p className={styles.pointName}><strong>{point.name}</strong></p>}
                     <p className={styles.pointAddress}>{point.address}</p>
 
-                    {/* Link pra testar as cordenadas */}
-                    {point.latitude && point.longitude && (
+                    {point.googleMapsUrl && (
                       <a
-                        href={`https://www.google.com/maps?q=${point.latitude},${point.longitude}`}
+                        href={point.googleMapsUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.mapLink}
-                        title="Testar coordenadas no Google Maps"
+                        title="Abrir localização no Google Maps"
                       >
                         <Map size={16} /> Ver no Mapa
                       </a>

@@ -133,75 +133,70 @@ export const dogEntitySchema = dogInputSchema.extend({
   temperamento: dogTemperamentReadSchema,
 });
 
-function coordinateSchema(label: string, minimum: number, maximum: number) {
-  return z
-    .string()
-    .trim()
-    .max(40, `${label} deve ter no máximo 40 caracteres.`)
-    .refine(
-      (value) => value === "" || /^-?\d+(?:\.\d+)?$/.test(value),
-      `${label} deve ser um número decimal usando ponto.`,
-    )
-    .refine(
-      (value) => value === "" || (Number(value) >= minimum && Number(value) <= maximum),
-      `${label} deve estar entre ${minimum} e ${maximum}.`,
-    )
-    .default("");
+const GOOGLE_MAPS_HOSTS = new Set([
+  "google.com",
+  "www.google.com",
+  "maps.google.com",
+  "google.com.br",
+  "www.google.com.br",
+  "maps.google.com.br",
+]);
+
+function isGoogleMapsUrl(value: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return false;
+  }
+
+  if (url.protocol !== "https:") return false;
+
+  const hostname = url.hostname.toLowerCase();
+  if (hostname === "maps.app.goo.gl") return url.pathname !== "/";
+  if (hostname === "goo.gl") {
+    return url.pathname === "/maps" || url.pathname.startsWith("/maps/");
+  }
+
+  if (!GOOGLE_MAPS_HOSTS.has(hostname)) return false;
+  return hostname.startsWith("maps.")
+    || url.pathname === "/maps"
+    || url.pathname.startsWith("/maps/");
 }
 
-const latitudeSchema = coordinateSchema("Latitude", -90, 90);
-const longitudeSchema = coordinateSchema("Longitude", -180, 180);
+const googleMapsUrlSchema = z
+  .string()
+  .trim()
+  .max(2_048, "O link deve ter no máximo 2048 caracteres.")
+  .refine(
+    (value) => value === "" || isGoogleMapsUrl(value),
+    "Informe um link HTTPS válido do Google Maps.",
+  );
 
 const recyclePointWritableFieldsSchema = z.object({
   zone: z.string().trim().min(1, "Informe a zona da cidade.").max(80),
   neighborhood: z.string().trim().min(1, "Informe o bairro.").max(120),
   name: z.string().trim().max(160),
   address: z.string().trim().min(1, "Informe o endereço.").max(300),
-  latitude: latitudeSchema.removeDefault(),
-  longitude: longitudeSchema.removeDefault(),
+  googleMapsUrl: googleMapsUrlSchema,
 });
 
-function validateCoordinatePair(
-  value: { latitude?: string; longitude?: string },
-  context: z.RefinementCtx,
-) {
-  if (value.latitude === undefined || value.longitude === undefined) return;
-
-  const hasLatitude = value.latitude !== "";
-  const hasLongitude = value.longitude !== "";
-  if (hasLatitude === hasLongitude) return;
-
-  context.addIssue({
-    code: "custom",
-    path: [hasLatitude ? "longitude" : "latitude"],
-    message: "Informe latitude e longitude juntas.",
-  });
-}
-
-export const recyclePointInputSchema = recyclePointWritableFieldsSchema
-  .extend({
-    name: recyclePointWritableFieldsSchema.shape.name.default(""),
-    latitude: recyclePointWritableFieldsSchema.shape.latitude.default(""),
-    longitude: recyclePointWritableFieldsSchema.shape.longitude.default(""),
-  })
-  .superRefine(validateCoordinatePair);
+export const recyclePointInputSchema = recyclePointWritableFieldsSchema.extend({
+  name: recyclePointWritableFieldsSchema.shape.name.default(""),
+  googleMapsUrl: recyclePointWritableFieldsSchema.shape.googleMapsUrl.default(""),
+});
 
 export const recyclePointUpdateSchema = recyclePointWritableFieldsSchema
   .partial()
-  .superRefine(validateCoordinatePair)
   .refine(
     (value) => Object.keys(value).length > 0,
     "Informe ao menos um campo para atualizar o ponto de coleta.",
   );
 
-const storedCoordinateSchema = z.string().trim().max(40).default("");
-
 export const recyclePointEntitySchema = recyclePointWritableFieldsSchema.extend({
   id: z.string().trim().min(1),
   name: recyclePointWritableFieldsSchema.shape.name.default(""),
-  // Reads remain compatible with coordinates previously stored as free-form strings.
-  latitude: storedCoordinateSchema,
-  longitude: storedCoordinateSchema,
+  googleMapsUrl: recyclePointWritableFieldsSchema.shape.googleMapsUrl.default(""),
 });
 
 export type DogInput = z.infer<typeof dogInputSchema>;

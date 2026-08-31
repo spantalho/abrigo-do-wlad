@@ -101,8 +101,7 @@ function createInitialState(): MockState {
         neighborhood: "Meireles",
         name: "Mercadinho do Bairro",
         address: "Rua das Flores, 120 — segunda a sábado, 8h às 18h",
-        latitude: "-3.7319",
-        longitude: "-38.5267",
+        googleMapsUrl: "https://maps.app.goo.gl/GRqPHHcqKZCUxHLN8",
       },
       {
         id: "pet-benfica",
@@ -110,8 +109,7 @@ function createInitialState(): MockState {
         neighborhood: "Benfica",
         name: "Pet Amigo",
         address: "Avenida da Universidade, 850 — segunda a sexta, 9h às 17h",
-        latitude: "-3.7432",
-        longitude: "-38.5398",
+        googleMapsUrl: "https://www.google.com/maps/place/Benfica,+Fortaleza+-+CE",
       },
       {
         id: "coleta-messejana",
@@ -119,8 +117,7 @@ function createInitialState(): MockState {
         neighborhood: "Messejana",
         name: "Ponto Solidário",
         address: "Rua Padre Pedro de Alencar, 45 — todos os dias, 8h às 20h",
-        latitude: "-3.8311",
-        longitude: "-38.4932",
+        googleMapsUrl: "https://maps.google.com/?q=Messejana,+Fortaleza+-+CE",
       },
     ],
     adoptions: [

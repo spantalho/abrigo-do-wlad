@@ -137,6 +137,27 @@
   justify-content: flex-end;
 }
 
+.mapLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-water);
+  color: var(--primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.mapLink:hover {
+  border-color: var(--border);
+  color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
 @media (max-width: 768px) {
   .recycleContainer {
     grid-template-columns: 1fr;
