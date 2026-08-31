@@ -9,7 +9,7 @@ import { getRecyclePoints, deleteRecyclePoint } from "../../services/recycle";
 import type { RecyclePoint } from "../../types/recycle";
 import { DeleteModal } from "../../components/DeleteModal";
 import { ErrorModal } from "../../components/ErrorModal";
-import { Pagination } from "../../components/Pagination";
+import { Pagination } from "@jaci/ui/Pagination";
 import styles from "./RecycleDashboard.module.css";
 
 const ITEMS_PER_PAGE = 8;

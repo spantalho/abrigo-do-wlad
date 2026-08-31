@@ -1,0 +1,66 @@
+.root {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.popup {
+  position: absolute;
+  z-index: 1000;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  left: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-lg);
+}
+
+.listbox {
+  max-height: 18rem;
+  padding: 0.4rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.option {
+  display: flex;
+  cursor: pointer;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  outline: none;
+  transition: var(--transition);
+}
+
+.option[data-highlighted] {
+  background: var(--surface-water);
+  color: var(--primary);
+}
+
+.option[data-disabled] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.optionLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.optionDescription {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.empty {
+  padding: 1rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}

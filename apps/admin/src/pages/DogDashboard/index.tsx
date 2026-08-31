@@ -9,7 +9,7 @@ import { DogCard } from "../../components/DogCard";
 import { AdoptionModal } from "../../components/AdoptionModal";
 import { ErrorModal } from "../../components/ErrorModal";
 import { SuccessModal } from "../../components/SuccessModal";
-import { Pagination } from "../../components/Pagination";
+import { Pagination } from "@jaci/ui/Pagination";
 import type { DogProps } from "../../types/dogs";
 import styles from "./DogDashboard.module.css";
 
