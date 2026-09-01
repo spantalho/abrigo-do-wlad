@@ -2,6 +2,9 @@
   /* Typography */
   --font-sans: "Poppins", sans-serif;
   --font-dog-voice: "Playwrite BR", cursive;
+  --tracking-display: -0.035em;
+  --tracking-heading: -0.02em;
+  --tracking-label: 0.08em;
   --text-primary: #1e2926;
   --text-secondary: #405658;
   --text-muted: #5f6f70;

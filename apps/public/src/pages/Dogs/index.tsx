@@ -16,6 +16,7 @@ import {
   type Dog,
   type DogFilters,
   type DogTag,
+  type DogTagCounts,
 } from "@/types/dogs";
 import { useDogSearch } from "@/hooks/useDogSearch";
 import { useDailyDog } from "@/hooks/useDailyDog";
@@ -48,6 +49,7 @@ interface DogFiltersProps {
   filters: DogFilters;
   onFilterChange: (filters: DogFilters) => void;
   totalItems: number;
+  tagCounts: DogTagCounts;
 }
 
 const dogTagOptions: ComboboxOption[] = DOG_TAG_OPTIONS.map((option) => ({
@@ -112,6 +114,7 @@ function DogFiltersComponent({
   filters,
   onFilterChange,
   totalItems,
+  tagCounts,
 }: DogFiltersProps) {
   const handleFilterChange = <Key extends keyof DogFilters>(
     filterName: Key,
@@ -121,6 +124,11 @@ function DogFiltersComponent({
   };
 
   const selectedTags = filters.tags ?? [];
+  const availableTagOptions = dogTagOptions.filter(
+    ({ value }) =>
+      isDogTag(value) &&
+      ((tagCounts[value] ?? 0) > 0 || selectedTags.includes(value)),
+  );
 
   function handleTagsChange(values: string[]) {
     handleFilterChange("tags", values.filter(isDogTag));
@@ -170,7 +178,7 @@ function DogFiltersComponent({
             <Combobox
               multiple
               className={styles.tagCombobox}
-              options={dogTagOptions}
+              options={availableTagOptions}
               selectedValues={selectedTags}
               onSelectedValuesChange={handleTagsChange}
               placeholder={
@@ -285,6 +293,7 @@ export default function Dogs() {
     totalItems,
     currentPage,
     totalPages,
+    tagCounts,
     filters,
     setFilters,
     setCurrentPage,
@@ -411,6 +420,7 @@ export default function Dogs() {
             filters={filters}
             onFilterChange={setFilters}
             totalItems={totalItems}
+            tagCounts={tagCounts}
           />
         )}
 

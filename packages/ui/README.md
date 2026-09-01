@@ -20,6 +20,9 @@ ajustar densidade e composição, mas devem consumir tokens como
 `--text-primary`, `--surface-card`, `--border` e `--primary` em vez de declarar
 novas cores.
 
+Títulos de destaque, títulos de seção e labels em caixa-alta devem consumir,
+respectivamente, `--tracking-display`, `--tracking-heading` e
+`--tracking-label`.
 ## Componentes
 
 Os componentes são exportados por subcaminho:

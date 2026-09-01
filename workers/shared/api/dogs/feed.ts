@@ -74,6 +74,7 @@ export interface DogFeedPage {
   totalPages: number;
   itemsPerPage: number;
   version: string;
+  tagCounts: Record<string, number>;
 }
 
 type DogFeedSource = Pick<FirestoreRestClient, "listDocuments">;
@@ -212,6 +213,19 @@ function isDogFeed(value: unknown): value is DogFeed {
   );
 }
 
+function normalizeStoredDogFeed(value: unknown): DogFeed | null {
+  if (!isDogFeed(value)) return null;
+
+  const dogs: PublicDog[] = [];
+  for (const dog of value.dogs) {
+    const tags = dog.tags.map(normalizeDogTag);
+    if (tags.some((tag) => tag === null)) return null;
+    dogs.push({ ...dog, tags: tags as string[] });
+  }
+
+  return { ...value, dogs };
+}
+
 export async function updateDogFeed(
   env: CloudflareEnv,
   options: DogFeedUpdateOptions = {},
@@ -265,8 +279,12 @@ async function readDogFeed(
       ? `${FEED_KEY_PREFIX}${requestedVersion}`
       : CURRENT_FEED_KEY,
   );
-  if (isDogFeed(feed) && (!requestedVersion || feed.version === requestedVersion)) {
-    return feed;
+  const normalizedFeed = normalizeStoredDogFeed(feed);
+  if (
+    normalizedFeed &&
+    (!requestedVersion || normalizedFeed.version === requestedVersion)
+  ) {
+    return normalizedFeed;
   }
 
   if (!requestedVersion) return null;
@@ -275,8 +293,9 @@ async function readDogFeed(
   // fallback when its matching versioned key has expired or has not replicated
   // yet, so pagination does not reset to page one between requests.
   const currentFeed = await kv.get<unknown>(CURRENT_FEED_KEY);
-  return isDogFeed(currentFeed) && currentFeed.version === requestedVersion
-    ? currentFeed
+  const normalizedCurrentFeed = normalizeStoredDogFeed(currentFeed);
+  return normalizedCurrentFeed?.version === requestedVersion
+    ? normalizedCurrentFeed
     : null;
 }
 
@@ -301,6 +320,23 @@ function positiveInteger(
 function optionalFilter(value: string | null): string | undefined {
   const normalized = value?.trim();
   return !normalized || normalized === "all" ? undefined : normalized;
+}
+
+function countDogTags(dogs: readonly PublicDog[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+
+  dogs.forEach((dog) => {
+    const uniqueTags = new Set(
+      dog.tags
+        .map(normalizeDogTag)
+        .filter((tag): tag is string => tag !== null),
+    );
+    uniqueTags.forEach((tag) => {
+      counts[tag] = (counts[tag] ?? 0) + 1;
+    });
+  });
+
+  return counts;
 }
 
 export function paginateDogFeed(feed: DogFeed, url: URL): DogFeedPage | null {
@@ -345,6 +381,7 @@ export function paginateDogFeed(feed: DogFeed, url: URL): DogFeedPage | null {
     totalPages,
     itemsPerPage,
     version: feed.version,
+    tagCounts: countDogTags(feed.dogs),
   };
 }
 

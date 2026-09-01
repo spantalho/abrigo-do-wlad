@@ -175,6 +175,7 @@ test("paginateDogFeed filters before slicing the requested page", () => {
     totalPages: 2,
     itemsPerPage: 1,
     version: "2026-08-24",
+    tagCounts: { docil: 2, ativo: 1 },
   });
 });
 
@@ -237,6 +238,33 @@ test("GET dog feed reads the requested KV version and returns only one page", as
     totalPages: 2,
     itemsPerPage: 2,
     version: "2026-08-24",
+    tagCounts: { docil: 3 },
+  });
+});
+
+test("GET dog feed normalizes legacy tag labels before filtering", async () => {
+  const legacyDog = dog("legacy", { tags: ["Dócil", "Sociável"] });
+  const feed: DogFeed = {
+    schemaVersion: 2,
+    version: "2026-08-24",
+    generatedAt: "2026-08-24T03:00:00.000Z",
+    dogs: [legacyDog, dog("active", { tags: ["Ativo"] })],
+  };
+  const { env } = kvEnv({ "dogs-feed:current": feed });
+  const response = await getDogFeedResponse(
+    new Request("https://abrigo.test/api/dogs?tag=docil"),
+    env,
+  );
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    dogs: [{ ...legacyDog, tags: ["docil", "sociavel"] }],
+    totalItems: 1,
+    currentPage: 1,
+    totalPages: 1,
+    itemsPerPage: 6,
+    version: "2026-08-24",
+    tagCounts: { docil: 1, sociavel: 1, ativo: 1 },
   });
 });
 
@@ -263,6 +291,7 @@ test("GET dog feed falls back to the matching current copy when its versioned ke
     totalPages: 2,
     itemsPerPage: 2,
     version: "2026-08-24",
+    tagCounts: { docil: 3 },
   });
 });
 

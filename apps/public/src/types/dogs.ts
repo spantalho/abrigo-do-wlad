@@ -86,6 +86,8 @@ export const DOG_TAG_OPTIONS = [
 
 export type DogTag = (typeof DOG_TAG_OPTIONS)[number]["value"];
 
+export type DogTagCounts = Partial<Record<DogTag, number>>;
+
 export const TAGS_MAP = Object.fromEntries(
   DOG_TAG_OPTIONS.map(({ value, label }) => [value, label]),
 ) as Record<DogTag, string>;
