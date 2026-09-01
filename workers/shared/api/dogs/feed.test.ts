@@ -138,6 +138,20 @@ test("updateDogFeed preserves a legacy free-form age", async () => {
   assert.equal(feed.dogs[0]?.idade, legacyAge);
 });
 
+test("updateDogFeed normalizes legacy tag labels", async () => {
+  const { env } = kvEnv();
+
+  const feed = await updateDogFeed(env, {
+    source: {
+      async listDocuments() {
+        return [document(dog("legacy-tags", { tags: ["Dócil", "Sociável"] }))];
+      },
+    },
+  });
+
+  assert.deepEqual(feed.dogs[0]?.tags, ["docil", "sociavel"]);
+});
+
 test("paginateDogFeed filters before slicing the requested page", () => {
   const feed: DogFeed = {
     schemaVersion: 2,
@@ -162,6 +176,40 @@ test("paginateDogFeed filters before slicing the requested page", () => {
     itemsPerPage: 1,
     version: "2026-08-24",
   });
+});
+
+test("paginateDogFeed combines repeated tag filters", () => {
+  const feed: DogFeed = {
+    schemaVersion: 2,
+    version: "2026-08-24",
+    generatedAt: "2026-08-24T03:00:00.000Z",
+    dogs: [
+      dog("1", { tags: ["docil", "sociavel"] }),
+      dog("2", { tags: ["docil"] }),
+      dog("3", { tags: ["sociavel", "ativo"] }),
+    ],
+  };
+  const page = paginateDogFeed(
+    feed,
+    new URL("https://abrigo.test/api/dogs?tag=docil&tag=sociavel"),
+  );
+
+  assert.deepEqual(page?.dogs, [feed.dogs[0]]);
+  assert.equal(page?.totalItems, 1);
+});
+
+test("paginateDogFeed rejects tags outside the public contract", () => {
+  const feed: DogFeed = {
+    schemaVersion: 2,
+    version: "2026-08-24",
+    generatedAt: "2026-08-24T03:00:00.000Z",
+    dogs: [dog("1")],
+  };
+
+  assert.equal(
+    paginateDogFeed(feed, new URL("https://abrigo.test/api/dogs?tag=Dócil")),
+    null,
+  );
 });
 
 test("GET dog feed reads the requested KV version and returns only one page", async () => {

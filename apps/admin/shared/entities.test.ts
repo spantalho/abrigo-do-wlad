@@ -18,7 +18,7 @@ const validDogInput = {
   cateIdade: "adulto" as const,
   sexo: "Fêmea" as const,
   temperamento: "Dócil e sociável",
-  tags: ["Dócil"],
+  tags: ["docil"],
   status: "Vacinado e Castrado" as const,
   fotos: [],
   cor: "caramelo",
@@ -53,6 +53,16 @@ describe("admin entity contracts", () => {
     expect(parseDogAge("2-3 anos")).toEqual({ range: "2-3", unit: "anos" });
     expect(formatDogAge("1", "meses")).toBe("1 mês");
     expect(formatDogAge("1-1", "anos")).toBe("1 ano");
+  });
+
+  test("normalizes legacy dog tag labels to their contract values", () => {
+    const result = dogEntitySchema.parse({
+      ...validDogInput,
+      id: 123,
+      tags: ["Dócil", "Sociável"],
+    });
+
+    expect(result.tags).toEqual(["docil", "sociavel"]);
   });
 
   test("keeps reads tolerant to legacy free-form dog ages", () => {

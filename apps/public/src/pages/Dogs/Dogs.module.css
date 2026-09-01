@@ -1,16 +1,126 @@
-/* Container de Filtros */
-.filterContainer {
-  display: flex;
-  padding: 2.5rem 0;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+.filtersCard {
+  height: auto;
+  margin: 2.5rem 0;
 }
 
-.filterItemContainer {
+.filtersPanel {
   display: flex;
-  gap: 15px;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.filterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.filterHeading {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.filterHeading h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(1.25rem, 2vw, 1.55rem);
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+}
+
+.filterHeading p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.925rem;
+  line-height: 1.5;
+}
+
+.filterMeta {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filterControls {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.tagField,
+.tagCombobox {
+  width: 100%;
+}
+
+.secondaryFilters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(14rem, 18rem);
+  align-items: end;
+  gap: 1.25rem;
+}
+
+.ageFilter {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filterLabel {
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ageGroup {
+  min-height: 2.5rem;
+}
+
+.colorFilter,
+.selectTrigger {
+  width: 100%;
+}
+
+.activeFilters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.activeFiltersLabel {
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.activeFilterChips {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.loadingTagFilter {
+  width: 100%;
+  height: 5.75rem;
+}
+
+.loadingSecondaryFilter {
+  width: 100%;
+  height: 4.5rem;
 }
 
 /* Grid */
@@ -21,15 +131,8 @@
   padding-bottom: 3rem;
 }
 
-.emptyState {
+.emptyResults {
   grid-column: 1 / -1;
-  text-align: center;
-  padding: 3rem;
-  color: var(--text-secondary);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
 }
 
 /* paginação */
@@ -49,16 +152,39 @@
 }
 
 @media (max-width: 768px) {
-  .filterContainer {
-    flex-direction: column-reverse;
-    gap: 20px;
-    justify-content: center;
-    padding: 0;
-    padding-bottom: 2.5rem;
+  .filtersCard {
+    margin: 1.25rem 0 2.5rem;
   }
 
-  .filterItemContainer {
+  .filtersPanel {
+    gap: 1.25rem;
+    padding: 1rem;
+  }
+
+  .filterHeader {
     flex-direction: column;
-    justify-content: center;
+    gap: 1rem;
+  }
+
+  .filterMeta {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .secondaryFilters {
+    grid-template-columns: 1fr;
+  }
+
+  .ageGroup > button {
+    flex: 1 1 calc(50% - 0.5rem);
+  }
+
+  .activeFilters {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .activeFilterChips {
+    width: 100%;
   }
 }

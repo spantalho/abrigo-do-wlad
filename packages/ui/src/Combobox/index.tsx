@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Check } from "lucide-react";
 
 import { ScrollArea } from "../ScrollArea";
 import { SearchField, type SearchFieldProps } from "../SearchField";
@@ -31,6 +32,10 @@ export interface ComboboxProps
   defaultValue?: string;
   onValueChange?: (value: string) => void;
   onOptionSelect?: (option: ComboboxOption) => void;
+  multiple?: boolean;
+  selectedValues?: string[];
+  defaultSelectedValues?: string[];
+  onSelectedValuesChange?: (values: string[]) => void;
   onClear?: () => void;
   filterOption?: (option: ComboboxOption, query: string) => boolean;
   emptyMessage?: React.ReactNode;
@@ -67,6 +72,10 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       defaultValue = "",
       onValueChange,
       onOptionSelect,
+      multiple = false,
+      selectedValues,
+      defaultSelectedValues = [],
+      onSelectedValuesChange,
       onClear,
       filterOption = defaultFilterOption,
       emptyMessage = "Nenhuma opção encontrada.",
@@ -84,9 +93,12 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     const listboxId = `${generatedId}-listbox`;
     const listboxRef = React.useRef<HTMLUListElement>(null);
     const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue);
+    const [uncontrolledSelectedValues, setUncontrolledSelectedValues] =
+      React.useState(defaultSelectedValues);
     const [open, setOpen] = React.useState(false);
     const [activeIndex, setActiveIndex] = React.useState(-1);
     const currentValue = value ?? uncontrolledValue;
+    const currentSelectedValues = selectedValues ?? uncontrolledSelectedValues;
 
     const filteredOptions = React.useMemo(
       () => options.filter(option => filterOption(option, currentValue)),
@@ -128,6 +140,23 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
 
     function selectOption(option: ComboboxOption) {
       if (option.disabled) return;
+
+      if (multiple) {
+        const nextSelectedValues = currentSelectedValues.includes(option.value)
+          ? currentSelectedValues.filter(value => value !== option.value)
+          : [...currentSelectedValues, option.value];
+        if (selectedValues === undefined) {
+          setUncontrolledSelectedValues(nextSelectedValues);
+        }
+        onSelectedValuesChange?.(nextSelectedValues);
+        onOptionSelect?.(option);
+        updateValue("");
+        const nextOptions = options.filter(item => filterOption(item, ""));
+        setOpen(true);
+        setActiveIndex(firstEnabledIndex(nextOptions));
+        return;
+      }
+
       updateValue(option.label);
       onOptionSelect?.(option);
       setOpen(false);
@@ -225,38 +254,51 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
                 ref={listboxRef}
                 id={listboxId}
                 role="listbox"
+                aria-multiselectable={multiple || undefined}
                 className={styles.listbox}
               >
                 {filteredOptions.length === 0 ? (
                   <li className={styles.empty}>{emptyMessage}</li>
                 ) : (
-                  filteredOptions.map((option, index) => (
-                    <li
-                      id={`${generatedId}-option-${index}`}
-                      key={option.value}
-                      role="option"
-                      aria-selected={index === activeIndex}
-                      aria-disabled={option.disabled || undefined}
-                      className={styles.option}
-                      data-option-index={index}
-                      data-highlighted={index === activeIndex ? "" : undefined}
-                      data-disabled={option.disabled ? "" : undefined}
-                      onMouseMove={() => {
-                        if (!option.disabled) setActiveIndex(index);
-                      }}
-                      onMouseDown={event => {
-                        event.preventDefault();
-                        selectOption(option);
-                      }}
-                    >
-                      <span className={styles.optionLabel}>{option.label}</span>
-                      {option.description && (
-                        <span className={styles.optionDescription}>
-                          {option.description}
+                  filteredOptions.map((option, index) => {
+                    const selected = multiple
+                      ? currentSelectedValues.includes(option.value)
+                      : currentValue === option.label;
+
+                    return (
+                      <li
+                        id={`${generatedId}-option-${index}`}
+                        key={option.value}
+                        role="option"
+                        aria-selected={selected}
+                        aria-disabled={option.disabled || undefined}
+                        className={styles.option}
+                        data-option-index={index}
+                        data-highlighted={index === activeIndex ? "" : undefined}
+                        data-selected={selected ? "" : undefined}
+                        data-disabled={option.disabled ? "" : undefined}
+                        onMouseMove={() => {
+                          if (!option.disabled) setActiveIndex(index);
+                        }}
+                        onMouseDown={event => {
+                          event.preventDefault();
+                          selectOption(option);
+                        }}
+                      >
+                        <span className={styles.optionContent}>
+                          <span className={styles.optionLabel}>{option.label}</span>
+                          {option.description && (
+                            <span className={styles.optionDescription}>
+                              {option.description}
+                            </span>
+                          )}
                         </span>
-                      )}
-                    </li>
-                  ))
+                        {selected && (
+                          <Check className={styles.optionCheck} aria-hidden="true" />
+                        )}
+                      </li>
+                    );
+                  })
                 )}
               </ul>
             </ScrollArea>

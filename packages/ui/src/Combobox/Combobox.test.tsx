@@ -40,6 +40,32 @@ describe("Combobox", () => {
     expect(screen.getByText("Nenhuma opção encontrada.")).toBeInTheDocument();
   });
 
+  test("permite selecionar e remover múltiplas opções", () => {
+    const onSelectedValuesChange = vi.fn();
+    render(
+      <Combobox
+        multiple
+        aria-label="Buscar bairros"
+        options={options}
+        onSelectedValuesChange={onSelectedValuesChange}
+      />,
+    );
+
+    const input = screen.getByRole("combobox", { name: "Buscar bairros" });
+    fireEvent.focus(input);
+
+    const aldeota = screen.getByRole("option", { name: /Aldeota/ });
+    fireEvent.mouseDown(aldeota);
+    expect(onSelectedValuesChange).toHaveBeenLastCalledWith(["aldeota"]);
+    expect(aldeota).toHaveAttribute("aria-selected", "true");
+    expect(input).toHaveValue("");
+    expect(input).toHaveAttribute("aria-expanded", "true");
+
+    fireEvent.mouseDown(aldeota);
+    expect(onSelectedValuesChange).toHaveBeenLastCalledWith([]);
+    expect(aldeota).toHaveAttribute("aria-selected", "false");
+  });
+
   test("usa o ScrollArea e mantém a opção ativa visível pelo teclado", async () => {
     const scrollIntoView = vi.spyOn(Element.prototype, "scrollIntoView");
     const manyOptions = Array.from({ length: 12 }, (_, index) => ({

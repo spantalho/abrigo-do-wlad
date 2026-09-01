@@ -1,5 +1,8 @@
+import { DOG_TAG_VALUES, type DogTag } from "../../shared/entities";
+
 export {
   DOG_HEALTH_STATUSES,
+  DOG_TAG_VALUES,
   MAX_DOG_AGE_MONTHS,
   MAX_DOG_AGE_YEARS,
   MAX_DOG_PHOTOS,
@@ -10,6 +13,7 @@ export type {
   Dog as DogProps,
   DogDetailsInput,
   DogHealthStatus,
+  DogTag,
   DogAgeParts,
   DogAgeUnit,
   DogInput,
@@ -24,20 +28,25 @@ export const CORES_MAP: Record<string, string> = {
   BrasilEgito: "Mistura do Brasil com Egito",
 };
 
-export const DOG_TAGS = [
-  "Dócil",
-  "Brincalhão",
-  "Medroso",
-  "Ativo",
-  "Tranquilo",
-  "Sociável",
-  "Resiliente",
-  "Carinhoso",
-  "Amável",
-  "Curioso",
-  "Tímido",
-  "Independente",
-  "Protetor",
-  "Companheiro",
-  "Adaptável",
-] as const;
+const DOG_TAG_LABELS: Record<DogTag, string> = {
+  docil: "Dócil",
+  brincalhao: "Brincalhão",
+  medroso: "Medroso",
+  ativo: "Ativo",
+  tranquilo: "Tranquilo",
+  sociavel: "Sociável",
+  resiliente: "Resiliente",
+  carinhoso: "Carinhoso",
+  amavel: "Amável",
+  curioso: "Curioso",
+  timido: "Tímido",
+  independente: "Independente",
+  protetor: "Protetor",
+  companheiro: "Companheiro",
+  adaptavel: "Adaptável",
+};
+
+export const DOG_TAGS = DOG_TAG_VALUES.map((value) => ({
+  value,
+  label: DOG_TAG_LABELS[value],
+}));

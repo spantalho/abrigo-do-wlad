@@ -15,7 +15,34 @@ const FEED_SCHEMA_VERSION = 2;
 const FEED_RETENTION_SECONDS = 3 * 24 * 60 * 60;
 const DEFAULT_ITEMS_PER_PAGE = 6;
 const MAX_ITEMS_PER_PAGE = 24;
+const MAX_TAG_FILTERS = 15;
 const ROTATION_TIME_ZONE = "America/Fortaleza";
+const DOG_TAG_VALUES = new Set([
+  "docil",
+  "brincalhao",
+  "medroso",
+  "ativo",
+  "tranquilo",
+  "sociavel",
+  "resiliente",
+  "carinhoso",
+  "amavel",
+  "curioso",
+  "timido",
+  "independente",
+  "protetor",
+  "companheiro",
+  "adaptavel",
+]);
+
+function normalizeDogTag(value: string): string | null {
+  const normalized = value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase()
+    .trim();
+  return DOG_TAG_VALUES.has(normalized) ? normalized : null;
+}
 
 export interface PublicDog {
   id: string;
@@ -124,6 +151,16 @@ function toPublicDog(
     return null;
   }
 
+  const tags = data.tags.map(normalizeDogTag);
+  if (tags.some((tag) => tag === null)) {
+    console.warn(JSON.stringify({
+      event: "dogs.feed.document.skipped",
+      documentId: document.id,
+      reason: "invalid_tag",
+    }));
+    return null;
+  }
+
   return {
     id: document.id,
     nome: data.nome,
@@ -131,7 +168,7 @@ function toPublicDog(
     cateIdade: data.cateIdade as PublicDog["cateIdade"],
     sexo: data.sexo,
     temperamento: data.temperamento,
-    tags: data.tags,
+    tags: tags as string[],
     status: data.status,
     fotos: data.fotos,
     cor: data.cor,
@@ -277,11 +314,17 @@ export function paginateDogFeed(feed: DogFeed, url: URL): DogFeedPage | null {
 
   const cateIdade = optionalFilter(url.searchParams.get("cateIdade"));
   const cor = optionalFilter(url.searchParams.get("cor"));
-  const tag = optionalFilter(url.searchParams.get("tag"));
+  const tags = Array.from(new Set(
+    url.searchParams
+      .getAll("tag")
+      .map(optionalFilter)
+      .filter((tag): tag is string => Boolean(tag)),
+  ));
   if (
     (cateIdade && !["filhote", "adulto", "idoso"].includes(cateIdade)) ||
     (cor && cor.length > 80) ||
-    (tag && tag.length > 60)
+    tags.length > MAX_TAG_FILTERS ||
+    tags.some((tag) => !DOG_TAG_VALUES.has(tag))
   ) {
     return null;
   }
@@ -289,7 +332,7 @@ export function paginateDogFeed(feed: DogFeed, url: URL): DogFeedPage | null {
   const filtered = feed.dogs.filter((dog) =>
     (!cateIdade || dog.cateIdade === cateIdade) &&
     (!cor || dog.cor === cor) &&
-    (!tag || dog.tags.includes(tag))
+    tags.every((tag) => dog.tags.includes(tag))
   );
   const totalItems = filtered.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);

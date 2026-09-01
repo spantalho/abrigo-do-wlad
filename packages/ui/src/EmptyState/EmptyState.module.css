@@ -32,7 +32,7 @@
   justify-content: center;
   width: 3.5rem;
   height: 3.5rem;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius);
   background: var(--surface-water);
   color: var(--primary);
 }

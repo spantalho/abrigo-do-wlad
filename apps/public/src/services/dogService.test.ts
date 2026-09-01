@@ -24,7 +24,7 @@ test("getDogFeedPage sends pagination, filters and feed version to the API", asy
   vi.stubGlobal("fetch", fetchMock);
 
   const page = await getDogFeedPage(
-    { cateIdade: "adulto", cor: "caramelo", tags: "docil" },
+    { cateIdade: "adulto", cor: "caramelo", tags: ["docil", "sociavel"] },
     2,
     6,
     "2026-08-24",
@@ -38,7 +38,7 @@ test("getDogFeedPage sends pagination, filters and feed version to the API", asy
   assert.equal(params.get("limit"), "6");
   assert.equal(params.get("cateIdade"), "adulto");
   assert.equal(params.get("cor"), "caramelo");
-  assert.equal(params.get("tag"), "docil");
+  assert.deepEqual(params.getAll("tag"), ["docil", "sociavel"]);
   assert.equal(params.get("version"), "2026-08-24");
 });
 

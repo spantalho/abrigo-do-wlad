@@ -49,6 +49,7 @@
 .donationPicture img {
   object-fit: cover;
   object-position: center;
+  filter: contrast(1.06) saturate(0.94);
   pointer-events: none;
 }
 
@@ -87,12 +88,25 @@
 }
 
 .donationSlide[data-tone] .donationOverlay {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--donation-overlay) 72%, transparent) 0%,
-    color-mix(in srgb, var(--donation-overlay) 52%, transparent) 48%,
-    color-mix(in srgb, var(--donation-overlay) 32%, transparent) 100%
-  );
+  background:
+    linear-gradient(
+      90deg,
+      rgba(11, 17, 14, 0.56) 0%,
+      rgba(11, 17, 14, 0.28) 44%,
+      rgba(11, 17, 14, 0.06) 74%,
+      transparent 100%
+    ),
+    linear-gradient(
+      0deg,
+      rgba(11, 17, 14, 0.2) 0%,
+      transparent 58%
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--donation-overlay) 22%, transparent) 0%,
+      color-mix(in srgb, var(--donation-overlay) 12%, transparent) 52%,
+      color-mix(in srgb, var(--donation-overlay) 6%, transparent) 100%
+    );
 }
 
 .donationSlideContent {
@@ -396,12 +410,19 @@
   }
 
   .donationSlide[data-tone] .donationOverlay {
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--donation-overlay) 34%, transparent) 0%,
-      color-mix(in srgb, var(--donation-overlay) 58%, transparent) 42%,
-      color-mix(in srgb, var(--donation-overlay) 82%, black) 100%
-    );
+    background:
+      linear-gradient(
+        180deg,
+        rgba(11, 17, 14, 0.02) 0%,
+        rgba(11, 17, 14, 0.16) 42%,
+        rgba(11, 17, 14, 0.7) 100%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--donation-overlay) 8%, transparent) 0%,
+        color-mix(in srgb, var(--donation-overlay) 13%, transparent) 42%,
+        color-mix(in srgb, var(--donation-overlay) 24%, transparent) 100%
+      );
   }
 
   .donationSlideContent {

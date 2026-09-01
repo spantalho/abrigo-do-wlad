@@ -98,9 +98,7 @@ export async function getDogFeedPage(
   if (filters.cor && filters.cor !== "all") {
     params.set("cor", filters.cor);
   }
-  if (filters.tags && filters.tags !== "all") {
-    params.set("tag", filters.tags);
-  }
+  filters.tags?.forEach((tag) => params.append("tag", tag));
   if (version) {
     params.set("version", version);
   }

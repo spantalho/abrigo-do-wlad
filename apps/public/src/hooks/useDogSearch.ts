@@ -10,12 +10,13 @@ const ITEMS_PER_PAGE = 6;
 export function useDogSearch() {
   const [dogs, setDogs] = React.useState<Dog[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [hasLoaded, setHasLoaded] = React.useState(false);
   const [error, setError] = React.useState(false);
   const [totalItems, setTotalItems] = React.useState(0);
   const [totalPages, setTotalPages] = React.useState(0);
   const [filters, setFiltersState] = React.useState<DogFilters>({
     cateIdade: "all",
-    tags: "all",
+    tags: [],
     cor: "all",
   });
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -70,7 +71,10 @@ export function useDogSearch() {
         setTotalPages(0);
         setError(true);
       } finally {
-        if (!controller.signal.aborted) setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+          setHasLoaded(true);
+        }
       }
     }
 
@@ -81,6 +85,7 @@ export function useDogSearch() {
   return {
     dogs,
     loading,
+    hasLoaded,
     error,
     totalItems,
     currentPage,
