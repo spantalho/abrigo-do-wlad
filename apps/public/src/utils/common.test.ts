@@ -15,7 +15,7 @@ describe("getThirdPartyImage", () => {
       photoId: "1616118132534-381148898bb4",
       author: {
         name: "charlesdeluvio",
-        profileUrl: "https://unsplash.com/pt-br/@charlesdeluvio",
+        profileUrl: "https://unsplash.com/@charlesdeluvio",
       },
     });
     expect(image?.url).toBe(
