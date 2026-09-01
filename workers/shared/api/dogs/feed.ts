@@ -16,7 +16,7 @@ const FEED_RETENTION_SECONDS = 3 * 24 * 60 * 60;
 const DEFAULT_ITEMS_PER_PAGE = 6;
 const MAX_ITEMS_PER_PAGE = 24;
 const MAX_TAG_FILTERS = 15;
-const ROTATION_TIME_ZONE = "America/Fortaleza";
+const ROTATION_TIME_ZONE = "America/Sao_Paulo";
 const DOG_TAG_VALUES = new Set([
   "docil",
   "brincalhao",

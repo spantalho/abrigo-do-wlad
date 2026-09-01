@@ -35,28 +35,28 @@ vi.mock("@/utils/common", () => ({
 
 const points: RecyclePoint[] = [
   {
-    id: "aldeota",
-    zone: "Zona Leste",
-    neighborhood: "Aldeota",
+    id: "morumbi",
+    zone: "Zona Oeste",
+    neighborhood: "Morumbi",
     name: "Pet Shop Amigo",
-    address: "Av. Santos Dumont, 1234",
-    googleMapsUrl: "https://maps.google.com/maps/place/aldeota",
+    address: "Av. Giovanni Gronchi, 1234",
+    googleMapsUrl: "https://maps.google.com/maps/place/morumbi",
   },
   {
-    id: "benfica",
-    zone: "Zona Central",
-    neighborhood: "Benfica",
+    id: "vila-sonia",
+    zone: "Zona Oeste",
+    neighborhood: "Vila Sônia",
     name: "Clínica Popular",
-    address: "Rua Paulino Nogueira, 280",
-    googleMapsUrl: "https://maps.google.com/maps/place/benfica",
+    address: "Av. Professor Francisco Morato, 280",
+    googleMapsUrl: "https://maps.google.com/maps/place/vila-sonia",
   },
   {
-    id: "messejana",
+    id: "campo-limpo",
     zone: "Zona Sul",
-    neighborhood: "Messejana",
-    name: "Mercado Messejana",
-    address: "Rua Coronel Francisco Pereira, 95",
-    googleMapsUrl: "https://maps.google.com/maps/place/messejana",
+    neighborhood: "Campo Limpo",
+    name: "Mercado Campo Limpo",
+    address: "Estrada do Campo Limpo, 95",
+    googleMapsUrl: "https://maps.google.com/maps/place/campo-limpo",
   },
 ];
 
@@ -113,13 +113,13 @@ describe("Recycle", () => {
       screen.getByRole("link", { name: "Abrir Pet Shop Amigo no Google Maps" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "Abrir Mercado Messejana no Google Maps" }),
+      screen.getByRole("link", { name: "Abrir Mercado Campo Limpo no Google Maps" }),
     ).toBeInTheDocument();
 
-    fireEvent.change(search, { target: { value: "messejana" } });
+    fireEvent.change(search, { target: { value: "campo limpo" } });
 
     expect(
-      screen.getByRole("link", { name: "Abrir Mercado Messejana no Google Maps" }),
+      screen.getByRole("link", { name: "Abrir Mercado Campo Limpo no Google Maps" }),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("link", { name: "Abrir Pet Shop Amigo no Google Maps" }),
@@ -127,7 +127,7 @@ describe("Recycle", () => {
     expect(screen.getAllByText("1 ponto encontrado").length).toBeGreaterThan(0);
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Remover busca messejana" }),
+      screen.getByRole("button", { name: "Remover busca campo limpo" }),
     );
     expect(
       screen.getByRole("link", { name: "Abrir Pet Shop Amigo no Google Maps" }),
@@ -140,13 +140,13 @@ describe("Recycle", () => {
     const search = await screen.findByRole("combobox", {
       name: "Bairro ou nome do local",
     });
-    fireEvent.click(screen.getByRole("button", { name: "Zona Leste" }));
+    fireEvent.click(screen.getByRole("button", { name: "Zona Oeste" }));
 
     expect(
       screen.getByRole("link", { name: "Abrir Pet Shop Amigo no Google Maps" }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("link", { name: "Abrir Mercado Messejana no Google Maps" }),
+      screen.queryByRole("link", { name: "Abrir Mercado Campo Limpo no Google Maps" }),
     ).not.toBeInTheDocument();
 
     fireEvent.change(search, { target: { value: "endereço inexistente" } });
@@ -156,7 +156,7 @@ describe("Recycle", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Limpar filtros" }));
     expect(
-      screen.getByRole("link", { name: "Abrir Mercado Messejana no Google Maps" }),
+      screen.getByRole("link", { name: "Abrir Mercado Campo Limpo no Google Maps" }),
     ).toBeInTheDocument();
   });
 

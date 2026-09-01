@@ -18,8 +18,8 @@ export const VALID_STEP_1 = {
   estado_civil: "Solteiro",
   profissao: "Profissional de teste",
   empresa: "Organização fictícia",
-  endereco: "Rua Exemplo, 100, Fortaleza - CE",
-  telefone: "(85) 90000-0000",
+  endereco: "Rua Exemplo, 100, Morumbi, São Paulo - SP",
+  telefone: "(11) 90000-0000",
   email: "candidatura@example.test",
   redes_sociais: "@candidatura_teste",
 } satisfies Step1Data;

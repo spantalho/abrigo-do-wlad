@@ -106,7 +106,7 @@ describe("mock admin API", () => {
     await expect(detailResponse.json()).resolves.toMatchObject({
       id: "adoption-livia",
       email: "livia@example.test",
-      endereco: "Fortaleza, CE",
+      endereco: "Morumbi, São Paulo - SP",
     });
   });
 

@@ -391,7 +391,7 @@ export default function Recycle() {
                           value={searchTerm}
                           onValueChange={handleSearchChange}
                           size="lg"
-                          placeholder="Ex.: Messejana ou Pet Shop"
+                          placeholder="Ex.: Morumbi"
                           emptyMessage="Nenhum bairro ou local corresponde à busca."
                         />
                       </Field>

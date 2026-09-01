@@ -4,9 +4,9 @@ import { describe, expect, test, vi } from "vitest";
 import { Combobox, type ComboboxOption } from ".";
 
 const options: ComboboxOption[] = [
-  { value: "aldeota", label: "Aldeota", description: "Bairro" },
-  { value: "messejana", label: "Messejana", description: "Bairro · Zona Sul" },
-  { value: "benfica", label: "Benfica", description: "Bairro · Zona Central" },
+  { value: "morumbi", label: "Morumbi", description: "Bairro" },
+  { value: "vila-sonia", label: "Vila Sônia", description: "Bairro · Zona Oeste" },
+  { value: "campo-limpo", label: "Campo Limpo", description: "Bairro · Zona Sul" },
 ];
 
 describe("Combobox", () => {
@@ -22,13 +22,13 @@ describe("Combobox", () => {
 
     const input = screen.getByRole("combobox", { name: "Buscar bairro" });
     fireEvent.focus(input);
-    fireEvent.change(input, { target: { value: "messe" } });
+    fireEvent.change(input, { target: { value: "sonia" } });
 
-    expect(screen.getByRole("option", { name: /Messejana/ })).toBeInTheDocument();
-    expect(screen.queryByRole("option", { name: /Aldeota/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /Vila Sônia/ })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: /Morumbi/ })).not.toBeInTheDocument();
 
     fireEvent.keyDown(input, { key: "Enter" });
-    expect(input).toHaveValue("Messejana");
+    expect(input).toHaveValue("Vila Sônia");
     expect(onOptionSelect).toHaveBeenCalledWith(options[1]);
     expect(input).toHaveAttribute("aria-expanded", "false");
   });
@@ -61,16 +61,16 @@ describe("Combobox", () => {
     const input = screen.getByRole("combobox", { name: "Buscar bairros" });
     fireEvent.focus(input);
 
-    const aldeota = screen.getByRole("option", { name: /Aldeota/ });
-    fireEvent.mouseDown(aldeota);
-    expect(onSelectedValuesChange).toHaveBeenLastCalledWith(["aldeota"]);
-    expect(aldeota).toHaveAttribute("aria-selected", "true");
+    const morumbi = screen.getByRole("option", { name: /Morumbi/ });
+    fireEvent.mouseDown(morumbi);
+    expect(onSelectedValuesChange).toHaveBeenLastCalledWith(["morumbi"]);
+    expect(morumbi).toHaveAttribute("aria-selected", "true");
     expect(input).toHaveValue("");
     expect(input).toHaveAttribute("aria-expanded", "true");
 
-    fireEvent.mouseDown(aldeota);
+    fireEvent.mouseDown(morumbi);
     expect(onSelectedValuesChange).toHaveBeenLastCalledWith([]);
-    expect(aldeota).toHaveAttribute("aria-selected", "false");
+    expect(morumbi).toHaveAttribute("aria-selected", "false");
   });
 
   test("usa o ScrollArea e mantém a opção ativa visível pelo teclado", async () => {

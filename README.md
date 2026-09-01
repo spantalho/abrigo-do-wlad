@@ -1,10 +1,10 @@
 # Abrigo do Wlad — Plataforma Web
 
 Repositório oficial da plataforma digital do Abrigo do Wlad, projeto social
-independente dedicado ao cuidado e à adoção responsável de animais. A
-plataforma reúne a divulgação dos cães, o recebimento de candidaturas de adoção,
-as campanhas de arrecadação, os pontos parceiros de reciclagem e a gestão das
-atividades do abrigo.
+independente na cidade de São Paulo, dedicado ao cuidado e à adoção
+responsável de animais. A plataforma reúne a divulgação dos cães, o recebimento
+de candidaturas de adoção, as campanhas de arrecadação, os pontos parceiros de
+reciclagem e a gestão das atividades do abrigo.
 
 O projeto nasceu para substituir as antigas listagens de animais em PDF, que
 dificultavam a atualização e a divulgação das adoções. O catálogo digital tornou

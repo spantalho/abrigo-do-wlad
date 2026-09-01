@@ -28,7 +28,7 @@ const validDogInput = {
 
 const validRecyclePointInput = {
   zone: "ZONA SUL",
-  neighborhood: "Aldeota",
+  neighborhood: "Morumbi",
   name: "Mercado local",
   address: "Rua Exemplo, 123",
   googleMapsUrl: "https://maps.app.goo.gl/abc123",
@@ -112,9 +112,9 @@ describe("admin entity contracts", () => {
 
   test.each([
     "https://maps.app.goo.gl/abc123",
-    "https://www.google.com/maps/place/Aldeota",
-    "https://www.google.com.br/maps/place/Aldeota",
-    "https://maps.google.com/?q=Aldeota",
+    "https://www.google.com/maps/place/Morumbi",
+    "https://www.google.com.br/maps/place/Morumbi",
+    "https://maps.google.com/?q=Morumbi",
     "https://goo.gl/maps/abc123",
   ])("accepts the Google Maps URL %s", (googleMapsUrl) => {
     expect(recyclePointInputSchema.safeParse({
@@ -124,10 +124,10 @@ describe("admin entity contracts", () => {
   });
 
   test.each([
-    "http://www.google.com/maps/place/Aldeota",
-    "https://www.google.com/search?q=Aldeota",
+    "http://www.google.com/maps/place/Morumbi",
+    "https://www.google.com/search?q=Morumbi",
     "https://maps.app.goo.gl.example.com/abc123",
-    "https://example.com/maps/place/Aldeota",
+    "https://example.com/maps/place/Morumbi",
   ])("rejects the non-Google Maps URL %s", (googleMapsUrl) => {
     expect(recyclePointInputSchema.safeParse({
       ...validRecyclePointInput,

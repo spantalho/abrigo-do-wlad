@@ -190,9 +190,9 @@ describe("comportamentos especializados", () => {
       />,
     );
 
-    changeField(/Telefone/, "85999998888777");
+    changeField(/Telefone/, "11999998888777");
 
-    expect(updateField).toHaveBeenCalledWith("telefone", "(85) 99999-8888");
+    expect(updateField).toHaveBeenCalledWith("telefone", "(11) 99999-8888");
   });
 
   it.each([
