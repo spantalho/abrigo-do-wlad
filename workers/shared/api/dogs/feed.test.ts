@@ -192,6 +192,32 @@ test("GET dog feed reads the requested KV version and returns only one page", as
   });
 });
 
+test("GET dog feed falls back to the matching current copy when its versioned key is missing", async () => {
+  const feed: DogFeed = {
+    schemaVersion: 2,
+    version: "2026-08-24",
+    generatedAt: "2026-08-24T03:00:00.000Z",
+    dogs: [dog("1"), dog("2"), dog("3")],
+  };
+  const { env } = kvEnv({
+    "dogs-feed:current": feed,
+  });
+  const response = await getDogFeedResponse(
+    new Request("https://abrigo.test/api/dogs?page=2&limit=2&version=2026-08-24"),
+    env,
+  );
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    dogs: [feed.dogs[2]],
+    totalItems: 3,
+    currentPage: 2,
+    totalPages: 2,
+    itemsPerPage: 2,
+    version: "2026-08-24",
+  });
+});
+
 test("GET dog feed reports an expired requested version without rebuilding it", async () => {
   const { env } = kvEnv();
   const response = await getDogFeedResponse(

@@ -228,9 +228,19 @@ async function readDogFeed(
       ? `${FEED_KEY_PREFIX}${requestedVersion}`
       : CURRENT_FEED_KEY,
   );
-  if (!isDogFeed(feed)) return null;
-  if (requestedVersion && feed.version !== requestedVersion) return null;
-  return feed;
+  if (isDogFeed(feed) && (!requestedVersion || feed.version === requestedVersion)) {
+    return feed;
+  }
+
+  if (!requestedVersion) return null;
+
+  // The current feed is a complete copy, not only a pointer. It remains a safe
+  // fallback when its matching versioned key has expired or has not replicated
+  // yet, so pagination does not reset to page one between requests.
+  const currentFeed = await kv.get<unknown>(CURRENT_FEED_KEY);
+  return isDogFeed(currentFeed) && currentFeed.version === requestedVersion
+    ? currentFeed
+    : null;
 }
 
 export async function getCurrentDogFeed(env: CloudflareEnv): Promise<DogFeed> {
