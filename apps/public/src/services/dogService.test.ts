@@ -20,17 +20,19 @@ test("getDogFeedPage sends pagination, filters and feed version to the API", asy
     totalPages: 0,
     itemsPerPage: 6,
     version: "2026-08-24",
+    tagCounts: { docil: 2, sociavel: 1 },
   }));
   vi.stubGlobal("fetch", fetchMock);
 
   const page = await getDogFeedPage(
-    { cateIdade: "adulto", cor: "caramelo", tags: "docil" },
+    { cateIdade: "adulto", cor: "caramelo", tags: ["docil", "sociavel"] },
     2,
     6,
     "2026-08-24",
   );
 
   assert.equal(page.version, "2026-08-24");
+  assert.deepEqual(page.tagCounts, { docil: 2, sociavel: 1 });
   const requestUrl = String(fetchMock.mock.calls[0]?.[0]);
   assert.match(requestUrl, /^\/api\/dogs\?/);
   const params = new URL(requestUrl, "https://abrigo.test").searchParams;
@@ -38,7 +40,7 @@ test("getDogFeedPage sends pagination, filters and feed version to the API", asy
   assert.equal(params.get("limit"), "6");
   assert.equal(params.get("cateIdade"), "adulto");
   assert.equal(params.get("cor"), "caramelo");
-  assert.equal(params.get("tag"), "docil");
+  assert.deepEqual(params.getAll("tag"), ["docil", "sociavel"]);
   assert.equal(params.get("version"), "2026-08-24");
 });
 

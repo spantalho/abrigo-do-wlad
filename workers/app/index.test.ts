@@ -88,6 +88,7 @@ test("GET /api/dogs returns a filtered page from the KV feed", async () => {
     totalPages: 1,
     itemsPerPage: 6,
     version: "2026-08-24",
+    tagCounts: { docil: 1 },
   });
 });
 

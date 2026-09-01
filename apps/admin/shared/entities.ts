@@ -14,10 +14,45 @@ export const DOG_HEALTH_STATUSES = [
   "Apenas Castrado",
   "Em Protocolo Vacinal",
 ] as const;
+export const DOG_TAG_VALUES = [
+  "docil",
+  "brincalhao",
+  "medroso",
+  "ativo",
+  "tranquilo",
+  "sociavel",
+  "resiliente",
+  "carinhoso",
+  "amavel",
+  "curioso",
+  "timido",
+  "independente",
+  "protetor",
+  "companheiro",
+  "adaptavel",
+] as const;
 
 export const dogAgeCategorySchema = z.enum(DOG_AGE_CATEGORIES);
 export const dogSexSchema = z.enum(DOG_SEXES);
 export const dogHealthStatusSchema = z.enum(DOG_HEALTH_STATUSES);
+export type DogTag = (typeof DOG_TAG_VALUES)[number];
+
+export function normalizeDogTag(value: string): DogTag | null {
+  const normalized = value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase()
+    .trim();
+  return DOG_TAG_VALUES.find((tag) => tag === normalized) ?? null;
+}
+
+const dogTagSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(60)
+  .transform(normalizeDogTag)
+  .refine((value): value is DogTag => value !== null, "Informe uma tag válida.");
 
 export type DogAgeUnit = (typeof DOG_AGE_UNITS)[number];
 
@@ -103,7 +138,7 @@ const dogWritableFieldsSchema = z.object({
   sexo: dogSexSchema,
   temperamento: dogTemperamentWriteSchema,
   tags: z
-    .array(z.string().trim().min(1).max(60))
+    .array(dogTagSchema)
     .max(MAX_DOG_TAGS, `Um cachorro pode ter no máximo ${MAX_DOG_TAGS} tags.`),
   status: dogHealthStatusSchema,
   fotos: z

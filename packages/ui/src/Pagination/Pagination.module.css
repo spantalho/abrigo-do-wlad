@@ -1,4 +1,4 @@
-.container {
+.root {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8,26 +8,33 @@
   border-top: 1px solid var(--border-light);
 }
 
-.navBtn {
-  width: 40px;
-  height: 40px;
+.navigationButton {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
 }
 
-.navBtn:hover:not(:disabled) {
-  border-color: var(--primary);
+.navigationButton:hover:not(:disabled) {
   color: var(--primary);
 }
 
-.navBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.navigationButton svg {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .info {
-  font-size: 0.9rem;
   color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .info strong {
   color: var(--text-primary);
+}
+
+@media (max-width: 480px) {
+  .root {
+    gap: 0.75rem;
+  }
 }

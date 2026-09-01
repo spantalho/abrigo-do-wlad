@@ -1,4 +1,11 @@
-import type { Dog, DogFilters, DogProfile, DogTombstone } from "@/types/dogs";
+import {
+  TAGS_MAP,
+  type Dog,
+  type DogFilters,
+  type DogProfile,
+  type DogTagCounts,
+  type DogTombstone,
+} from "@/types/dogs";
 
 export interface DogFeedPage {
   dogs: Dog[];
@@ -7,6 +14,7 @@ export interface DogFeedPage {
   totalPages: number;
   itemsPerPage: number;
   version: string;
+  tagCounts: DogTagCounts;
 }
 
 export class DogFeedVersionError extends Error {
@@ -77,7 +85,20 @@ function isDogFeedPage(value: unknown): value is DogFeedPage {
     typeof page.currentPage === "number" &&
     typeof page.totalPages === "number" &&
     typeof page.itemsPerPage === "number" &&
-    typeof page.version === "string"
+    typeof page.version === "string" &&
+    isDogTagCounts(page.tagCounts)
+  );
+}
+
+function isDogTagCounts(value: unknown): value is DogTagCounts {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+
+  return Object.entries(value).every(
+    ([tag, count]) =>
+      Object.hasOwn(TAGS_MAP, tag) &&
+      typeof count === "number" &&
+      Number.isInteger(count) &&
+      count > 0,
   );
 }
 
@@ -98,9 +119,7 @@ export async function getDogFeedPage(
   if (filters.cor && filters.cor !== "all") {
     params.set("cor", filters.cor);
   }
-  if (filters.tags && filters.tags !== "all") {
-    params.set("tag", filters.tags);
-  }
+  filters.tags?.forEach((tag) => params.append("tag", tag));
   if (version) {
     params.set("version", version);
   }

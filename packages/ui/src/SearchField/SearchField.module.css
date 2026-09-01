@@ -1,0 +1,84 @@
+.root {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  z-index: 1;
+  left: 1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.input {
+  padding-right: 2.75rem;
+  padding-left: 2.75rem;
+  appearance: none;
+}
+
+.input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.clearButton {
+  position: absolute;
+  z-index: 1;
+  right: 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-xl);
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+
+.clearButton svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.clearButton:hover {
+  background: var(--btn-ghost-bg);
+  color: var(--text-primary);
+}
+
+.disabled {
+  opacity: 0.6;
+}
+
+.disabled .searchIcon {
+  color: var(--text-muted);
+}
+
+.root[data-size="sm"] .searchIcon {
+  left: 0.75rem;
+  width: 1rem;
+  height: 1rem;
+}
+
+.root[data-size="sm"] .input {
+  padding-right: 2.4rem;
+  padding-left: 2.25rem;
+}
+
+.root[data-size="sm"] .clearButton {
+  right: 0.35rem;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.root[data-size="lg"] .searchIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.root[data-size="lg"] .input {
+  padding-right: 3rem;
+}

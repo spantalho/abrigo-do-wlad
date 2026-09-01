@@ -3,19 +3,21 @@ import {
   DogFeedVersionError,
   getDogFeedPage,
 } from "@/services/dogService";
-import type { Dog, DogFilters } from "@/types/dogs";
+import type { Dog, DogFilters, DogTagCounts } from "@/types/dogs";
 
 const ITEMS_PER_PAGE = 6;
 
 export function useDogSearch() {
   const [dogs, setDogs] = React.useState<Dog[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [hasLoaded, setHasLoaded] = React.useState(false);
   const [error, setError] = React.useState(false);
   const [totalItems, setTotalItems] = React.useState(0);
   const [totalPages, setTotalPages] = React.useState(0);
+  const [tagCounts, setTagCounts] = React.useState<DogTagCounts>({});
   const [filters, setFiltersState] = React.useState<DogFilters>({
     cateIdade: "all",
-    tags: "all",
+    tags: [],
     cor: "all",
   });
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -62,6 +64,7 @@ export function useDogSearch() {
         setDogs(page.dogs);
         setTotalItems(page.totalItems);
         setTotalPages(page.totalPages);
+        setTagCounts(page.tagCounts);
       } catch (requestError) {
         if (controller.signal.aborted) return;
         console.error("Erro ao carregar a página de cães:", requestError);
@@ -70,7 +73,10 @@ export function useDogSearch() {
         setTotalPages(0);
         setError(true);
       } finally {
-        if (!controller.signal.aborted) setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+          setHasLoaded(true);
+        }
       }
     }
 
@@ -81,10 +87,12 @@ export function useDogSearch() {
   return {
     dogs,
     loading,
+    hasLoaded,
     error,
     totalItems,
     currentPage,
     totalPages,
+    tagCounts,
     filters,
     setFilters,
     setCurrentPage,

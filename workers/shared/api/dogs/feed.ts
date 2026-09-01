@@ -15,7 +15,34 @@ const FEED_SCHEMA_VERSION = 2;
 const FEED_RETENTION_SECONDS = 3 * 24 * 60 * 60;
 const DEFAULT_ITEMS_PER_PAGE = 6;
 const MAX_ITEMS_PER_PAGE = 24;
+const MAX_TAG_FILTERS = 15;
 const ROTATION_TIME_ZONE = "America/Fortaleza";
+const DOG_TAG_VALUES = new Set([
+  "docil",
+  "brincalhao",
+  "medroso",
+  "ativo",
+  "tranquilo",
+  "sociavel",
+  "resiliente",
+  "carinhoso",
+  "amavel",
+  "curioso",
+  "timido",
+  "independente",
+  "protetor",
+  "companheiro",
+  "adaptavel",
+]);
+
+function normalizeDogTag(value: string): string | null {
+  const normalized = value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase()
+    .trim();
+  return DOG_TAG_VALUES.has(normalized) ? normalized : null;
+}
 
 export interface PublicDog {
   id: string;
@@ -47,6 +74,7 @@ export interface DogFeedPage {
   totalPages: number;
   itemsPerPage: number;
   version: string;
+  tagCounts: Record<string, number>;
 }
 
 type DogFeedSource = Pick<FirestoreRestClient, "listDocuments">;
@@ -124,6 +152,16 @@ function toPublicDog(
     return null;
   }
 
+  const tags = data.tags.map(normalizeDogTag);
+  if (tags.some((tag) => tag === null)) {
+    console.warn(JSON.stringify({
+      event: "dogs.feed.document.skipped",
+      documentId: document.id,
+      reason: "invalid_tag",
+    }));
+    return null;
+  }
+
   return {
     id: document.id,
     nome: data.nome,
@@ -131,7 +169,7 @@ function toPublicDog(
     cateIdade: data.cateIdade as PublicDog["cateIdade"],
     sexo: data.sexo,
     temperamento: data.temperamento,
-    tags: data.tags,
+    tags: tags as string[],
     status: data.status,
     fotos: data.fotos,
     cor: data.cor,
@@ -173,6 +211,19 @@ function isDogFeed(value: unknown): value is DogFeed {
     Array.isArray(feed.dogs) &&
     feed.dogs.every(isPublicDog)
   );
+}
+
+function normalizeStoredDogFeed(value: unknown): DogFeed | null {
+  if (!isDogFeed(value)) return null;
+
+  const dogs: PublicDog[] = [];
+  for (const dog of value.dogs) {
+    const tags = dog.tags.map(normalizeDogTag);
+    if (tags.some((tag) => tag === null)) return null;
+    dogs.push({ ...dog, tags: tags as string[] });
+  }
+
+  return { ...value, dogs };
 }
 
 export async function updateDogFeed(
@@ -228,9 +279,24 @@ async function readDogFeed(
       ? `${FEED_KEY_PREFIX}${requestedVersion}`
       : CURRENT_FEED_KEY,
   );
-  if (!isDogFeed(feed)) return null;
-  if (requestedVersion && feed.version !== requestedVersion) return null;
-  return feed;
+  const normalizedFeed = normalizeStoredDogFeed(feed);
+  if (
+    normalizedFeed &&
+    (!requestedVersion || normalizedFeed.version === requestedVersion)
+  ) {
+    return normalizedFeed;
+  }
+
+  if (!requestedVersion) return null;
+
+  // The current feed is a complete copy, not only a pointer. It remains a safe
+  // fallback when its matching versioned key has expired or has not replicated
+  // yet, so pagination does not reset to page one between requests.
+  const currentFeed = await kv.get<unknown>(CURRENT_FEED_KEY);
+  const normalizedCurrentFeed = normalizeStoredDogFeed(currentFeed);
+  return normalizedCurrentFeed?.version === requestedVersion
+    ? normalizedCurrentFeed
+    : null;
 }
 
 export async function getCurrentDogFeed(env: CloudflareEnv): Promise<DogFeed> {
@@ -256,6 +322,23 @@ function optionalFilter(value: string | null): string | undefined {
   return !normalized || normalized === "all" ? undefined : normalized;
 }
 
+function countDogTags(dogs: readonly PublicDog[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+
+  dogs.forEach((dog) => {
+    const uniqueTags = new Set(
+      dog.tags
+        .map(normalizeDogTag)
+        .filter((tag): tag is string => tag !== null),
+    );
+    uniqueTags.forEach((tag) => {
+      counts[tag] = (counts[tag] ?? 0) + 1;
+    });
+  });
+
+  return counts;
+}
+
 export function paginateDogFeed(feed: DogFeed, url: URL): DogFeedPage | null {
   const page = positiveInteger(url.searchParams.get("page"), 1);
   const itemsPerPage = positiveInteger(
@@ -267,11 +350,17 @@ export function paginateDogFeed(feed: DogFeed, url: URL): DogFeedPage | null {
 
   const cateIdade = optionalFilter(url.searchParams.get("cateIdade"));
   const cor = optionalFilter(url.searchParams.get("cor"));
-  const tag = optionalFilter(url.searchParams.get("tag"));
+  const tags = Array.from(new Set(
+    url.searchParams
+      .getAll("tag")
+      .map(optionalFilter)
+      .filter((tag): tag is string => Boolean(tag)),
+  ));
   if (
     (cateIdade && !["filhote", "adulto", "idoso"].includes(cateIdade)) ||
     (cor && cor.length > 80) ||
-    (tag && tag.length > 60)
+    tags.length > MAX_TAG_FILTERS ||
+    tags.some((tag) => !DOG_TAG_VALUES.has(tag))
   ) {
     return null;
   }
@@ -279,7 +368,7 @@ export function paginateDogFeed(feed: DogFeed, url: URL): DogFeedPage | null {
   const filtered = feed.dogs.filter((dog) =>
     (!cateIdade || dog.cateIdade === cateIdade) &&
     (!cor || dog.cor === cor) &&
-    (!tag || dog.tags.includes(tag))
+    tags.every((tag) => dog.tags.includes(tag))
   );
   const totalItems = filtered.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -292,6 +381,7 @@ export function paginateDogFeed(feed: DogFeed, url: URL): DogFeedPage | null {
     totalPages,
     itemsPerPage,
     version: feed.version,
+    tagCounts: countDogTags(feed.dogs),
   };
 }
 

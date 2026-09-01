@@ -30,6 +30,12 @@
   --card-accent: var(--success);
 }
 
+.toneCoral {
+  --card-body-surface: var(--surface-coral);
+  --card-accent: var(--brand-coral);
+  --card-border: color-mix(in srgb, var(--brand-coral) 28%, var(--border-light));
+}
+
 .toneWarning {
   --card-body-surface: var(--warning-bg);
   --card-accent: var(--warning-text);

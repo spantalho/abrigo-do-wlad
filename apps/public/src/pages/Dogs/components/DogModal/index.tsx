@@ -13,7 +13,8 @@ import {
 import { Badge } from "@jaci/ui/Badge";
 import { ExternalLink } from "@/components/common/ExternalLink";
 import * as CardComponent from "@jaci/ui/Card";
-import { Carousel, type CarouselAPI } from "@jaci/ui/Carousel";
+import { Carousel } from "@jaci/ui/Carousel";
+import { CarouselNavigation } from "@jaci/ui/CarouselNavigation";
 import { ScrollArea } from "@jaci/ui/ScrollArea";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { analytics } from "@/utils/analytics";
@@ -132,7 +133,7 @@ export function DogModal({ dog: parentDog, isOpen, onClose }: ModalProps) {
             {/* --- CARROSSEL DE IMAGENS --- */}
             <div className={styles.carouselContainer}>
               <Carousel
-                render={(api: CarouselAPI) => (
+                render={api => (
                   <div className={styles.carouselButtons}>
                     {!isDesktop && (
                       <div>
@@ -141,44 +142,25 @@ export function DogModal({ dog: parentDog, isOpen, onClose }: ModalProps) {
                           variant="outline"
                           onClick={handleClose}
                           size="icon"
+                          aria-label={`Fechar detalhes de ${dog.nome}`}
                         >
-                          <Lucide.X size={20} />
+                          <Lucide.X size={20} aria-hidden="true" />
                         </Button>
                       </div>
                     )}
                     {hasMultipleImages && (
-                      <div className={styles.carouselNavContainer}>
-                        <div className={styles.carouselNav}>
-                          <div className={styles.carouselNavButtons}>
-                            <Button
-                              variant="primary"
-                              size="icon"
-                              onClick={api.goPrev}
-                            >
-                              <Lucide.ChevronLeft size={24} />
-                            </Button>
-                            <Button
-                              variant="primary"
-                              size="icon"
-                              onClick={api.goNext}
-                            >
-                              <Lucide.ChevronRight size={24} />
-                            </Button>
-                          </div>
-                        </div>
-                        <div className={styles.carouselNavDots}>
-                          {photos.map((_, index) => (
-                            <button
-                              key={index}
-                              className={`${styles.dot} ${
-                                api.page === index ? styles.dotActive : ""
-                              }`}
-                              onClick={() => api.goTo(index)}
-                              aria-label={`Ir para imagem ${index + 1}`}
-                            />
-                          ))}
-                        </div>
-                      </div>
+                      <CarouselNavigation
+                        api={api}
+                        size={isDesktop ? "md" : "sm"}
+                        showDots={isDesktop}
+                        itemLabels={photos.map(
+                          (_, index) => `foto ${index + 1} de ${dog.nome}`,
+                        )}
+                        previousLabel="Ver foto anterior"
+                        nextLabel="Ver próxima foto"
+                        dotsLabel={`Escolher foto de ${dog.nome}`}
+                        aria-label={`Navegação das fotos de ${dog.nome}`}
+                      />
                     )}
                   </div>
                 )}

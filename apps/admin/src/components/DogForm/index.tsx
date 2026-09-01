@@ -16,6 +16,7 @@ import {
   type DogAgeUnit,
   type DogInput,
   type DogProps,
+  type DogTag,
 } from "../../types/dogs";
 import {
   dogAgeCategorySchema,
@@ -204,7 +205,7 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
     });
   };
 
-  const toggleTag = (tag: string) => {
+  const toggleTag = (tag: DogTag) => {
     setFormData(prev => {
       const tags = prev.tags;
       if (tags.includes(tag)) {
@@ -544,21 +545,21 @@ export function DogForm({ initialData, onSubmit, title, buttonLabel }: DogFormPr
             </p>
             <div className={styles.tagsContainer}>
               {DOG_TAGS.map(tag => {
-                const isSelected = selectedTags.includes(tag);
+                const isSelected = selectedTags.includes(tag.value);
 
                 return (
                   <Button
                     type="button"
                     size="sm"
                     variant={isSelected ? "primary" : "outline"}
-                    key={tag}
+                    key={tag.value}
                     className={`${styles.tagButton} ${isSelected ? styles.active : ''}`}
                     aria-describedby="tags-description"
                     aria-pressed={isSelected}
                     disabled={!isSelected && tagLimitReached}
-                    onClick={() => toggleTag(tag)}
+                    onClick={() => toggleTag(tag.value)}
                   >
-                    {tag}
+                    {tag.label}
                   </Button>
                 );
               })}
