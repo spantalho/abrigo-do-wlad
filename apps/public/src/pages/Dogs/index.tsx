@@ -40,7 +40,6 @@ import { FilterChip } from "@jaci/ui/FilterChip";
 import { LiveRegion } from "@jaci/ui/LiveRegion";
 import { ToggleGroup, ToggleGroupItem } from "@jaci/ui/ToggleGroup";
 
-import * as TooltipComponent from "@jaci/ui/Tooltip";
 import * as SelectComponent from "@jaci/ui/Select";
 
 import styles from "./Dogs.module.css";
@@ -92,9 +91,6 @@ function DogFiltersSkeleton() {
             <Skeleton
               style={{ height: "28px", width: "120px", borderRadius: "16px" }}
             />
-            <Skeleton
-              style={{ height: "28px", width: "100px", borderRadius: "16px" }}
-            />
           </div>
         </div>
 
@@ -105,6 +101,8 @@ function DogFiltersSkeleton() {
             <Skeleton className={styles.loadingSecondaryFilter} />
           </div>
         </div>
+
+        <Skeleton className={styles.loadingRotationNote} />
       </CardComponent.CardBody>
     </CardComponent.Card>
   );
@@ -158,29 +156,6 @@ function DogFiltersComponent({
             >
               {getResultLabel(totalItems)}
             </Badge>
-            <TooltipComponent.TooltipProvider>
-              <TooltipComponent.Tooltip>
-                <TooltipComponent.TooltipTrigger asChild>
-                  <Badge
-                    leftIcon={<Lucide.CircleQuestionMark size={16} />}
-                    variant="outline"
-                    size="sm"
-                    style={{ cursor: "help" }}
-                  >
-                    Ordem rotativa
-                  </Badge>
-                </TooltipComponent.TooltipTrigger>
-                <TooltipComponent.TooltipContent>
-                  <p>
-                    <strong>A ordem desta lista é rotativa.</strong>
-                  </p>
-                  <p>
-                    Essa medida ajuda a distribuir a visibilidade de forma mais
-                    justa entre todos os cães.
-                  </p>
-                </TooltipComponent.TooltipContent>
-              </TooltipComponent.Tooltip>
-            </TooltipComponent.TooltipProvider>
           </div>
         </header>
 
@@ -286,6 +261,14 @@ function DogFiltersComponent({
             </Button>
           </div>
         )}
+
+        <p className={styles.rotationNote}>
+          <Lucide.Info size={16} aria-hidden="true" />
+          <span>
+            A ordem dos cães muda periodicamente para distribuir a visibilidade
+            de forma justa.
+          </span>
+        </p>
       </CardComponent.CardBody>
     </CardComponent.Card>
   );

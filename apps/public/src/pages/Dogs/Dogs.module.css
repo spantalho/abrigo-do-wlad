@@ -1,6 +1,7 @@
 .filtersCard {
   height: auto;
   margin: 2.5rem 0;
+  overflow: visible;
 }
 
 .filtersPanel {
@@ -46,6 +47,24 @@
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.rotationNote {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-lg);
+  background: var(--surface-water);
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.rotationNote svg {
+  flex-shrink: 0;
+  color: var(--primary);
 }
 
 .filterControls {
@@ -118,6 +137,11 @@
   height: 5.75rem;
 }
 
+.loadingRotationNote {
+  width: 100%;
+  height: 3rem;
+}
+
 .loadingSecondaryFilter {
   width: 100%;
   height: 4.5rem;
@@ -167,8 +191,15 @@
   }
 
   .filterMeta {
+    order: -1;
     width: 100%;
-    justify-content: flex-start;
+    justify-content: center;
+  }
+
+  .rotationNote {
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
   }
 
   .secondaryFilters {

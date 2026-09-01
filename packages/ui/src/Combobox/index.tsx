@@ -110,7 +110,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
       ? `${generatedId}-option-${activeIndex}`
       : undefined;
     const scrollAreaHeight = React.useMemo(() => {
-      if (filteredOptions.length === 0) return "3.5rem";
+      if (filteredOptions.length === 0) return "5.5rem";
 
       const contentHeight = filteredOptions.reduce(
         (height, option) => height + (option.description ? 3.75 : 2.8),

@@ -344,10 +344,18 @@ export default function Recycle() {
                 className={styles.loadingState}
                 aria-label="Carregando pontos de coleta"
               >
-                <div className={styles.loadingFilters}>
-                  <Skeleton className={styles.loadingSearch} />
-                  <Skeleton className={styles.loadingZones} />
-                </div>
+                <CardComponent.Card
+                  tone="muted"
+                  size="sm"
+                  className={styles.filterCard}
+                >
+                  <CardComponent.CardBody className={styles.filterCardBody}>
+                    <div className={styles.loadingFilters}>
+                      <Skeleton className={styles.loadingSearch} />
+                      <Skeleton className={styles.loadingZones} />
+                    </div>
+                  </CardComponent.CardBody>
+                </CardComponent.Card>
                 <div className={styles.pointsGrid}>
                   {Array.from({ length: 4 }, (_, index) => (
                     <Skeleton key={index} className={styles.loadingCard} />
@@ -363,77 +371,89 @@ export default function Recycle() {
               />
             ) : (
               <>
-                <div className={styles.filterPanel}>
-                  <Field
-                    controlId="collection-point-search"
-                    label="Bairro ou nome do local"
-                    description="Você também pode pesquisar pelo endereço."
-                    size="lg"
-                  >
-                    <Combobox
-                      options={searchOptions}
-                      value={searchTerm}
-                      onValueChange={handleSearchChange}
-                      size="lg"
-                      placeholder="Ex.: Messejana ou Pet Shop"
-                      emptyMessage="Nenhum bairro ou local corresponde à busca."
-                    />
-                  </Field>
+                <CardComponent.Card
+                  tone="muted"
+                  size="sm"
+                  className={styles.filterCard}
+                  role="region"
+                  aria-label="Filtros de pontos de coleta"
+                >
+                  <CardComponent.CardBody className={styles.filterCardBody}>
+                    <div className={styles.filterPanel}>
+                      <Field
+                        controlId="collection-point-search"
+                        label="Bairro ou nome do local"
+                        description="Você também pode pesquisar pelo endereço."
+                        size="lg"
+                      >
+                        <Combobox
+                          options={searchOptions}
+                          value={searchTerm}
+                          onValueChange={handleSearchChange}
+                          size="lg"
+                          placeholder="Ex.: Messejana ou Pet Shop"
+                          emptyMessage="Nenhum bairro ou local corresponde à busca."
+                        />
+                      </Field>
 
-                  <div className={styles.zoneFilter}>
-                    <p className={styles.filterLabel}>Zona</p>
-                    <ToggleGroup
-                      type="single"
-                      value={selectedZone}
-                      onValueChange={handleZoneChange}
-                      aria-label="Filtrar por zona"
-                      size="sm"
-                    >
-                      <ToggleGroupItem value={ALL_ZONES}>Todas</ToggleGroupItem>
-                      {zones.map((zone) => (
-                        <ToggleGroupItem key={zone} value={zone}>
-                          {zone}
-                        </ToggleGroupItem>
-                      ))}
-                    </ToggleGroup>
-                  </div>
-                </div>
-
-                {hasActiveFilters && (
-                  <div className={styles.activeFilters}>
-                    <span className={styles.activeFiltersLabel}>
-                      Filtros ativos
-                    </span>
-                    <div className={styles.activeFilterChips}>
-                      {searchTerm.trim() && (
-                        <FilterChip
-                          onRemove={() => handleSearchChange("")}
-                          removeLabel={`Remover busca ${searchTerm}`}
+                      <div className={styles.zoneFilter}>
+                        <p className={styles.filterLabel}>Zona</p>
+                        <ToggleGroup
+                          type="single"
+                          value={selectedZone}
+                          onValueChange={handleZoneChange}
+                          aria-label="Filtrar por zona"
                           size="sm"
                         >
-                          Busca: {searchTerm}
-                        </FilterChip>
-                      )}
-                      {selectedZone !== ALL_ZONES && (
-                        <FilterChip
-                          onRemove={() => handleZoneChange(ALL_ZONES)}
-                          removeLabel={`Remover filtro ${selectedZone}`}
-                          size="sm"
-                        >
-                          {selectedZone}
-                        </FilterChip>
-                      )}
+                          <ToggleGroupItem value={ALL_ZONES}>
+                            Todas
+                          </ToggleGroupItem>
+                          {zones.map((zone) => (
+                            <ToggleGroupItem key={zone} value={zone}>
+                              {zone}
+                            </ToggleGroupItem>
+                          ))}
+                        </ToggleGroup>
+                      </div>
                     </div>
-                    <Button
-                      type="button"
-                      variant="text"
-                      size="sm"
-                      onClick={clearFilters}
-                    >
-                      Limpar filtros
-                    </Button>
-                  </div>
-                )}
+
+                    {hasActiveFilters && (
+                      <div className={styles.activeFilters}>
+                        <span className={styles.activeFiltersLabel}>
+                          Filtros ativos
+                        </span>
+                        <div className={styles.activeFilterChips}>
+                          {searchTerm.trim() && (
+                            <FilterChip
+                              onRemove={() => handleSearchChange("")}
+                              removeLabel={`Remover busca ${searchTerm}`}
+                              size="sm"
+                            >
+                              Busca: {searchTerm}
+                            </FilterChip>
+                          )}
+                          {selectedZone !== ALL_ZONES && (
+                            <FilterChip
+                              onRemove={() => handleZoneChange(ALL_ZONES)}
+                              removeLabel={`Remover filtro ${selectedZone}`}
+                              size="sm"
+                            >
+                              {selectedZone}
+                            </FilterChip>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="text"
+                          size="sm"
+                          onClick={clearFilters}
+                        >
+                          Limpar filtros
+                        </Button>
+                      </div>
+                    )}
+                  </CardComponent.CardBody>
+                </CardComponent.Card>
 
                 <div className={styles.resultsHeader}>
                   <p>{getResultLabel(filteredPoints.length)}</p>

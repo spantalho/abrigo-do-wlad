@@ -34,10 +34,17 @@ describe("Combobox", () => {
   });
 
   test("informa quando não há opções correspondentes", () => {
-    render(<Combobox aria-label="Buscar bairro" options={options} />);
+    const { container } = render(
+      <Combobox aria-label="Buscar bairro" options={options} />,
+    );
     const input = screen.getByRole("combobox", { name: "Buscar bairro" });
     fireEvent.change(input, { target: { value: "inexistente" } });
+
     expect(screen.getByText("Nenhuma opção encontrada.")).toBeInTheDocument();
+    expect(
+      container.querySelector("[data-radix-scroll-area-viewport]")
+        ?.parentElement,
+    ).toHaveStyle({ height: "5.5rem" });
   });
 
   test("permite selecionar e remover múltiplas opções", () => {

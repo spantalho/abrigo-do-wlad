@@ -172,16 +172,23 @@
   margin-bottom: 1.5rem;
 }
 
+.filterCard {
+  height: auto;
+  overflow: visible;
+}
+
+.filterCardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+}
+
 .filterPanel {
   display: grid;
   grid-template-columns: minmax(20rem, 1.6fr) minmax(15rem, 0.9fr);
   align-items: start;
   gap: 1.5rem;
-  padding: 1.5rem;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius);
-  background: var(--surface-card);
-  box-shadow: var(--shadow-sm);
 }
 
 .zoneFilter {
@@ -204,7 +211,8 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin-top: 1rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-light);
 }
 
 .activeFilterChips {
@@ -236,7 +244,7 @@
 
 .pointsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1rem;
 }
 
@@ -436,7 +444,7 @@
     justify-content: space-between;
   }
 
-  .filterPanel {
+  .filterCardBody {
     padding: 1rem;
   }
 
@@ -450,13 +458,44 @@
   }
 
   .resultsHeader {
-    align-items: flex-start;
+    align-items: center;
     flex-direction: column;
     gap: 0.2rem;
+    text-align: center;
   }
 
   .pointsGrid {
     grid-template-columns: 1fr;
+  }
+
+  .pointCardHeader {
+    align-items: center;
+    flex-direction: column-reverse;
+    gap: 1rem;
+  }
+
+  .neighborhoodHeading,
+  .collectionCardItem {
+    align-items: center;
+    flex-direction: column;
+    gap: 0.4rem;
+    text-align: center;
+  }
+
+  .neighborhoodHeading > div,
+  .collectionCardItem > div {
+    width: 100%;
+  }
+
+  .neighborhoodHeading > svg,
+  .collectionCardIcon {
+    margin-top: 0;
+  }
+
+  .collectionCardNeighborhood,
+  .collectionCardName,
+  .collectionCardAddress {
+    text-align: center !important;
   }
 
   .cardFooter {
@@ -467,12 +506,5 @@
     justify-content: center;
     width: 100%;
     min-height: 2.75rem;
-  }
-}
-
-@media (max-width: 420px) {
-  .pointCardHeader {
-    align-items: flex-start;
-    flex-direction: column-reverse;
   }
 }
