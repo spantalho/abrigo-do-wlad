@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, test, vi } from "vitest";
 
 import { Combobox, type ComboboxOption } from ".";
@@ -38,5 +38,26 @@ describe("Combobox", () => {
     const input = screen.getByRole("combobox", { name: "Buscar bairro" });
     fireEvent.change(input, { target: { value: "inexistente" } });
     expect(screen.getByText("Nenhuma opção encontrada.")).toBeInTheDocument();
+  });
+
+  test("usa o ScrollArea e mantém a opção ativa visível pelo teclado", async () => {
+    const scrollIntoView = vi.spyOn(Element.prototype, "scrollIntoView");
+    const manyOptions = Array.from({ length: 12 }, (_, index) => ({
+      value: `option-${index}`,
+      label: `Opção ${index + 1}`,
+      description: "Bairro",
+    }));
+    const { container } = render(
+      <Combobox aria-label="Buscar opção" options={manyOptions} />,
+    );
+
+    const input = screen.getByRole("combobox", { name: "Buscar opção" });
+    fireEvent.focus(input);
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+
+    expect(
+      container.querySelector("[data-radix-scroll-area-viewport]"),
+    ).toBeInTheDocument();
+    await waitFor(() => expect(scrollIntoView).toHaveBeenCalled());
   });
 });

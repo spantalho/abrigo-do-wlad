@@ -31,68 +31,16 @@
 
 /* container de navegação */
 .carouselButtons {
-  display: flex;
-  flex-direction: column;
   position: absolute;
-  justify-content: space-between;
-  align-items: center;
-  bottom: -6.5rem;
+  z-index: 20;
+  bottom: 0;
   left: 0;
-  width: 100%;
-  padding: 2rem;
-  z-index: 20;
-  transition: all 0.3s ease-in-out;
-}
-
-.carouselContainer:hover .carouselButtons {
-  bottom: -2.1rem;
-}
-
-.carouselNavContainer {
   display: flex;
-  flex-direction: column-reverse;
-  gap: 1rem;
-}
-
-.carouselNav {
-  display: flex;
-  align-items: center;
-  padding: 0.5rem 0.5rem;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  background-color: var(--surface-card);
-  pointer-events: none;
-}
-
-.carouselNavButtons {
-  display: flex;
-  gap: 0.8rem;
-  z-index: 20;
-  pointer-events: all;
-}
-
-.carouselNavDots {
-  display: flex;
-  gap: 0.5rem;
   align-items: center;
   justify-content: center;
-  pointer-events: all;
-}
-
-.dot {
-  width: 7px;
-  height: 7px;
-  border-radius: var(--radius-lg);
-  background-color: var(--dot-inactive);
-  transition: all 0.2s ease-in-out;
-}
-
-.dot:hover {
-  background-color: var(--dot-hover);
-}
-
-.dotActive {
-  width: 30px;
-  background-color: var(--always-white);
+  width: 100%;
+  padding: 2rem;
+  flex-direction: column;
 }
 
 .details {
@@ -261,15 +209,7 @@
 
   .carouselButtons {
     flex-direction: row;
-    bottom: 0 !important;
     justify-content: space-between;
-  }
-
-  .carouselNav {
-    border-radius: var(--radius-lg);
-    background-color: var(--glass);
-    border: 1px solid var(--border);
-    backdrop-filter: var(--blur);
   }
 
   .footer {
@@ -298,10 +238,6 @@
 
   .titleWrapper {
     justify-content: center;
-  }
-
-  .carouselNavDots {
-    display: none;
   }
 
   .badges {

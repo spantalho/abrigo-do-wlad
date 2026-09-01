@@ -20,6 +20,9 @@ describe("ToggleGroup", () => {
 
     const all = screen.getByRole("button", { name: "Todas" });
     const south = screen.getByRole("button", { name: "Sul" });
+    expect(screen.getByRole("group", { name: "Zona" })).not.toHaveAttribute(
+      "value",
+    );
     expect(all).toHaveAttribute("aria-pressed", "true");
 
     fireEvent.click(south);

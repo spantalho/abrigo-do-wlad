@@ -1,4 +1,4 @@
-type ThirdPartyImage = {
+export type ThirdPartyImage = {
   photoId: string;
   author: {
     name: string;
@@ -10,6 +10,10 @@ type ThirdPartyImage = {
   };
 };
 
+type ThirdPartyImageGroup = {
+  [key: string]: ThirdPartyImage | ThirdPartyImageGroup;
+};
+
 export type ThirdPartyImagesData = {
-  [key: string]: ThirdPartyImage;
+  [key: string]: ThirdPartyImage | ThirdPartyImageGroup;
 };

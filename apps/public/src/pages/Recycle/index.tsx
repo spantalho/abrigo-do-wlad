@@ -1,84 +1,226 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Badge } from "@jaci/ui/Badge";
+import { Button } from "@jaci/ui/Button";
 import * as CardComponent from "@jaci/ui/Card";
-import Banner from "@/components/Banner";
-import { ScrollIndicators } from "@/components/ScrollIndicators";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@jaci/ui/Accordion";
-
-import { getThirdPartyImage } from "@/utils/common";
-import { analytics } from "@/utils/analytics";
+import { Carousel } from "@jaci/ui/Carousel";
+import { CarouselNavigation } from "@jaci/ui/CarouselNavigation";
+import { Combobox, type ComboboxOption } from "@jaci/ui/Combobox";
+import { EmptyState } from "@jaci/ui/EmptyState";
+import { Field } from "@jaci/ui/Field";
+import { FilterChip } from "@jaci/ui/FilterChip";
+import { LiveRegion } from "@jaci/ui/LiveRegion";
+import { Skeleton } from "@jaci/ui/Skeleton";
+import { ToggleGroup, ToggleGroupItem } from "@jaci/ui/ToggleGroup";
 import * as Lucide from "lucide-react";
 
-// Adicionamos as importações do Firebase e do Tipo
+import Banner from "@/components/Banner";
+import { PageFeedback } from "@/components/PageFeedback";
+import { ScrollIndicators } from "@/components/ScrollIndicators";
+import { analytics } from "@/utils/analytics";
+import { getThirdPartyImage } from "@/utils/common";
+
 import { getRecyclePoints } from "../../services/recycleService";
 import type { RecyclePoint } from "../../types/recycle";
 
 import styles from "./Recycle.module.css";
-import { PageFeedback } from "@/components/PageFeedback";
 
-interface GroupedPoints {
-  zone: string;
-  locations: RecyclePoint[];
+const ALL_ZONES = "all";
+const INITIAL_VISIBLE_POINTS = 8;
+
+const DONATION_ITEMS = [
+  {
+    imageKey: "recycle.petBottle",
+    tone: "leaf",
+    title: "Tampas de garrafa PET",
+    description:
+      "Também valem tampas de garrafas de água, refrigerante, suco e outras bebidas.",
+    imageAlt: "Garrafa PET transparente sobre uma superfície clara",
+  },
+  {
+    imageKey: "recycle.beautyCream",
+    tone: "earth",
+    title: "Tampas de higiene e limpeza",
+    description:
+      "Inclua tampas de shampoo, condicionador, creme, detergente, amaciante e produtos semelhantes.",
+    imageAlt: "Embalagem de creme de beleza",
+  },
+  {
+    imageKey: "recycle.pen",
+    tone: "coral",
+    title: "Tampas pequenas de plástico",
+    description:
+      "Tampas de caneta, creme dental, maionese e outras embalagens de plástico duro também ajudam.",
+    imageAlt: "Caneta esferográfica sobre uma superfície clara",
+  },
+  {
+    imageKey: "recycle.aluminumCan",
+    tone: "water",
+    title: "Lacres de alumínio",
+    description:
+      "Separe os lacres de latas de refrigerante, água, suco, cerveja e outras bebidas.",
+    imageAlt: "Lata de refrigerante de alumínio",
+  },
+] as const;
+
+function normalize(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase()
+    .trim();
+}
+
+function sortPoints(points: RecyclePoint[]) {
+  return [...points].sort(
+    (first, second) =>
+      first.zone.localeCompare(second.zone) ||
+      first.neighborhood.localeCompare(second.neighborhood) ||
+      (first.name ?? "").localeCompare(second.name ?? ""),
+  );
+}
+
+function createSearchOptions(points: RecyclePoint[]): ComboboxOption[] {
+  const options = new Map<string, ComboboxOption>();
+
+  points.forEach((point) => {
+    const neighborhoodKey = `neighborhood:${normalize(point.neighborhood)}`;
+    if (!options.has(neighborhoodKey)) {
+      options.set(neighborhoodKey, {
+        value: neighborhoodKey,
+        label: point.neighborhood,
+        description: `Bairro · ${point.zone}`,
+        keywords: [point.zone],
+      });
+    }
+
+    if (point.name) {
+      const nameKey = `place:${normalize(point.name)}`;
+      if (!options.has(nameKey)) {
+        options.set(nameKey, {
+          value: nameKey,
+          label: point.name,
+          description: `Ponto de coleta · ${point.neighborhood}`,
+          keywords: [point.neighborhood, point.zone],
+        });
+      }
+    }
+  });
+
+  return [...options.values()].sort((first, second) =>
+    first.label.localeCompare(second.label),
+  );
+}
+
+function getResultLabel(count: number) {
+  return `${count} ${count === 1 ? "ponto encontrado" : "pontos encontrados"}`;
 }
 
 export default function Recycle() {
-  const heroImage = getThirdPartyImage("recycle")?.url;
+  const heroImage = getThirdPartyImage("recycle.banner")?.url;
+  const donationItems = useMemo(
+    () =>
+      DONATION_ITEMS.map((item) => ({
+        ...item,
+        image: getThirdPartyImage(item.imageKey, {
+          w: 1600,
+          h: 800,
+          q: 82,
+          crop: "center",
+        })?.url,
+        mobileImage: getThirdPartyImage(item.imageKey, {
+          w: 768,
+          h: 920,
+          q: 80,
+          crop: "center",
+        })?.url,
+      })),
+    [],
+  );
   const containerRef = useRef<HTMLDivElement>(null!);
   const section1Ref = useRef<HTMLElement>(null!);
   const section2Ref = useRef<HTMLElement>(null!);
   const sectionLabels = ["O que doar?", "Pontos de coleta"];
 
-  const [collectionPoints, setCollectionPoints] = useState<GroupedPoints[]>([]);
+  const [collectionPoints, setCollectionPoints] = useState<RecyclePoint[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedZone, setSelectedZone] = useState(ALL_ZONES);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_POINTS);
   const [loading, setLoading] = useState(true);
 
-  // Busca na base de dados quando a página carrega
   useEffect(() => {
-    async function fetchPoints() {
-      try {
-        const rawPoints = await getRecyclePoints();
+    let active = true;
 
-        // Agrupa a lista que vem reta do banco pelo campo "zone"
-        const grouped = rawPoints.reduce((acc, point) => {
-          const existingZone = acc.find((item) => item.zone === point.zone);
-          if (existingZone) {
-            existingZone.locations.push(point);
-          } else {
-            acc.push({ zone: point.zone, locations: [point] });
-          }
-          return acc;
-        }, [] as GroupedPoints[]);
+    getRecyclePoints()
+      .then((points) => {
+        if (active) setCollectionPoints(sortPoints(points));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
-        // Ordena as zonas em ordem alfabética
-        grouped.sort((a, b) => a.zone.localeCompare(b.zone));
-
-        // Ordena os bairros dentro de cada zona em ordem alfabética
-        grouped.forEach((group) => {
-          group.locations.sort((a, b) =>
-            a.neighborhood.localeCompare(b.neighborhood),
-          );
-        });
-
-        setCollectionPoints(grouped);
-      } catch (error) {
-        console.error("Erro ao buscar pontos do Firebase", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchPoints();
+    return () => {
+      active = false;
+    };
   }, []);
 
-  // Track when no results are found
   useEffect(() => {
     if (!loading && collectionPoints.length === 0) {
       analytics.trackNoResults("recycle_page");
     }
   }, [loading, collectionPoints.length]);
+
+  const zones = useMemo(
+    () =>
+      [...new Set(collectionPoints.map((point) => point.zone))].sort(
+        (first, second) => first.localeCompare(second),
+      ),
+    [collectionPoints],
+  );
+
+  const pointsInSelectedZone = useMemo(
+    () =>
+      selectedZone === ALL_ZONES
+        ? collectionPoints
+        : collectionPoints.filter((point) => point.zone === selectedZone),
+    [collectionPoints, selectedZone],
+  );
+
+  const searchOptions = useMemo(
+    () => createSearchOptions(pointsInSelectedZone),
+    [pointsInSelectedZone],
+  );
+
+  const filteredPoints = useMemo(() => {
+    const query = normalize(searchTerm);
+    if (!query) return pointsInSelectedZone;
+
+    return pointsInSelectedZone.filter((point) =>
+      [point.neighborhood, point.name, point.address, point.zone]
+        .filter((value): value is string => Boolean(value))
+        .some((value) => normalize(value).includes(query)),
+    );
+  }, [pointsInSelectedZone, searchTerm]);
+
+  const visiblePoints = filteredPoints.slice(0, visibleCount);
+  const hasActiveFilters =
+    Boolean(searchTerm.trim()) || selectedZone !== ALL_ZONES;
+  const hasMorePoints = visiblePoints.length < filteredPoints.length;
+
+  function handleSearchChange(value: string) {
+    setSearchTerm(value);
+    setVisibleCount(INITIAL_VISIBLE_POINTS);
+  }
+
+  function handleZoneChange(value: string) {
+    setSelectedZone(value || ALL_ZONES);
+    setVisibleCount(INITIAL_VISIBLE_POINTS);
+  }
+
+  function clearFilters() {
+    setSearchTerm("");
+    setSelectedZone(ALL_ZONES);
+    setVisibleCount(INITIAL_VISIBLE_POINTS);
+  }
 
   return (
     <>
@@ -104,190 +246,336 @@ export default function Recycle() {
               vendido para reciclagem e 100% do valor é revertido para o abrigo.
             </p>
 
-            <ul className={styles.checklist}>
-              <li>
-                <Lucide.CheckCircle className={styles.checklistIcon} />
-                <span>Tampas de garrafa PET (água/refri)</span>
-              </li>
-              <li>
-                <Lucide.CheckCircle className={styles.checklistIcon} />
-                <span>Tampas de shampoo, detergente e amaciante</span>
-              </li>
-              <li>
-                <Lucide.CheckCircle className={styles.checklistIcon} />
-                <span>Tampas de caneta, creme e maionese</span>
-              </li>
-              <li>
-                <Lucide.CheckCircle className={styles.checklistIcon} />
-                <span>Lacres de latinhas de alumínio</span>
-              </li>
-            </ul>
+            <div
+              className={styles.donationCarousel}
+              role="region"
+              aria-roledescription="carrossel"
+              aria-label="Exemplos de materiais aceitos"
+            >
+              <Carousel
+                render={api => (
+                  <CarouselNavigation
+                    api={api}
+                    className={styles.carouselNavigation}
+                    itemLabels={donationItems.map(item => item.title)}
+                    previousLabel="Ver material anterior"
+                    nextLabel="Ver próximo material"
+                    dotsLabel="Escolher material"
+                    aria-label="Navegação dos materiais aceitos"
+                  />
+                )}
+              >
+                {donationItems.map((item, index) => (
+                  <article
+                    key={item.imageKey}
+                    className={styles.donationSlide}
+                    data-tone={item.tone}
+                    role="group"
+                    aria-roledescription="slide"
+                    aria-label={`${index + 1} de ${donationItems.length}`}
+                  >
+                    {item.image && (
+                      <picture className={styles.donationPicture}>
+                        <source
+                          media="(max-width: 768px)"
+                          srcSet={item.mobileImage || item.image}
+                        />
+                        <img
+                          src={item.image}
+                          alt={item.imageAlt}
+                          width={1600}
+                          height={800}
+                          loading={index === 0 ? "eager" : "lazy"}
+                          decoding="async"
+                          draggable={false}
+                        />
+                      </picture>
+                    )}
+                    <div
+                      className={styles.donationOverlay}
+                      aria-hidden="true"
+                    />
+                    <div className={styles.donationSlideContent}>
+                      <span className={styles.donationEyebrow}>
+                        Exemplo de material aceito
+                      </span>
+                      <h3>{item.title}</h3>
+                      <p>{item.description}</p>
+                    </div>
+                  </article>
+                ))}
+              </Carousel>
+            </div>
           </div>
         </section>
 
         <section className="container" ref={section2Ref}>
-          <div style={{ width: "100%" }}>
-            <div style={{ marginBottom: "2rem" }}>
-              <h2 className="section-title" style={{ marginBottom: "0.5rem" }}>
-                Pontos de coleta
-              </h2>
-              <p style={{ color: "var(--text-secondary)" }}>
-                Encontre o local mais próximo de você e saiba como contribuir.{" "}
-                <strong>
-                  {" "}
-                  Se possível, entregue as tampinhas lavadas e separadas por
-                  cor. Isso agiliza muito nosso trabalho!
-                </strong>
-              </p>
-            </div>
+          <div className={styles.collectionSection}>
+            <header className={styles.collectionIntro}>
+              <h2 className="section-title">Pontos de coleta</h2>
+              <p>Encontre um ponto de coleta no seu bairro ou região.</p>
+            </header>
+
+            <CardComponent.Card
+              variant="callout"
+              tone="info"
+              size="sm"
+              layout="inline"
+              className={styles.preparationCallout}
+            >
+              <CardComponent.CardBody>
+                <CardComponent.CardIcon>
+                  <Lucide.Sparkles size={24} aria-hidden="true" />
+                </CardComponent.CardIcon>
+                <CardComponent.CardTitle>
+                  Prepare sua doação
+                </CardComponent.CardTitle>
+                <CardComponent.CardContent>
+                  <p>
+                    Se possível, lave as tampinhas e separe-as por cor. Isso
+                    agiliza muito o nosso trabalho!
+                  </p>
+                </CardComponent.CardContent>
+              </CardComponent.CardBody>
+            </CardComponent.Card>
 
             {loading ? (
               <div
-                style={{
-                  textAlign: "center",
-                  padding: "3rem 2rem",
-                  color: "var(--text-muted)",
-                }}
+                className={styles.loadingState}
+                aria-label="Carregando pontos de coleta"
               >
-                <Lucide.Loader2
-                  size={32}
-                  className="animate-spin"
-                  style={{ margin: "0 auto 1rem" }}
-                />
-                <p>Carregando pontos de coleta...</p>
+                <div className={styles.loadingFilters}>
+                  <Skeleton className={styles.loadingSearch} />
+                  <Skeleton className={styles.loadingZones} />
+                </div>
+                <div className={styles.pointsGrid}>
+                  {Array.from({ length: 4 }, (_, index) => (
+                    <Skeleton key={index} className={styles.loadingCard} />
+                  ))}
+                </div>
               </div>
             ) : collectionPoints.length === 0 ? (
-              <CardComponent.Card>
-                <CardComponent.CardBody>
-                  <CardComponent.CardContent>
-                    <p
-                      style={{
-                        textAlign: "center",
-                        color: "var(--text-secondary)",
-                      }}
-                    >
-                      Nenhum ponto de coleta cadastrado no momento.
-                    </p>
-                  </CardComponent.CardContent>
-                </CardComponent.CardBody>
-              </CardComponent.Card>
+              <EmptyState
+                icon={<Lucide.MapPinOff />}
+                title="Nenhum ponto de coleta cadastrado"
+                description="Estamos atualizando nossa rede de parceiros. Volte em breve para conferir novos locais."
+                size="lg"
+              />
             ) : (
-              <Accordion type="single" collapsible>
-                {collectionPoints.map((zone) => (
-                  <AccordionItem key={zone.zone} value={zone.zone}>
-                    <AccordionTrigger>
-                      <div className={styles.collectionCardHeader}>
-                        <Lucide.MapPin size={20} />
-                        <div>
-                          <p className={styles.collectionCardHeaderTitle}>
-                            {zone.zone}
-                          </p>
-                          <p className={styles.collectionCardHeaderSubtitle}>
-                            {zone.locations.length} ponto
-                            {zone.locations.length !== 1 ? "s" : ""} de coleta
-                          </p>
-                        </div>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className={styles.pointsGrid}>
-                        {zone.locations.map((location) => (
-                          <CardComponent.Card
-                            key={location.id}
-                            tone="info"
-                            size="sm"
+              <>
+                <div className={styles.filterPanel}>
+                  <Field
+                    controlId="collection-point-search"
+                    label="Bairro ou nome do local"
+                    description="Você também pode pesquisar pelo endereço."
+                    size="lg"
+                  >
+                    <Combobox
+                      options={searchOptions}
+                      value={searchTerm}
+                      onValueChange={handleSearchChange}
+                      size="lg"
+                      placeholder="Ex.: Messejana ou Pet Shop"
+                      emptyMessage="Nenhum bairro ou local corresponde à busca."
+                    />
+                  </Field>
+
+                  <div className={styles.zoneFilter}>
+                    <p className={styles.filterLabel}>Zona</p>
+                    <ToggleGroup
+                      type="single"
+                      value={selectedZone}
+                      onValueChange={handleZoneChange}
+                      aria-label="Filtrar por zona"
+                      size="sm"
+                    >
+                      <ToggleGroupItem value={ALL_ZONES}>Todas</ToggleGroupItem>
+                      {zones.map((zone) => (
+                        <ToggleGroupItem key={zone} value={zone}>
+                          {zone}
+                        </ToggleGroupItem>
+                      ))}
+                    </ToggleGroup>
+                  </div>
+                </div>
+
+                {hasActiveFilters && (
+                  <div className={styles.activeFilters}>
+                    <span className={styles.activeFiltersLabel}>
+                      Filtros ativos
+                    </span>
+                    <div className={styles.activeFilterChips}>
+                      {searchTerm.trim() && (
+                        <FilterChip
+                          onRemove={() => handleSearchChange("")}
+                          removeLabel={`Remover busca ${searchTerm}`}
+                          size="sm"
+                        >
+                          Busca: {searchTerm}
+                        </FilterChip>
+                      )}
+                      {selectedZone !== ALL_ZONES && (
+                        <FilterChip
+                          onRemove={() => handleZoneChange(ALL_ZONES)}
+                          removeLabel={`Remover filtro ${selectedZone}`}
+                          size="sm"
+                        >
+                          {selectedZone}
+                        </FilterChip>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="text"
+                      size="sm"
+                      onClick={clearFilters}
+                    >
+                      Limpar filtros
+                    </Button>
+                  </div>
+                )}
+
+                <div className={styles.resultsHeader}>
+                  <p>{getResultLabel(filteredPoints.length)}</p>
+                  {filteredPoints.length > visiblePoints.length && (
+                    <span>
+                      Exibindo {visiblePoints.length} de {filteredPoints.length}
+                    </span>
+                  )}
+                </div>
+                <LiveRegion>{getResultLabel(filteredPoints.length)}</LiveRegion>
+
+                {filteredPoints.length === 0 ? (
+                  <EmptyState
+                    icon={<Lucide.SearchX />}
+                    title="Nenhum ponto encontrado"
+                    description="Tente outro bairro, nome de local ou remova o filtro de zona."
+                  />
+                ) : (
+                  <>
+                    <div className={styles.pointsGrid}>
+                      {visiblePoints.map((location) => (
+                        <CardComponent.Card
+                          key={
+                            location.id ??
+                            `${location.zone}-${location.neighborhood}-${location.address}`
+                          }
+                          tone="success"
+                          size="sm"
+                          className={styles.pointCard}
+                        >
+                          <CardComponent.CardBody
+                            className={styles.pointCardBody}
                           >
-                            <CardComponent.CardBody>
-                              <CardComponent.CardContent>
+                            <CardComponent.CardHeader
+                              className={styles.pointCardHeader}
+                            >
+                              <div className={styles.neighborhoodHeading}>
+                                <Lucide.MapPin aria-hidden="true" />
+                                <div>
+                                  <span className={styles.collectionCardLabel}>
+                                    Bairro
+                                  </span>
+                                  <CardComponent.CardTitle
+                                    className={
+                                      styles.collectionCardNeighborhood
+                                    }
+                                  >
+                                    {location.neighborhood}
+                                  </CardComponent.CardTitle>
+                                </div>
+                              </div>
+                              <Badge variant="success" size="sm">
+                                {location.zone}
+                              </Badge>
+                            </CardComponent.CardHeader>
+
+                            <CardComponent.CardContent
+                              className={styles.pointCardContent}
+                            >
+                              {location.name && (
                                 <div className={styles.collectionCardItem}>
-                                  <Lucide.MapPin
-                                    size={18}
+                                  <Lucide.Building2
                                     className={styles.collectionCardIcon}
-                                    style={{
-                                      color: "var(--primary-color)",
-                                    }}
+                                    aria-hidden="true"
                                   />
                                   <div>
-                                    <p className={styles.collectionCardLabel}>
-                                      Bairro
-                                    </p>
-                                    <h4
-                                      className={
-                                        styles.collectionCardNeighborhood
-                                      }
+                                    <span
+                                      className={styles.collectionCardLabel}
                                     >
-                                      {location.neighborhood}
-                                    </h4>
-                                  </div>
-                                </div>
-
-                                {location.name && (
-                                  <div className={styles.collectionCardItem}>
-                                    <Lucide.Building2
-                                      size={18}
-                                      className={styles.collectionCardIcon}
-                                      style={{
-                                        color: "var(--text-secondary)",
-                                      }}
-                                    />
-                                    <div>
-                                      <p className={styles.collectionCardLabel}>
-                                        Local
-                                      </p>
-                                      <p className={styles.collectionCardName}>
-                                        {location.name}
-                                      </p>
-                                    </div>
-                                  </div>
-                                )}
-
-                                <div className={styles.collectionCardItem}>
-                                  <Lucide.Navigation
-                                    size={18}
-                                    className={styles.collectionCardIcon}
-                                    style={{
-                                      color: "var(--text-secondary)",
-                                    }}
-                                  />
-                                  <div>
-                                    <p className={styles.collectionCardLabel}>
-                                      Endereço
-                                    </p>
-                                    <p className={styles.collectionCardAddress}>
-                                      {location.address}
+                                      Local
+                                    </span>
+                                    <p className={styles.collectionCardName}>
+                                      {location.name}
                                     </p>
                                   </div>
                                 </div>
-                              </CardComponent.CardContent>
-                            </CardComponent.CardBody>
-                            {location.googleMapsUrl && (
-                              <CardComponent.CardFooter
-                                className={styles.cardFooter}
+                              )}
+
+                              <div className={styles.collectionCardItem}>
+                                <Lucide.Navigation
+                                  className={styles.collectionCardIcon}
+                                  aria-hidden="true"
+                                />
+                                <div>
+                                  <span className={styles.collectionCardLabel}>
+                                    Endereço
+                                  </span>
+                                  <p className={styles.collectionCardAddress}>
+                                    {location.address}
+                                  </p>
+                                </div>
+                              </div>
+                            </CardComponent.CardContent>
+                          </CardComponent.CardBody>
+
+                          {location.googleMapsUrl && (
+                            <CardComponent.CardFooter
+                              className={styles.cardFooter}
+                            >
+                              <a
+                                href={location.googleMapsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.mapLink}
+                                aria-label={`Abrir ${location.name || location.neighborhood} no Google Maps`}
                               >
-                                <a
-                                  href={location.googleMapsUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className={styles.mapLink}
-                                >
-                                  <Lucide.MapPinHouse size={16} /> Abrir no Google Maps
-                                  <Lucide.ArrowUpRight size={16} />
-                                </a>
-                              </CardComponent.CardFooter>
-                            )}
-                          </CardComponent.Card>
-                        ))}
+                                <Lucide.MapPinHouse aria-hidden="true" />
+                                Abrir no Google Maps
+                                <Lucide.ArrowUpRight aria-hidden="true" />
+                              </a>
+                            </CardComponent.CardFooter>
+                          )}
+                        </CardComponent.Card>
+                      ))}
+                    </div>
+
+                    {hasMorePoints && (
+                      <div className={styles.loadMore}>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          leftIcon={
+                            <Lucide.Plus size={18} aria-hidden="true" />
+                          }
+                          onClick={() =>
+                            setVisibleCount(
+                              (count) => count + INITIAL_VISIBLE_POINTS,
+                            )
+                          }
+                        >
+                          Mostrar mais pontos
+                        </Button>
                       </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+                    )}
+                  </>
+                )}
+              </>
             )}
           </div>
           <PageFeedback pageId="tampinhas" />
         </section>
       </div>
-
     </>
   );
 }

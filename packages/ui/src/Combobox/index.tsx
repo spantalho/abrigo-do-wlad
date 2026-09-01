@@ -1,5 +1,6 @@
 import * as React from "react";
 
+import { ScrollArea } from "../ScrollArea";
 import { SearchField, type SearchFieldProps } from "../SearchField";
 import { cn } from "../utils";
 import styles from "./Combobox.module.css";
@@ -81,6 +82,7 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
   ) => {
     const generatedId = React.useId();
     const listboxId = `${generatedId}-listbox`;
+    const listboxRef = React.useRef<HTMLUListElement>(null);
     const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue);
     const [open, setOpen] = React.useState(false);
     const [activeIndex, setActiveIndex] = React.useState(-1);
@@ -95,6 +97,24 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
     const activeOptionId = activeOption
       ? `${generatedId}-option-${activeIndex}`
       : undefined;
+    const scrollAreaHeight = React.useMemo(() => {
+      if (filteredOptions.length === 0) return "3.5rem";
+
+      const contentHeight = filteredOptions.reduce(
+        (height, option) => height + (option.description ? 3.75 : 2.8),
+        0.8,
+      );
+
+      return `${Math.min(contentHeight, 18)}rem`;
+    }, [filteredOptions]);
+
+    React.useLayoutEffect(() => {
+      if (!open || activeIndex < 0) return;
+
+      listboxRef.current
+        ?.querySelector<HTMLElement>(`[data-option-index="${activeIndex}"]`)
+        ?.scrollIntoView({ block: "nearest" });
+    }, [activeIndex, open]);
 
     function updateValue(nextValue: string) {
       if (value === undefined) setUncontrolledValue(nextValue);
@@ -196,38 +216,50 @@ export const Combobox = React.forwardRef<HTMLInputElement, ComboboxProps>(
 
         {open && !disabled && (
           <div className={styles.popup}>
-            <ul id={listboxId} role="listbox" className={styles.listbox}>
-              {filteredOptions.length === 0 ? (
-                <li className={styles.empty}>{emptyMessage}</li>
-              ) : (
-                filteredOptions.map((option, index) => (
-                  <li
-                    id={`${generatedId}-option-${index}`}
-                    key={option.value}
-                    role="option"
-                    aria-selected={index === activeIndex}
-                    aria-disabled={option.disabled || undefined}
-                    className={styles.option}
-                    data-highlighted={index === activeIndex ? "" : undefined}
-                    data-disabled={option.disabled ? "" : undefined}
-                    onMouseMove={() => {
-                      if (!option.disabled) setActiveIndex(index);
-                    }}
-                    onMouseDown={event => {
-                      event.preventDefault();
-                      selectOption(option);
-                    }}
-                  >
-                    <span className={styles.optionLabel}>{option.label}</span>
-                    {option.description && (
-                      <span className={styles.optionDescription}>
-                        {option.description}
-                      </span>
-                    )}
-                  </li>
-                ))
-              )}
-            </ul>
+            <ScrollArea
+              className={styles.scrollArea}
+              style={{ height: scrollAreaHeight }}
+              showScrollShadows
+            >
+              <ul
+                ref={listboxRef}
+                id={listboxId}
+                role="listbox"
+                className={styles.listbox}
+              >
+                {filteredOptions.length === 0 ? (
+                  <li className={styles.empty}>{emptyMessage}</li>
+                ) : (
+                  filteredOptions.map((option, index) => (
+                    <li
+                      id={`${generatedId}-option-${index}`}
+                      key={option.value}
+                      role="option"
+                      aria-selected={index === activeIndex}
+                      aria-disabled={option.disabled || undefined}
+                      className={styles.option}
+                      data-option-index={index}
+                      data-highlighted={index === activeIndex ? "" : undefined}
+                      data-disabled={option.disabled ? "" : undefined}
+                      onMouseMove={() => {
+                        if (!option.disabled) setActiveIndex(index);
+                      }}
+                      onMouseDown={event => {
+                        event.preventDefault();
+                        selectOption(option);
+                      }}
+                    >
+                      <span className={styles.optionLabel}>{option.label}</span>
+                      {option.description && (
+                        <span className={styles.optionDescription}>
+                          {option.description}
+                        </span>
+                      )}
+                    </li>
+                  ))
+                )}
+              </ul>
+            </ScrollArea>
           </div>
         )}
       </div>

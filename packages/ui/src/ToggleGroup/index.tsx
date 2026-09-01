@@ -53,6 +53,9 @@ export const ToggleGroup = React.forwardRef<HTMLDivElement, ToggleGroupProps>(
       loop = true,
       disabled = false,
       allowEmpty = false,
+      value: controlledValue,
+      defaultValue,
+      onValueChange,
       className,
       children,
       onKeyDown,
@@ -60,10 +63,9 @@ export const ToggleGroup = React.forwardRef<HTMLDivElement, ToggleGroupProps>(
     },
     ref,
   ) => {
-    const controlledValue = props.value;
     const [uncontrolledValue, setUncontrolledValue] = React.useState<string[]>(
       () => {
-        const initialValue = props.defaultValue;
+        const initialValue = defaultValue;
         if (type === "single") {
           return typeof initialValue === "string" && initialValue
             ? [initialValue]
@@ -86,12 +88,12 @@ export const ToggleGroup = React.forwardRef<HTMLDivElement, ToggleGroupProps>(
     function commit(nextValues: string[]) {
       if (controlledValue === undefined) setUncontrolledValue(nextValues);
       if (type === "single") {
-        const handleSingleValueChange = props.onValueChange as
+        const handleSingleValueChange = onValueChange as
           | ((value: string) => void)
           | undefined;
         handleSingleValueChange?.(nextValues[0] ?? "");
       } else {
-        const handleMultipleValueChange = props.onValueChange as
+        const handleMultipleValueChange = onValueChange as
           | ((value: string[]) => void)
           | undefined;
         handleMultipleValueChange?.(nextValues);

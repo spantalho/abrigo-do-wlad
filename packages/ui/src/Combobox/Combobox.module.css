@@ -17,11 +17,13 @@
   box-shadow: var(--shadow-lg);
 }
 
+.scrollArea {
+  border: 0;
+  border-radius: inherit;
+}
+
 .listbox {
-  max-height: 18rem;
   padding: 0.4rem;
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
 
 .option {
